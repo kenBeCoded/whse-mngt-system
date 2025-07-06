@@ -1,0 +1,21 @@
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInVzZXJuYW1lIjoidGVzdDQiLCJpYXQiOjE3NTE3OTk3MzEsImV4cCI6MTc1MTc5OTc0MX0.yTy-HQ8GetHNTLU6KjhOlEPBb4bIBU74puIKIREvpDg
+@RT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInVzZXJuYW1lIjoidGVzdDQiLCJpYXQiOjE3NTE3MjYxMzEsImV4cCI6MTc1NDMxODEzMX0._fA1RslyaRINuVxhjyZjQL4vDPpuH_60u7SIN_lwLEs
+
+###
+
+post http://localhost:8000/api/auth/login
+Content-Type: application/json
+
+{
+    "username":"test4",
+    "password":"test4"
+}
+
+###
+
+post http://localhost:8000/api/auth/logout
+Content-Type: application/json
+
+###
+
+post http://localhost:8000/api/auth/refresh
