@@ -10,7 +10,7 @@ import { useAuth } from "../hooks/useAuth";
 //   // email?: string;
 // }
 
-const DashboardPage: React.FC = () => {
+function DashboardPage() {
   const { user, logout, loading } = useAuth();
   // const [userData, setUserData] = useState<UserData | null>(null);
   // const [loading, setLoading] = useState(true);
@@ -60,6 +60,6 @@ const DashboardPage: React.FC = () => {
       <button onClick={handleLogout}>Logout</button>
     </div>
   );
-};
+}
 
 export default DashboardPage;

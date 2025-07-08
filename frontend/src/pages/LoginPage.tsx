@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 // import { useAuth } from "../context/AuthProvider";
 
-const LoginPage: React.FC = () => {
+function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const { login, loading } = useAuth();
@@ -13,7 +13,7 @@ const LoginPage: React.FC = () => {
     e.preventDefault();
     try {
       await login(username, password);
-      navigate("/dashboard");
+      navigate("/admin/dashboard");
     } catch (err) {
       // Error is handled by the AuthProvider
       console.log(err);
@@ -59,6 +59,6 @@ const LoginPage: React.FC = () => {
       </p>
     </div>
   );
-};
+}
 
 export default LoginPage;

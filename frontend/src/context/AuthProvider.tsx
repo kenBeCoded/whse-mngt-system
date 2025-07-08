@@ -1,3 +1,71 @@
+import { createContext, useState, useEffect, type ReactNode } from "react";
+import { authService } from "../services/userService";
+interface User {
+  id: number;
+  username: string;
+}
+interface AuthContextType {
+  user: User | null;
+  accessToken: string | null;
+  login: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  loading: boolean;
+}
+
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
+
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+
+  const login = async (email: string, password: string) => {
+    const { accessToken } = await authService.login(email, password);
+    setAccessToken(accessToken);
+    const profile = await authService.getProfile(accessToken);
+    setUser(profile);
+  };
+
+  const logout = async () => {
+    await authService.logout();
+    setAccessToken(null);
+    setUser(null);
+  };
+
+  const refreshAccessToken = async () => {
+    try {
+      const { accessToken } = await authService.refresh();
+      setAccessToken(accessToken);
+      const profile = await authService.getProfile(accessToken);
+      setUser(profile);
+    } catch {
+      logout();
+    }
+  };
+
+  useEffect(() => {
+    const init = async () => {
+      try {
+        await refreshAccessToken();
+      } catch {
+        setAccessToken(null);
+        setUser(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+    init();
+  }, []);
+
+  return (
+    <AuthContext.Provider value={{ user, accessToken, login, logout, loading }}>
+      {!loading && children}
+    </AuthContext.Provider>
+  );
+};
+
 // import React, {
 //   createContext,
 //   //   useContext,
@@ -212,68 +280,3 @@
 
 //   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 // };
-
-import { createContext, useState, useEffect, type ReactNode } from "react";
-import { authService } from "../services/userService";
-
-interface AuthContextType {
-  user: any;
-  accessToken: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  loading: boolean;
-}
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
-
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<any>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  const login = async (email: string, password: string) => {
-    const { accessToken } = await authService.login(email, password);
-    setAccessToken(accessToken);
-    const profile = await authService.getProfile(accessToken);
-    setUser(profile);
-  };
-
-  const logout = async () => {
-    await authService.logout();
-    setAccessToken(null);
-    setUser(null);
-  };
-
-  const refreshAccessToken = async () => {
-    try {
-      const { accessToken } = await authService.refresh();
-      setAccessToken(accessToken);
-      const profile = await authService.getProfile(accessToken);
-      setUser(profile);
-    } catch {
-      logout();
-    }
-  };
-
-  useEffect(() => {
-    const init = async () => {
-      try {
-        await refreshAccessToken();
-      } catch {
-        setAccessToken(null);
-        setUser(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-    init();
-  }, []);
-
-  return (
-    <AuthContext.Provider value={{ user, accessToken, login, logout, loading }}>
-      {!loading && children}
-    </AuthContext.Provider>
-  );
-};

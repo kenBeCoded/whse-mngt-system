@@ -1,5 +1,11 @@
+import { Outlet } from "react-router-dom";
+
 function HomePage() {
-  return <div>HomePage</div>;
+  return (
+    <>
+      <Outlet />
+    </>
+  );
 }
 
 export default HomePage;
