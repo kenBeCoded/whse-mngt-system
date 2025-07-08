@@ -14,24 +14,28 @@ const router = Router();
 
 // Refresh token endpoint
 router.post("/refresh", (req: Request, res: Response): void => {
-  const refreshToken = req.cookies.refreshToken;
+  try {
+    const refreshToken = req.cookies.refreshToken;
+    if (!refreshToken) {
+      res.status(401).json({ message: "Refresh token required" });
+      return;
+    }
 
-  if (!refreshToken) {
-    res.status(401).json({ message: "Refresh token required" });
-    return;
+    const decoded = verifyRefreshToken(refreshToken);
+    if (!decoded) {
+      res.status(403).json({ message: "Invalid refresh token" });
+      return;
+    }
+
+    // generate new access token
+    const tokenPayload = { userId: decoded.userId, username: decoded.username };
+    const accessToken = generateAccessToken(tokenPayload);
+
+    res.json({ accessToken });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
-
-  const decoded = verifyRefreshToken(refreshToken);
-  if (!decoded) {
-    res.status(403).json({ message: "Invalid refresh token" });
-    return;
-  }
-
-  // generate new access token
-  const tokenPayload = { userId: decoded.userId, username: decoded.username };
-  const accessToken = generateAccessToken(tokenPayload);
-
-  res.json({ accessToken });
 });
 
 // log in account

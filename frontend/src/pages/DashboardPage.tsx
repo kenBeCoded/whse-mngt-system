@@ -1,35 +1,7 @@
-// import React, { useEffect, useState } from "react";
-// import { useAuth } from "../context/AuthProvider";
-// import axios from "../api/axios";
 import { useAuth } from "../hooks/useAuth";
-
-// interface UserData {
-//   // Define your user data structure
-//   id: number;
-//   username: string;
-//   // email?: string;
-// }
 
 function DashboardPage() {
   const { user, logout, loading } = useAuth();
-  // const [userData, setUserData] = useState<UserData | null>(null);
-  // const [loading, setLoading] = useState(true);
-
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     try {
-  //       // This will automatically include the auth token via interceptor
-  //       const response = await axios.get("/api/auth/profile");
-  //       setUserData(response.data);
-  //     } catch (error) {
-  //       console.error("Failed to fetch user data:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, []);
 
   const handleLogout = async () => {
     try {

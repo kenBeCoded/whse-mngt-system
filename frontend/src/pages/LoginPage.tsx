@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-// import { useAuth } from "../context/AuthProvider";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const { login, loading } = useAuth();
+  const { user, login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,6 +18,10 @@ function LoginPage() {
       console.log(err);
     }
   };
+
+  if (user) {
+    return <Navigate to="/admin/dashboard" replace />;
+  }
 
   return (
     <div className="login-page">
@@ -42,14 +45,14 @@ function LoginPage() {
             required
           />
         </div>
-        {/* {error && (
+        {error && (
           <div className="error">
             {error}
             <button type="button" onClick={clearError}>
               ×
             </button>
           </div>
-        )} */}
+        )}
         <button type="submit" disabled={loading}>
           {loading ? "Logging in..." : "Login"}
         </button>
