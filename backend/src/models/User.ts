@@ -5,31 +5,64 @@ import { QueryResult } from "pg";
 
 // TODO PRIO : need put all of func try catch
 
-type UserWithoutPassword = Omit<User, "password">;
+type UserWithoutPassword = Omit<User, "password_hash">;
 
 export class UserModel {
   // create user account
-  static async create(username: string, password: string): Promise<User> {
+  static async create(
+    userData: Omit<
+      User,
+      "id" | "created_at" | "updated_at" | "password_hash"
+    > & {
+      password: string;
+      role?: string;
+    }
+  ): Promise<User> {
+    const client = await pool.connect();
     try {
-      const hashedPassword = await bcrypt.hash(password, 12);
+      await client.query("BEGIN");
+
+      // ensure the sequence is set correctly
+      await client.query(
+        "SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 0) + 1, false);"
+      );
+
+      await client.query(
+        "SELECT setval('user_account_id_seq', COALESCE((SELECT MAX(id) FROM users), 0) + 1, false);"
+      );
+
+      const hashedPassword = await bcrypt.hash(userData.password, 12);
       const query = `
-        INSERT INTO users (username, password)
-        VALUES ($1, $2)
-        RETURNING id, username, created_at, updated_at
-    `;
+        INSERT INTO users (username, password_hash, email, first_name, middle_name, last_name, gender, user_profile_image_url, role)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        RETURNING username, email, first_name, middle_name, last_name, gender, user_profile_image_url
+      `;
 
-      const result = await pool.query(query, [username, hashedPassword]);
+      const result = await client.query(query, [
+        userData.username,
+        hashedPassword,
+        userData.email,
+        userData.first_name,
+        userData.middle_name,
+        userData.last_name,
+        userData.gender,
+        userData.user_profile_image_url,
+        userData.role ? userData.role : "employee",
+      ]);
 
+      await client.query("COMMIT");
       return result.rows[0];
     } catch (error: any) {
-      await pool.query(
-        "SELECT setval('users_id_seq', (SELECT COALESCE(MAX(id), 0) FROM users));"
-      );
+      await client.query("ROLLBACK");
+
       if (error.code === "23505") {
         // PostgreSQL unique constraint violation
-        throw new Error("Username already exists");
+        throw new Error("Username or email already exists");
       }
-      throw new Error("Failed to create user");
+      console.error("Error creating user:", error);
+      throw new Error(`Failed to create user: ${error.message}`);
+    } finally {
+      client.release();
     }
   }
 
@@ -87,6 +120,6 @@ export class UserModel {
     user: User,
     password: string
   ): Promise<boolean> {
-    return bcrypt.compare(password, user.password);
+    return bcrypt.compare(password, user.password_hash);
   }
 }

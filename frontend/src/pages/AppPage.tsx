@@ -3,13 +3,10 @@ import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Outlet } from "react-router-dom";
 
 function PersistentDrawer() {
-  const [isOpen, setIsOpen] = useState(false);
   const breakpoint = useBreakpoint();
   const isTabletBelow =
     breakpoint === "md" || breakpoint === "sm" || breakpoint === "xs";
-
-  console.log(breakpoint);
-  console.log("[AppPage.tsx:157]", isTabletBelow);
+  const [isOpen, setIsOpen] = useState(!isTabletBelow);
 
   const toggleDrawer = () => {
     setIsOpen(!isOpen);
