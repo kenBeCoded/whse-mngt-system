@@ -1,42 +1,5 @@
 @AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInVzZXJuYW1lIjoidGVzdDQiLCJpYXQiOjE3NTE3OTk4ODMsImV4cCI6MTc1MTc5OTg5M30.ymDqN0X-ijTHDR0iyNvLaqOhcG7HFhebWWXrj-AdQgE
 
-post http://localhost:8000/api/users/create-user
-Content-Type: application/json
-
-# {
-#     "username":"admin",
-#     "password":"admin",
-#     "email":"admin@gmail.com",
-#     "first_name":"admin",
-#     "middle_name":"admin",
-#     "last_name":"admin",
-#     "gender":"male",
-#     "role":"admin",
-#     "user_profile_image_url":"test1 profile image url"
-# }
-
-{
-    "username":"test1",
-    "password":"test1",
-    "email":"test1@gmail.com",
-    "first_name":"test1 first name",
-    "middle_name":"test1 middle name",
-    "last_name":"test1 last name",
-    "gender":"male",
-    "user_profile_image_url":"test1 profile image url"
-}
-
-# {
-#     "username":"test2",
-#     "password":"test2",
-#     "email":"test2@gmail.com",
-#     "first_name":"test2 first name",
-#     "middle_name":"test2 middle name",
-#     "last_name":"test2 last name",
-#     "gender":"male",
-#     "user_profile_image_url":"test2 profile image url"
-# }
-###
 
 post http://localhost:8000/api/auth/login
 Content-Type: application/json
@@ -58,3 +21,45 @@ Authorization: Bearer {{AT}}
 ###
 
 post http://localhost:8000/api/auth/refresh
+
+###
+
+post http://localhost:8000/api/users/create-user
+Content-Type: application/json
+
+# {
+#     "username":"admin",
+#     "password":"admin",
+#     "email":"admin@gmail.com",
+#     "first_name":"admin",
+#     "middle_name":"admin",
+#     "last_name":"admin",
+#     "gender":"male",
+#     "role":"admin",
+#     "user_profile_image_url":"test1 profile image url"
+# }
+
+# {
+#     "username":"test1",
+#     "password":"test1",
+#     "email":"test1@gmail.com",
+#     "first_name":"test1 first name",
+#     "middle_name":"test1 middle name",
+#     "last_name":"test1 last name",
+#     "gender":"male",
+#     "user_profile_image_url":"test1 profile image url"
+# }
+
+# {
+#     "username":"test2",
+#     "password":"test2",
+#     "email":"test2@gmail.com",
+#     "first_name":"test2 first name",
+#     "middle_name":"test2 middle name",
+#     "last_name":"test2 last name",
+#     "gender":"male",
+#     "user_profile_image_url":"test2 profile image url"
+# }
+###
+
+get http://localhost:8000/api/users/get-all-users

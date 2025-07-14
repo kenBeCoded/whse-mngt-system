@@ -68,7 +68,7 @@ export class UserModel {
 
   // get all users
   static async findAllUsernames(): Promise<UserWithoutPassword[]> {
-    const query = "SELECT id, username, created_at, updated_at FROM users";
+    const query = "SELECT username, user_account_id, email, first_name, middle_name, last_name, gender, user_profile_image_url FROM users";
     const result = await pool.query(query);
     return result.rows || null;
   }

@@ -11,7 +11,6 @@ export const signup = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-
     const data: Omit<User, "id" | "created_at" | "updated_at"> & {
       password: string;
       role: string;
@@ -38,6 +37,18 @@ export const signup = async (
 };
 
 // get all users
+export const getAllUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const users = await UserModel.findAllUsernames();
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // update
 
