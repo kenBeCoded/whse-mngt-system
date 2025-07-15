@@ -51,5 +51,29 @@ export const getAllUsers = async (
 };
 
 // update
+export const updateUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { username } = req.body;
+    const userId = await UserModel.getIdByUsername(username);
+    if (!userId) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    const user = await UserModel.updateById(userId, req.body);
+    if (!user) {
+      res.status(404).json({ message: "User not found" });
+      return;
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    next(error);
+  }
+};
 
 // delete(soft)

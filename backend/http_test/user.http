@@ -63,3 +63,14 @@ Content-Type: application/json
 ###
 
 get http://localhost:8000/api/users/get-all-users
+
+###
+
+post http://localhost:8000/api/users/update-user
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "username":"test1",
+    "first_name":"test1 first name"
+}
