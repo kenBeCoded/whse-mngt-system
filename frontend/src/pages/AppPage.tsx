@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { useBreakpoint } from "../hooks/useBreakpoint";
 import { Outlet } from "react-router-dom";
+import DemoPage from "@/app/user-table/page";
+import { TableDemo } from "@/app/user-table/asd";
+import { Button } from "@/components/ui/button";
 
 function PersistentDrawer() {
   const breakpoint = useBreakpoint();
@@ -254,6 +257,9 @@ function PersistentDrawer() {
             This is the main content area. The drawer persists on the left when
             open, and the content adjusts accordingly.
           </p>
+          <DemoPage />
+          <TableDemo />
+          <Button >test</Button>
           <Outlet />
         </main>
       </div>

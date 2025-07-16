@@ -60,6 +60,7 @@ Content-Type: application/json
 #     "gender":"male",
 #     "user_profile_image_url":"test2 profile image url"
 # }
+
 ###
 
 get http://localhost:8000/api/users/get-all-users
@@ -73,4 +74,23 @@ Authorization: Bearer {{AT}}
 {
     "username":"test1",
     "first_name":"test1 first name"
+}
+
+###
+post http://localhost:8000/api/users/delete-user
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "username":"test3"
+}
+
+###
+
+post http://localhost:8000/api/users/get-user-by-username
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "username":"test1"
 }

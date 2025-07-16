@@ -8,7 +8,6 @@ export const authenticateToken = (
   next: NextFunction
 ): void => {
   const authHeader = req.headers["authorization"];
-  console.log("[authToken.ts:11]", authHeader);
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
