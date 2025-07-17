@@ -258,7 +258,7 @@ function PersistentDrawer() {
             open, and the content adjusts accordingly.
           </p>
           <DemoPage />
-          <TableDemo />
+          {/* <TableDemo /> */}
           <Button >test</Button>
           <Outlet />
         </main>
