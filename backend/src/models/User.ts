@@ -1,7 +1,6 @@
 import pool from "../config/database.js";
 import bcrypt from "bcrypt";
 import { User } from "../types/index.js";
-import { QueryResult } from "pg";
 
 // TODO PRIO : need put all of func try catch
 

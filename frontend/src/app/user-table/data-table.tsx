@@ -201,9 +201,27 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
+import { DataTablePagination } from "./data-table-pagination";
+import { DataTableViewOptions } from "./data-table-column-toggle";
+
+type TData = any; // e.g., { name: string; age: number; }
+type TValue = any; // e.g., string | number | Date
+interface CustomCell<TData, TValue> {
+  getValue: () => TValue;
+  // Add other properties/methods of Cell if needed
+}
+// Assuming Row and Cell come from your table library
+interface CustomRow<TData> {
+  getVisibleCells: () => CustomCell<TData, TValue>[];
+  // Add other properties/methods of Row if needed
+}
 
 // Custom global regex filter function
-const globalRegexFilter = (row, columnId, filterValue) => {
+const globalRegexFilter = (
+  row: CustomRow<TData>,
+  columnId: string,
+  filterValue: string
+) => {
   if (!filterValue) return true; // No filter applied
 
   try {
@@ -214,6 +232,7 @@ const globalRegexFilter = (row, columnId, filterValue) => {
       return regex.test(value);
     });
   } catch (error) {
+    console.error("Invalid regex:", error);
     // If regex is invalid, fall back to simple string match across all columns
     return row.getVisibleCells().some((cell) => {
       const value = cell.getValue()?.toString().toLowerCase() || "";
@@ -236,6 +255,8 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
+  const [rowSelection, setRowSelection] = useState({});
+
   const table = useReactTable({
     data,
     columns,
@@ -248,11 +269,17 @@ export function DataTable<TData, TValue>({
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: globalRegexFilter, // Use the custom global regex filter
+    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       globalFilter,
+      rowSelection,
+      // pagination: {
+      //   pageIndex: 0, // Initial page index
+      //   pageSize: 10, // Set page size to 5
+      // },
     },
   });
 
@@ -280,9 +307,7 @@ export function DataTable<TData, TValue>({
                   key={column.id}
                   className="capitalize"
                   checked={column.getIsVisible()}
-                  onCheckedChange={(value) =>
-                    column.toggleVisibility(!!value)
-                  }
+                  onCheckedChange={(value) => column.toggleVisibility(!!value)}
                 >
                   {column.id}
                 </DropdownMenuCheckboxItem>
@@ -337,7 +362,13 @@ export function DataTable<TData, TValue>({
             )}
           </TableBody>
         </Table>
-        <div className="flex items-center justify-end space-x-2 py-4">
+      </div>
+      {/* <div className="flex items-center justify-end space-x-2 py-4">
+        <div className="text-muted-foreground flex-1 text-sm">
+          {table.getFilteredSelectedRowModel().rows.length} of{" "}
+          {table.getFilteredRowModel().rows.length} row(s) selected.
+        </div>
+        <div className="space-x-2">
           <Button
             variant="outline"
             size="sm"
@@ -355,6 +386,10 @@ export function DataTable<TData, TValue>({
             Next
           </Button>
         </div>
+      </div> */}
+      <div className="mt-2">
+        <DataTablePagination table={table} />
+        <DataTableViewOptions table={table} />
       </div>
     </div>
   );

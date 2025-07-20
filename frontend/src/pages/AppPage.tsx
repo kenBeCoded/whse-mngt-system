@@ -26,6 +26,7 @@ function PersistentDrawer() {
         >
           <div className="flex items-center justify-between p-4 border-b border-gray-700">
             <h2 className="text-lg font-semibold">Menu</h2>
+
             <button
               onClick={toggleDrawer}
               className="p-2 rounded-md hover:bg-gray-700 focus:outline-none"
@@ -46,6 +47,28 @@ function PersistentDrawer() {
               </svg>
             </button>
           </div>
+          {/* <div className="flex items-center justify-between p-4 border-b border-gray-700 w-full">
+            <h2 className="text-lg font-semibold truncate">Menu</h2>
+            <button
+              onClick={toggleDrawer}
+              className="p-2 rounded-md bg-gray-700 text-white hover:bg-gray-600 focus:outline-none z-40"
+            >
+              <svg
+                className="w-6 h-6"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            </button>
+          </div> */}
           <nav className="p-4">
             <ul className="space-y-2">
               <li>
@@ -259,7 +282,7 @@ function PersistentDrawer() {
           </p>
           <DemoPage />
           {/* <TableDemo /> */}
-          <Button >test</Button>
+          <Button>test</Button>
           <Outlet />
         </main>
       </div>
