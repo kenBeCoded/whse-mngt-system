@@ -1,4 +1,4 @@
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 
 const API = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000", // replace with your API
@@ -30,18 +30,3 @@ export const authService = {
     return response.data;
   },
 };
-
-// import axios from "axios";
-
-// export const userService = {
-//   getProfile: () => axios.get("/api/user/profile"),
-//   updateProfile: (data: any) => axios.put("/api/user/profile", data),
-//   deleteAccount: () => axios.delete("/api/user/account"),
-// };
-
-// export const dataService = {
-//   getData: () => axios.get("/api/data"),
-//   createData: (data: any) => axios.post("/api/data", data),
-//   updateData: (id: number, data: any) => axios.put(`/api/data/${id}`, data),
-//   deleteData: (id: number) => axios.delete(`/api/data/${id}`),
-// };

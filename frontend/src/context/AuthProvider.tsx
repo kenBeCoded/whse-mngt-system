@@ -1,7 +1,6 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
 import { authService } from "../services/userService";
 import type { AxiosError } from "axios";
-import axios from "axios";
 interface User {
   id: number;
   username: string;
@@ -14,6 +13,10 @@ interface AuthContextType {
   loading: boolean;
   error: string | null;
   clearError: () => void;
+}
+
+interface ErrorResponse {
+  message: string;
 }
 
 export const AuthContext = createContext<AuthContextType | undefined>(
@@ -33,7 +36,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
     } catch (err) {
-      const axiosError = err as AxiosError;
+      const axiosError = err as AxiosError<ErrorResponse>;
       // const errorMessage = err.response?.data?.message || "Login failed";
       setError(axiosError.response?.data?.message || "Login failed");
       throw err;
@@ -53,7 +56,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
     } catch (err) {
-      const axiosError = err as AxiosError;
+      const axiosError = err as AxiosError<ErrorResponse>;
       console.log(axiosError.response?.data?.message || "Token refresh failed");
       // const errorMessage = err.response?.data?.message || "Token refresh failed";
       // setError(axiosError.response?.data?.message || "Token refresh failed"); // Assuming error state is used
