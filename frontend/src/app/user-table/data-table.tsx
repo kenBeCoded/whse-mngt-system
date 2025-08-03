@@ -38,24 +38,32 @@ import { DataTableViewOptions } from "./data-table-column-toggle";
 // Custom global regex filter function
 const globalRegexFilter = <TData,>(
   row: Row<TData>,
-  // columnId: string,
+  columnId: string, // Added for clarity, though not used directly
   filterValue: string
 ) => {
   if (!filterValue) return true; // No filter applied
 
   try {
     const regex = new RegExp(filterValue, "i"); // Case-insensitive regex
-    // Check all columns in the row
     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-      const value = cell.getValue()?.toString().toLowerCase() || "";
-      return regex.test(value);
+      const value = cell.getValue();
+      // Handle different value types
+      const cellString =
+        value === null || value === undefined
+          ? ""
+          : value.toString().toLowerCase();
+      return regex.test(cellString);
     });
   } catch (error) {
     console.error("Invalid regex:", error);
-    // If regex is invalid, fall back to simple string match across all columns
+    // Fallback to simple string match
     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-      const value = cell.getValue()?.toString().toLowerCase() || "";
-      return value.includes(filterValue.toLowerCase());
+      const value = cell.getValue();
+      const cellString =
+        value === null || value === undefined
+          ? ""
+          : value.toString().toLowerCase();
+      return cellString.includes(filterValue.toLowerCase());
     });
   }
 };
@@ -85,7 +93,7 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onGlobalFilterChange: setGlobalFilter,
+    // onGlobalFilterChange: setGlobalFilter,
     globalFilterFn: globalRegexFilter, // Use the custom global regex filter
     onRowSelectionChange: setRowSelection,
     state: {

@@ -68,7 +68,7 @@ export class UserModel {
   // get all users
   static async findAllUsernames(): Promise<UserWithoutPassword[]> {
     const query =
-      "SELECT username, user_account_id, email, first_name, middle_name, last_name, gender, user_profile_image_url FROM users WHERE is_deleted = FALSE";
+      "SELECT username, user_account_id, email, first_name, middle_name, last_name, gender, user_profile_image_url, role, updated_at FROM users WHERE is_deleted = FALSE";
     const result = await pool.query(query);
     return result.rows || null;
   }
@@ -118,7 +118,8 @@ export class UserModel {
 
   // TODO: set this as update the is_deleted
   static async deleteById(id: number): Promise<void> {
-    const query = "UPDATE users SET is_deleted = TRUE WHERE id = $1 RETURNING id";
+    const query =
+      "UPDATE users SET is_deleted = TRUE WHERE id = $1 RETURNING id";
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
   }
