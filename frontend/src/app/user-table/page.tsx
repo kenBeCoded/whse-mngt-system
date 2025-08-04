@@ -108,10 +108,10 @@ const API = axios.create({
 export async function getUsers(): Promise<Users[]> {
   try {
     const response = await API.get("/api/users/get-all-users");
-    console.log(response);
     if (response.status === 200) {
-      return response.data as Promise<Users[]>;
+      return response.data as Users[];
     }
+    throw new Error(`Unexpected response status: ${response.status}`);
   } catch (error) {
     console.error("Error fetching users:", error);
     throw error;

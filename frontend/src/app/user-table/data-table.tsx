@@ -9,8 +9,8 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type Row,
-  type Cell,
+  // type Row,
+  // type Cell,
 } from "@tanstack/react-table";
 
 import {
@@ -36,37 +36,37 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
 
 // Custom global regex filter function
-const globalRegexFilter = <TData,>(
-  row: Row<TData>,
-  columnId: string, // Added for clarity, though not used directly
-  filterValue: string
-) => {
-  if (!filterValue) return true; // No filter applied
+// const globalRegexFilter = <TData,>(
+//   row: Row<TData>,
+//   // columnId: string, // Added for clarity, though not used directly
+//   filterValue: string
+// ) => {
+//   if (!filterValue) return true; // No filter applied
 
-  try {
-    const regex = new RegExp(filterValue, "i"); // Case-insensitive regex
-    return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-      const value = cell.getValue();
-      // Handle different value types
-      const cellString =
-        value === null || value === undefined
-          ? ""
-          : value.toString().toLowerCase();
-      return regex.test(cellString);
-    });
-  } catch (error) {
-    console.error("Invalid regex:", error);
-    // Fallback to simple string match
-    return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-      const value = cell.getValue();
-      const cellString =
-        value === null || value === undefined
-          ? ""
-          : value.toString().toLowerCase();
-      return cellString.includes(filterValue.toLowerCase());
-    });
-  }
-};
+//   try {
+//     const regex = new RegExp(filterValue, "i"); // Case-insensitive regex
+//     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
+//       const value = cell.getValue();
+//       // Handle different value types
+//       const cellString =
+//         value === null || value === undefined
+//           ? ""
+//           : value.toString().toLowerCase();
+//       return regex.test(cellString);
+//     });
+//   } catch (error) {
+//     console.error("Invalid regex:", error);
+//     // Fallback to simple string match
+//     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
+//       const value = cell.getValue();
+//       const cellString =
+//         value === null || value === undefined
+//           ? ""
+//           : value.toString().toLowerCase();
+//       return cellString.includes(filterValue.toLowerCase());
+//     });
+//   }
+// };
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -83,6 +83,9 @@ export function DataTable<TData, TValue>({
   const [globalFilter, setGlobalFilter] = useState<string>("");
   const [rowSelection, setRowSelection] = useState({});
 
+  console.log("rowSelection", rowSelection);
+  console.log("data", data);
+
   const table = useReactTable({
     data,
     columns,
@@ -93,8 +96,8 @@ export function DataTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    // onGlobalFilterChange: setGlobalFilter,
-    globalFilterFn: globalRegexFilter, // Use the custom global regex filter
+    onGlobalFilterChange: setGlobalFilter,
+    // globalFilterFn: globalRegexFilter, // Use the custom global regex filter
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
