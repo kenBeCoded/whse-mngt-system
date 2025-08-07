@@ -9,8 +9,6 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  // type Row,
-  // type Cell,
 } from "@tanstack/react-table";
 
 import {
@@ -35,47 +33,16 @@ import { useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
 
-// Custom global regex filter function
-// const globalRegexFilter = <TData,>(
-//   row: Row<TData>,
-//   // columnId: string, // Added for clarity, though not used directly
-//   filterValue: string
-// ) => {
-//   if (!filterValue) return true; // No filter applied
-
-//   try {
-//     const regex = new RegExp(filterValue, "i"); // Case-insensitive regex
-//     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-//       const value = cell.getValue();
-//       // Handle different value types
-//       const cellString =
-//         value === null || value === undefined
-//           ? ""
-//           : value.toString().toLowerCase();
-//       return regex.test(cellString);
-//     });
-//   } catch (error) {
-//     console.error("Invalid regex:", error);
-//     // Fallback to simple string match
-//     return row.getVisibleCells().some((cell: Cell<TData, unknown>) => {
-//       const value = cell.getValue();
-//       const cellString =
-//         value === null || value === undefined
-//           ? ""
-//           : value.toString().toLowerCase();
-//       return cellString.includes(filterValue.toLowerCase());
-//     });
-//   }
-// };
-
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
+  onSave?: (updatedItem: TData) => void; // Added onSave prop
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
+  onSave,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -97,8 +64,10 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
-    // globalFilterFn: globalRegexFilter, // Use the custom global regex filter
     onRowSelectionChange: setRowSelection,
+    meta: {
+      onSave, // Pass onSave function to table meta so it can be accessed in columns
+    },
     state: {
       sorting,
       columnFilters,

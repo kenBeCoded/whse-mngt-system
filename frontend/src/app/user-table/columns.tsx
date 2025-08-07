@@ -4,6 +4,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -24,7 +25,6 @@ import { MoreHorizontal } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { FormEvent } from "react";
 import {
   Select,
   SelectContent,
@@ -33,23 +33,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// This type is used to define the shape of our data.
-// You can use a Zod schema here if you want.
-// export type Payment = {
-//   id: string;
-//   amount: number;
-//   status: "pending" | "processing" | "success" | "failed";
-//   email: string;
-// };
-
 const userSchema = z.object({
   username: z.string(),
   user_account_id: z.string(),
   email: z.email("Invalid email address"),
-  first_name: z.string(),
+  first_name: z.string().min(1, "First name is required"),
   middle_name: z.string(),
-  last_name: z.string(),
-  gender: z.enum(["Male", "Female"]),
+  last_name: z.string().min(1, "Last name is required"),
+  gender: z.enum(["male", "female"]),
   user_profile_image_url: z.string(),
   role: z.string(),
   updated_at: z.string(),
@@ -69,6 +60,7 @@ export type Users = {
   user_profile_image_url: string;
   role: string;
   updated_at: string;
+  created_at: string;
 };
 
 // User Details Modal Component
@@ -77,37 +69,39 @@ const UserDetailsModal = ({
   onSave,
 }: {
   user: Users;
-  onSave: () => void;
+  onSave: (updatedUser: Users) => void; // Fixed: Added parameter type
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  // const [userData, setUserData] = useState(user);
+  const [isOpen, setIsOpen] = useState(false); // Added: Control dialog open state
 
   const {
     register,
     handleSubmit,
+    setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
-    defaultValues: user,
+    defaultValues: {
+      ...user,
+      created_at: user.created_at || new Date().toISOString(),
+    },
   });
 
-  const onSubmit = (data: UserFormData) => {
-    console.log("errors", errors);
-    console.log("isSubmitting", isSubmitting);
-    console.log("data", data);
+  const onSubmit = async (data: UserFormData) => {
+    try {
+      await onSave(data); // Pass the updated user data
+      setIsOpen(false); // Close the dialog after successful save
+    } catch (error) {
+      console.error("Failed to save user:", error);
+    }
   };
 
-  console.log("[columns.tsx:63]", user);
-
-  // const handleInputChange = (field: keyof Users, value: string) => {
-  //   setUserData((prev) => ({
-  //     ...prev,
-  //     [field]: value,
-  //   }));
-  // };
+  // Watch gender value for controlled Select component
+  const genderValue = watch("gender");
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="sm">
           Details
@@ -116,6 +110,10 @@ const UserDetailsModal = ({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>USER DETAILS</DialogTitle>
+          <DialogDescription>
+            View and edit user information. Make changes and click save to
+            update the user details.
+          </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
@@ -132,7 +130,12 @@ const UserDetailsModal = ({
                   <span className="text-gray-400 text-sm">No Image</span>
                 )}
               </div>
-              <Button variant="outline" size="sm" className="w-32">
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-32"
+                type="button"
+              >
                 Choose File
               </Button>
             </div>
@@ -143,7 +146,6 @@ const UserDetailsModal = ({
                   <Label htmlFor="user_account_id">User Account ID</Label>
                   <Input
                     id="user_account_id"
-                    // value={user.user_account_id}
                     {...register("user_account_id")}
                     readOnly
                     className="bg-gray-100"
@@ -153,7 +155,6 @@ const UserDetailsModal = ({
                   <Label htmlFor="username">Username</Label>
                   <Input
                     id="username"
-                    // value={user.username}
                     {...register("username")}
                     readOnly
                     className="bg-gray-100"
@@ -164,49 +165,37 @@ const UserDetailsModal = ({
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label htmlFor="first_name">First Name</Label>
-                  <Input
-                    id="first_name"
-                    // value={userData.first_name}
-                    {...register("first_name")}
-                    // onChange={(e) =>
-                    //   handleInputChange("first_name", e.target.value)
-                    // }
-                  />
+                  <Input id="first_name" {...register("first_name")} />
+                  {errors.first_name && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.first_name.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="middle_name">Middle Name</Label>
-                  <Input
-                    id="middle_name"
-                    // value={userData.middle_name || ""}
-                    {...register("middle_name")}
-                    // onChange={(e) =>
-                    //   handleInputChange("middle_name", e.target.value)
-                    // }
-                  />
+                  <Input id="middle_name" {...register("middle_name")} />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div>
                   <Label htmlFor="last_name">Last Name</Label>
-                  <Input
-                    id="last_name"
-                    // value={userData.last_name}
-                    {...register("last_name")}
-                    // onChange={(e) =>
-                    //   handleInputChange("last_name", e.target.value)
-                    // }
-                  />
+                  <Input id="last_name" {...register("last_name")} />
+                  {errors.last_name && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.last_name.message}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    {...register("email")}
-                    // value={userData.email}
-                    // onChange={(e) => handleInputChange("email", e.target.value)}
-                  />
+                  <Input id="email" type="email" {...register("email")} />
+                  {errors.email && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.email.message}
+                    </p>
+                  )}
                 </div>
               </div>
             </div>
@@ -216,7 +205,12 @@ const UserDetailsModal = ({
           <div className="grid grid-cols-3 gap-4 mb-4">
             <div>
               <Label htmlFor="gender">Gender</Label>
-              <Select {...register("gender")}>
+              <Select
+                value={genderValue}
+                onValueChange={(value) =>
+                  setValue("gender", value as "male" | "female")
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
@@ -225,25 +219,32 @@ const UserDetailsModal = ({
                   <SelectItem value="female">Female</SelectItem>
                 </SelectContent>
               </Select>
+              {errors.gender && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.gender.message}
+                </p>
+              )}
             </div>
             <div>
               <Label htmlFor="created_at">Created At</Label>
               <Input
                 id="created_at"
-                // value={new Date().toLocaleDateString()} // Placeholder since created_at not in type
                 {...register("created_at")}
                 readOnly
                 className="bg-gray-100"
+                value={new Date(
+                  user.created_at || Date.now()
+                ).toLocaleDateString()}
               />
             </div>
             <div>
               <Label htmlFor="updated_at">Updated At</Label>
               <Input
                 id="updated_at"
-                // value={new Date(user.updated_at).toLocaleDateString()}
                 {...register("updated_at")}
                 readOnly
                 className="bg-gray-100"
+                value={new Date(user.updated_at).toLocaleDateString()}
               />
             </div>
           </div>
@@ -253,6 +254,7 @@ const UserDetailsModal = ({
             <div>
               {!isDeleteDialogOpen ? (
                 <Button
+                  type="button"
                   variant="outline"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="text-red-600 border-red-600 hover:bg-red-50"
@@ -261,12 +263,13 @@ const UserDetailsModal = ({
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button variant="destructive" size="sm">
+                  <Button variant="destructive" size="sm" type="button">
                     Yes
                   </Button>
                   <Button
                     variant="outline"
                     size="sm"
+                    type="button"
                     onClick={() => setIsDeleteDialogOpen(false)}
                   >
                     Cancel
@@ -276,10 +279,12 @@ const UserDetailsModal = ({
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" type="submit">
-                Save changes
+              <Button variant="outline" type="submit" disabled={isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
-              <Button variant="destructive">Delete</Button>
+              <Button variant="destructive" type="button">
+                Delete
+              </Button>
             </div>
           </div>
         </form>
@@ -345,12 +350,15 @@ export const userColumns: ColumnDef<Users>[] = [
   {
     id: "actions",
     header: "Actions",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
+      // Added table to get access to meta
       const user = row.original;
+      // Get onSave function from table meta
+      const onSave = (table.options.meta as any)?.onSave;
 
       return (
         <div className="flex gap-2">
-          <UserDetailsModal user={user} onSave={() => {}} />
+          <UserDetailsModal user={user} onSave={onSave || (() => {})} />
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -380,5 +388,3 @@ export const userColumns: ColumnDef<Users>[] = [
     },
   },
 ];
-
-// TODO : remove comments

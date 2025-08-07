@@ -15,7 +15,7 @@ const router = Router();
 router.post("/create-user", createUser);
 router.get("/get-all-users", getAllUsers)
 router.post("/get-user-by-username", getUserByUsername)
-router.post("/update-user", updateUser)
+router.patch("/update-user", updateUser)
 router.post("/delete-user", deleteUser)
 
 //! meh!

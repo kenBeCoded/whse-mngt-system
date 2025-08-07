@@ -4,107 +4,10 @@ import { DataTable } from "./data-table";
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000", // replace with your API
-  withCredentials: true, // to send cookies (refresh token)
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
+  withCredentials: true,
 });
 
-// function getData(): Promise<Payment[]> {
-//   // Simulate API fetch
-//   return new Promise((resolve) =>
-//     resolve([
-//       {
-//         id: "m5gr84i9",
-//         amount: 316,
-//         status: "success",
-//         email: "ken99@example.com",
-//       },
-//       {
-//         id: "3u1reuv4",
-//         amount: 242,
-//         status: "success",
-//         email: "Abe45@example.com",
-//       },
-//       {
-//         id: "derv1ws0",
-//         amount: 837,
-//         status: "processing",
-//         email: "Monserrat44@example.com",
-//       },
-//       {
-//         id: "5kma53ae",
-//         amount: 874,
-//         status: "success",
-//         email: "Silas22@example.com",
-//       },
-//       {
-//         id: "bhqecj4p",
-//         amount: 721,
-//         status: "failed",
-//         email: "carmella@example.com",
-//       },
-//       {
-//         id: "m5gr84i9",
-//         amount: 316,
-//         status: "success",
-//         email: "ken99@example.com",
-//       },
-//       {
-//         id: "3u1reuv4",
-//         amount: 242,
-//         status: "success",
-//         email: "Abe45@example.com",
-//       },
-//       {
-//         id: "derv1ws0",
-//         amount: 837,
-//         status: "processing",
-//         email: "Monserrat44@example.com",
-//       },
-//       {
-//         id: "5kma53ae",
-//         amount: 874,
-//         status: "success",
-//         email: "Silas22@example.com",
-//       },
-//       {
-//         id: "bhqecj4p",
-//         amount: 721,
-//         status: "failed",
-//         email: "carmella@example.com",
-//       },
-//       {
-//         id: "m5gr84i9",
-//         amount: 316,
-//         status: "success",
-//         email: "ken99@example.com",
-//       },
-//       {
-//         id: "3u1reuv4",
-//         amount: 242,
-//         status: "success",
-//         email: "Abe45@example.com",
-//       },
-//       {
-//         id: "derv1ws0",
-//         amount: 837,
-//         status: "processing",
-//         email: "Monserrat44@example.com",
-//       },
-//       {
-//         id: "5kma53ae",
-//         amount: 874,
-//         status: "success",
-//         email: "Silas22@example.com",
-//       },
-//       {
-//         id: "bhqecj4p",
-//         amount: 721,
-//         status: "failed",
-//         email: "carmella@example.com",
-//       },
-//     ])
-//   );
-// }
 export async function getUsers(): Promise<Users[]> {
   try {
     const response = await API.get("/api/users/get-all-users");
@@ -119,18 +22,43 @@ export async function getUsers(): Promise<Users[]> {
 }
 
 export function DemoPage() {
-  // const [data, setData] = useState<Payment[]>([]);
   const [users, setUsers] = useState<Users[]>([]);
+
+  const handleSaveUser = async (updatedUser: Users) => {
+    console.log("updatedUser", updatedUser);
+    try {
+      // remove updated_at
+      const body = {
+        ...updatedUser,
+        updated_at: undefined,
+      };
+
+      // Optional: Make API call to save user to backend
+      const response = await API.patch(`/api/users/update-user`, body);
+
+      if (response.status !== 200) {
+        throw new Error(`Failed to update user: ${response.status}`);
+      }
+
+      // Update local state
+      setUsers((prev) =>
+        prev.map((user) =>
+          user.user_account_id === updatedUser.user_account_id
+            ? updatedUser
+            : user
+        )
+      );
+
+      console.log("User updated successfully");
+    } catch (error) {
+      console.error("Failed to update user:", error);
+      // You might want to show an error toast/notification here
+    }
+  };
 
   console.log("users", users);
 
   useEffect(() => {
-    // getData()
-    //   .then((fetchedData) => setData(fetchedData))
-    //   .catch((error) => {
-    //     console.error("Failed to fetch data:", error);
-    //   });
-
     getUsers()
       .then((fetchedUsers) => setUsers(fetchedUsers))
       .catch((error) => {
@@ -140,9 +68,7 @@ export function DemoPage() {
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={userColumns} data={users} />
+      <DataTable columns={userColumns} data={users} onSave={handleSaveUser} />
     </div>
   );
 }
-
-// TODO : remove comments
