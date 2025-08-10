@@ -1,74 +1,119 @@
-import { useState, useEffect } from "react";
-import { userColumns, type Users } from "./columns";
+import { useEffect } from "react";
+import { userColumns } from "./columns";
 import { DataTable } from "./data-table";
-import axios from "axios";
-
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
-  withCredentials: true,
-});
-
-export async function getUsers(): Promise<Users[]> {
-  try {
-    const response = await API.get("/api/users/get-all-users");
-    if (response.status === 200) {
-      return response.data as Users[];
-    }
-    throw new Error(`Unexpected response status: ${response.status}`);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    throw error;
-  }
-}
+import { useUserStore } from "../../store/user-store";
 
 export function DemoPage() {
-  const [users, setUsers] = useState<Users[]>([]);
+  const {
+    users,
+    isLoading,
+    error,
+    fetchUsers,
+    updateUser,
+    deleteUser,
+    deleteMultipleUsers,
+    selectedUsers,
+    clearError,
+  } = useUserStore();
 
-  const handleSaveUser = async (updatedUser: Users) => {
-    console.log("updatedUser", updatedUser);
+  // Fetch users on component mount
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Handle error display (you might want to use a toast library here)
+  useEffect(() => {
+    if (error) {
+      console.error("User store error:", error);
+      // You can add toast notification here
+      // toast.error(error);
+    }
+  }, [error]);
+
+  const handleSaveUser = async (updatedUser: any) => {
     try {
-      // remove updated_at
-      const body = {
-        ...updatedUser,
-        updated_at: undefined,
-      };
-
-      // Optional: Make API call to save user to backend
-      const response = await API.patch(`/api/users/update-user`, body);
-
-      if (response.status !== 200) {
-        throw new Error(`Failed to update user: ${response.status}`);
-      }
-
-      // Update local state
-      setUsers((prev) =>
-        prev.map((user) =>
-          user.user_account_id === updatedUser.user_account_id
-            ? updatedUser
-            : user
-        )
-      );
-
+      await updateUser(updatedUser);
+      // Success feedback could go here
       console.log("User updated successfully");
     } catch (error) {
-      console.error("Failed to update user:", error);
-      // You might want to show an error toast/notification here
+      // Error handling is already done in the store
+      console.error("Failed to update user in component:", error);
     }
   };
 
-  console.log("users", users);
+  const handleDeleteUser = async (userId: string) => {
+    try {
+      await deleteUser(userId);
+      console.log("User deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete user in component:", error);
+    }
+  };
 
-  useEffect(() => {
-    getUsers()
-      .then((fetchedUsers) => setUsers(fetchedUsers))
-      .catch((error) => {
-        console.error("Failed to fetch users:", error);
-      });
-  }, []);
+  const handleDeleteMultipleUsers = async () => {
+    if (selectedUsers.length === 0) return;
+
+    try {
+      await deleteMultipleUsers(selectedUsers);
+      console.log("Users deleted successfully");
+    } catch (error) {
+      console.error("Failed to delete users in component:", error);
+    }
+  };
+
+  // Show loading state
+  if (isLoading && users.length === 0) {
+    return (
+      <div className="container mx-auto py-10">
+        <div className="flex items-center justify-center h-64">
+          <div className="text-lg">Loading users...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto py-10">
-      <DataTable columns={userColumns} data={users} onSave={handleSaveUser} />
+      {/* Error display */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
+          <div className="flex justify-between items-center">
+            <p className="text-red-800">{error}</p>
+            <button
+              onClick={clearError}
+              className="text-red-600 hover:text-red-800 font-medium"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk actions */}
+      {selectedUsers.length > 0 && (
+        <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+          <div className="flex justify-between items-center">
+            <p className="text-blue-800">
+              {selectedUsers.length} user(s) selected
+            </p>
+            <button
+              onClick={handleDeleteMultipleUsers}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors"
+              disabled={isLoading}
+            >
+              {isLoading ? "Deleting..." : "Delete Selected"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      <DataTable
+        columns={userColumns}
+        data={users}
+        onSave={handleSaveUser}
+        onDelete={handleDeleteUser}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

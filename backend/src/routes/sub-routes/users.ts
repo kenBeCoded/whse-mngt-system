@@ -16,7 +16,7 @@ router.post("/create-user", createUser);
 router.get("/get-all-users", getAllUsers)
 router.post("/get-user-by-username", getUserByUsername)
 router.patch("/update-user", updateUser)
-router.post("/delete-user", deleteUser)
+router.delete("/delete-user", deleteUser)
 
 //! meh!
 // router.get("/", authenticateToken, getUsers);

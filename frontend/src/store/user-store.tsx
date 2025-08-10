@@ -24,7 +24,7 @@ interface UserState {
   fetchUsers: () => Promise<void>;
   addUser: (user: Users) => Promise<void>;
   updateUser: (updatedUser: Users) => Promise<void>;
-  deleteUser: (userId: string) => Promise<void>;
+  deleteUser: (username: string) => Promise<void>;
   deleteMultipleUsers: (userIds: string[]) => Promise<void>;
 
   // Selection management
@@ -103,6 +103,7 @@ export const useUserStore = create<UserState>()(
             ...updatedUser,
             updated_at: undefined, // Remove updated_at as it's handled by backend
           };
+          console.log(body);
 
           const response = await API.patch("/api/users/update-user", body);
           if (response.status === 200) {
@@ -131,16 +132,18 @@ export const useUserStore = create<UserState>()(
       },
 
       // Delete single user
-      deleteUser: async (userId) => {
+      deleteUser: async (username) => {
         set({ isLoading: true, error: null });
         try {
-          const response = await API.delete(`/api/users/delete-user/${userId}`);
+          const response = await API.delete(`/api/users/delete-user`, {
+            data: { username },
+          });
           if (response.status === 200 || response.status === 204) {
             set((state) => ({
-              users: state.users.filter(
-                (user) => user.user_account_id !== userId
+              users: state.users.filter((user) => user.username !== username),
+              selectedUsers: state.selectedUsers.filter(
+                (id) => id !== username
               ),
-              selectedUsers: state.selectedUsers.filter((id) => id !== userId),
               isLoading: false,
             }));
           } else {

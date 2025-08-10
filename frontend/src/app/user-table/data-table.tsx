@@ -32,26 +32,48 @@ import {
 import { useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
+import { useUserStore } from "../../store/user-store";
+import { type Users } from "./columns";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
-  onSave?: (updatedItem: TData) => void; // Added onSave prop
+  onSave?: (updatedItem: TData) => void;
+  onDelete?: (id: string) => void;
+  isLoading?: boolean;
 }
 
 export function DataTable<TData, TValue>({
   columns,
   data,
   onSave,
+  onDelete,
+  isLoading = false,
 }: DataTableProps<TData, TValue>) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
-  const [rowSelection, setRowSelection] = useState({});
 
-  console.log("rowSelection", rowSelection);
-  console.log("data", data);
+  // Get selection state and actions from Zustand store
+  const {
+    selectedUsers,
+    // selectAllUsers,
+    // unselectAllUsers,
+    toggleUserSelection,
+  } = useUserStore();
+
+  // Convert selectedUsers array to TanStack table row selection format
+  const rowSelection = selectedUsers.reduce((acc, userId) => {
+    // Find the row index for this user
+    const rowIndex = data.findIndex(
+      (item: any) => item.user_account_id === userId
+    );
+    if (rowIndex !== -1) {
+      acc[rowIndex] = true;
+    }
+    return acc;
+  }, {} as Record<string, boolean>);
 
   const table = useReactTable({
     data,
@@ -64,9 +86,35 @@ export function DataTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
     onGlobalFilterChange: setGlobalFilter,
-    onRowSelectionChange: setRowSelection,
+    onRowSelectionChange: (updaterOrValue) => {
+      // Handle row selection changes by updating Zustand store
+      if (typeof updaterOrValue === "function") {
+        const newSelection = updaterOrValue(rowSelection);
+
+        // Convert back to user IDs and update store
+        Object.keys(newSelection).forEach((rowIndex) => {
+          const user = data[parseInt(rowIndex)] as Users;
+          if (user && newSelection[rowIndex]) {
+            if (!selectedUsers.includes(user.user_account_id)) {
+              toggleUserSelection(user.user_account_id);
+            }
+          }
+        });
+
+        // Handle deselections
+        selectedUsers.forEach((userId) => {
+          const rowIndex = data.findIndex(
+            (item: any) => item.user_account_id === userId
+          );
+          if (rowIndex !== -1 && !newSelection[rowIndex]) {
+            toggleUserSelection(userId);
+          }
+        });
+      }
+    },
     meta: {
-      onSave, // Pass onSave function to table meta so it can be accessed in columns
+      onSave,
+      onDelete,
     },
     state: {
       sorting,
@@ -77,18 +125,29 @@ export function DataTable<TData, TValue>({
     },
   });
 
+  // Handle "Select All" functionality
+  // const handleSelectAll = () => {
+  //   const allSelected = table.getIsAllPageRowsSelected();
+  //   if (allSelected) {
+  //     unselectAllUsers();
+  //   } else {
+  //     selectAllUsers();
+  //   }
+  // };
+
   return (
     <div>
       <div className="flex items-center py-4">
         <Input
-          placeholder="Search all columns (supports regex)..."
+          placeholder="Search all columns..."
           value={globalFilter ?? ""}
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm"
+          disabled={isLoading}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
+            <Button variant="outline" className="ml-auto" disabled={isLoading}>
               Columns
             </Button>
           </DropdownMenuTrigger>
@@ -109,6 +168,7 @@ export function DataTable<TData, TValue>({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -128,7 +188,19 @@ export function DataTable<TData, TValue>({
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {isLoading ? (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  <div className="flex items-center justify-center">
+                    <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900 mr-2"></div>
+                    Loading...
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}
@@ -157,6 +229,7 @@ export function DataTable<TData, TValue>({
           </TableBody>
         </Table>
       </div>
+
       <div className="mt-2">
         <DataTablePagination table={table} />
         <DataTableViewOptions table={table} />

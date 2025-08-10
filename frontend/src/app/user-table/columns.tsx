@@ -20,7 +20,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal } from "lucide-react";
+import { MoreHorizontal, Trash2 } from "lucide-react";
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -32,6 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUserStore } from "../../store/user-store";
 
 const userSchema = z.object({
   username: z.string(),
@@ -69,10 +70,13 @@ const UserDetailsModal = ({
   onSave,
 }: {
   user: Users;
-  onSave: (updatedUser: Users) => void; // Fixed: Added parameter type
+  onSave: (updatedUser: Users) => void;
 }) => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false); // Added: Control dialog open state
+  const [isOpen, setIsOpen] = useState(false);
+
+  // Get delete function and loading state from Zustand store
+  const { deleteUser, isLoading } = useUserStore();
 
   const {
     register,
@@ -89,15 +93,25 @@ const UserDetailsModal = ({
   });
 
   const onSubmit = async (data: UserFormData) => {
+    console.log("data", data);
     try {
-      await onSave(data); // Pass the updated user data
-      setIsOpen(false); // Close the dialog after successful save
+      await onSave(data);
+      setIsOpen(false);
     } catch (error) {
       console.error("Failed to save user:", error);
     }
   };
 
-  // Watch gender value for controlled Select component
+  const handleDeleteUser = async () => {
+    try {
+      await deleteUser(user.username);
+      setIsOpen(false);
+      setIsDeleteDialogOpen(false);
+    } catch (error) {
+      console.error("Failed to delete user:", error);
+    }
+  };
+
   const genderValue = watch("gender");
 
   return (
@@ -127,30 +141,25 @@ const UserDetailsModal = ({
                     className="w-full h-full object-cover rounded"
                   />
                 ) : (
-                  <span className="text-gray-400 text-sm">No Image</span>
+                  <span>No Image</span>
                 )}
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-32"
-                type="button"
-              >
-                Choose File
-              </Button>
+              {/* <Label htmlFor="user_profile_image_url">Profile Image URL</Label>
+              <Input
+                id="user_profile_image_url"
+                {...register("user_profile_image_url")}
+                disabled={isSubmitting || isLoading}
+              />
+              {errors.user_profile_image_url && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.user_profile_image_url.message}
+                </p>
+              )} */}
             </div>
-            {/* Form Fields */}
-            <div className="md:col-span-1 space-y-4">
+
+            {/* First row of fields */}
+            <div className="md:col-span-1">
               <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label htmlFor="user_account_id">User Account ID</Label>
-                  <Input
-                    id="user_account_id"
-                    {...register("user_account_id")}
-                    readOnly
-                    className="bg-gray-100"
-                  />
-                </div>
                 <div>
                   <Label htmlFor="username">Username</Label>
                   <Input
@@ -159,13 +168,36 @@ const UserDetailsModal = ({
                     readOnly
                     className="bg-gray-100"
                   />
+                  {errors.username && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.username.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="role">Role</Label>
+                  <Input
+                    id="role"
+                    {...register("role")}
+                    readOnly
+                    className="bg-gray-100"
+                  />
+                  {errors.role && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.role.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mt-2">
                 <div>
                   <Label htmlFor="first_name">First Name</Label>
-                  <Input id="first_name" {...register("first_name")} />
+                  <Input
+                    id="first_name"
+                    {...register("first_name")}
+                    disabled={isSubmitting || isLoading}
+                  />
                   {errors.first_name && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.first_name.message}
@@ -174,14 +206,22 @@ const UserDetailsModal = ({
                 </div>
                 <div>
                   <Label htmlFor="middle_name">Middle Name</Label>
-                  <Input id="middle_name" {...register("middle_name")} />
+                  <Input
+                    id="middle_name"
+                    {...register("middle_name")}
+                    disabled={isSubmitting || isLoading}
+                  />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2 mt-2">
                 <div>
                   <Label htmlFor="last_name">Last Name</Label>
-                  <Input id="last_name" {...register("last_name")} />
+                  <Input
+                    id="last_name"
+                    {...register("last_name")}
+                    disabled={isSubmitting || isLoading}
+                  />
                   {errors.last_name && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.last_name.message}
@@ -190,7 +230,12 @@ const UserDetailsModal = ({
                 </div>
                 <div>
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" type="email" {...register("email")} />
+                  <Input
+                    id="email"
+                    type="email"
+                    {...register("email")}
+                    disabled={isSubmitting || isLoading}
+                  />
                   {errors.email && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.email.message}
@@ -210,6 +255,7 @@ const UserDetailsModal = ({
                 onValueChange={(value) =>
                   setValue("gender", value as "male" | "female")
                 }
+                disabled={isSubmitting || isLoading}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select gender" />
@@ -258,12 +304,20 @@ const UserDetailsModal = ({
                   variant="outline"
                   onClick={() => setIsDeleteDialogOpen(true)}
                   className="text-red-600 border-red-600 hover:bg-red-50"
+                  disabled={isSubmitting || isLoading}
                 >
+                  <Trash2 className="h-4 w-4 mr-2" />
                   Delete this account?
                 </Button>
               ) : (
                 <div className="flex gap-2">
-                  <Button variant="destructive" size="sm" type="button">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    type="button"
+                    onClick={handleDeleteUser}
+                    disabled={isSubmitting || isLoading}
+                  >
                     Yes
                   </Button>
                   <Button
@@ -271,6 +325,7 @@ const UserDetailsModal = ({
                     size="sm"
                     type="button"
                     onClick={() => setIsDeleteDialogOpen(false)}
+                    disabled={isSubmitting || isLoading}
                   >
                     Cancel
                   </Button>
@@ -279,10 +334,18 @@ const UserDetailsModal = ({
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" type="submit" disabled={isSubmitting}>
+              <Button
+                variant="outline"
+                type="submit"
+                disabled={isSubmitting || isLoading}
+              >
                 {isSubmitting ? "Saving..." : "Save changes"}
               </Button>
-              <Button variant="destructive" type="button">
+              <Button
+                variant="destructive"
+                type="button"
+                disabled={isSubmitting || isLoading}
+              >
                 Delete
               </Button>
             </div>
@@ -293,7 +356,7 @@ const UserDetailsModal = ({
   );
 };
 
-// Users
+// User Columns (assuming this is part of the same file or imported)
 export const userColumns: ColumnDef<Users>[] = [
   {
     id: "select",
@@ -321,7 +384,6 @@ export const userColumns: ColumnDef<Users>[] = [
     accessorKey: "user_account_id",
     header: "User ID",
   },
-  // full name
   {
     header: "Fullname",
     cell: ({ row }) => {
@@ -330,7 +392,6 @@ export const userColumns: ColumnDef<Users>[] = [
         user.middle_name ? user.middle_name + " " : ""
       }${user.last_name}`;
     },
-    // Optional: Add an accessorFn if you want to enable sorting and filtering on the full name
     accessorFn: (row) =>
       `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim(),
   },
@@ -346,20 +407,16 @@ export const userColumns: ColumnDef<Users>[] = [
     accessorKey: "updated_at",
     header: "Last Updated",
   },
-  // Actions column with Details button
   {
     id: "actions",
     header: "Actions",
     cell: ({ row, table }) => {
-      // Added table to get access to meta
       const user = row.original;
-      // Get onSave function from table meta
       const onSave = (table.options.meta as any)?.onSave;
 
       return (
         <div className="flex gap-2">
-          <UserDetailsModal user={user} onSave={onSave || (() => {})} />
-
+          <UserDetailsModal user={user} onSave={onSave} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-8 w-8 p-0">
