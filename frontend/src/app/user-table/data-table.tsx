@@ -34,6 +34,7 @@ import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
 import { useUserStore } from "../../store/user-store";
 import { type Users } from "./columns";
+import { UserCreateModal } from "./modal/UserCreateModal";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -144,6 +145,10 @@ export function DataTable<TData, TValue>({
           onChange={(event) => setGlobalFilter(event.target.value)}
           className="max-w-sm"
           disabled={isLoading}
+        />
+        <UserCreateModal
+          // TODO PRIO : <onCreate2> put onCreate here
+          onCreate={(newUser) => table.options.meta.onCreate(newUser)}
         />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
