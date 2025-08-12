@@ -24,7 +24,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const userSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   first_name: z.string().min(1, "First name is required"),
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
@@ -35,11 +35,11 @@ const userSchema = z.object({
 
 type UserFormData = z.infer<typeof userSchema>;
 
-export const UserCreateModal = ({
-  onCreate,
-}: {
-  onCreate: (newUser: Users) => void;
-}) => {
+interface UserCreateModalProps {
+  onCreate: (newUser: Omit<Users, "user_account_id">) => void;
+}
+
+export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const {
@@ -67,7 +67,6 @@ export const UserCreateModal = ({
     try {
       await onCreate({
         ...data,
-        user_account_id: crypto.randomUUID(), // Generate a unique ID
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       });

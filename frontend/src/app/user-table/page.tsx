@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { userColumns } from "./columns";
+import { userColumns, type Users } from "./columns";
 import { DataTable } from "./data-table";
 import { useUserStore } from "../../store/user-store";
 
@@ -14,6 +14,7 @@ export function DemoPage() {
     deleteMultipleUsers,
     selectedUsers,
     clearError,
+    // addUser,
   } = useUserStore();
 
   // Fetch users on component mount
@@ -30,8 +31,9 @@ export function DemoPage() {
     }
   }, [error]);
 
-  const handleSaveUser = async (updatedUser: any) => {
+  const handleSaveUser = async (updatedUser: Users) => {
     try {
+      // return console.log("updatedUser", updatedUser);
       await updateUser(updatedUser);
       // Success feedback could go here
       console.log("User updated successfully");
@@ -62,6 +64,15 @@ export function DemoPage() {
   };
 
   // TODO PRIO : <onCreate1> create onCreate function here transfer to DataTable
+  const handleCreateUser = async (newUser: Omit<Users, "user_account_id">) => {
+  try {
+    console.log("newUser", newUser);
+    // await addUser(newUser);
+    console.log("User created successfully");
+  } catch (error) {
+    console.error("Failed to create user in component:", error);
+  }
+};
 
   // Show loading state
   if (isLoading && users.length === 0) {
@@ -113,6 +124,7 @@ export function DemoPage() {
         columns={userColumns}
         data={users}
         onSave={handleSaveUser}
+        onCreate={handleCreateUser}
         onDelete={handleDeleteUser}
         isLoading={isLoading}
       />

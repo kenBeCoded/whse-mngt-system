@@ -33,24 +33,40 @@ import { useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
 import { useUserStore } from "../../store/user-store";
-import { type Users } from "./columns";
+// import { type Users } from "./columns";
 import { UserCreateModal } from "./modal/UserCreateModal";
+import type { Users } from "./columns";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  onSave?: (updatedItem: TData) => void;
+// interface DataTableProps<TData, TValue> {
+//   columns: ColumnDef<TData, TValue>[];
+//   data: TData[];
+//   onSave?: (updatedItem: TData) => void;
+//   onDelete?: (id: string) => void;
+//   isLoading?: boolean;
+//   onCreate?: (newUser: TData) => void;
+// }
+
+interface DataTableProps {
+  columns: ColumnDef<Users, unknown>[];
+  data: Users[];
+  onSave?: (updatedItem: Users) => void;
   onDelete?: (id: string) => void;
   isLoading?: boolean;
+  onCreate?: (newUser: Omit<Users, "user_account_id">) => void;
+  meta?: {
+    onSave?: (updatedItem: Users) => void;
+    onDelete?: (id: string) => void;
+  };
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable({
   columns,
   data,
   onSave,
   onDelete,
   isLoading = false,
-}: DataTableProps<TData, TValue>) {
+  onCreate,
+}: DataTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -67,9 +83,7 @@ export function DataTable<TData, TValue>({
   // Convert selectedUsers array to TanStack table row selection format
   const rowSelection = selectedUsers.reduce((acc, userId) => {
     // Find the row index for this user
-    const rowIndex = data.findIndex(
-      (item: any) => item.user_account_id === userId
-    );
+    const rowIndex = data.findIndex((item) => item.user_account_id === userId);
     if (rowIndex !== -1) {
       acc[rowIndex] = true;
     }
@@ -94,7 +108,7 @@ export function DataTable<TData, TValue>({
 
         // Convert back to user IDs and update store
         Object.keys(newSelection).forEach((rowIndex) => {
-          const user = data[parseInt(rowIndex)] as Users;
+          const user = data[parseInt(rowIndex)];
           if (user && newSelection[rowIndex]) {
             if (!selectedUsers.includes(user.user_account_id)) {
               toggleUserSelection(user.user_account_id);
@@ -105,7 +119,7 @@ export function DataTable<TData, TValue>({
         // Handle deselections
         selectedUsers.forEach((userId) => {
           const rowIndex = data.findIndex(
-            (item: any) => item.user_account_id === userId
+            (item) => item.user_account_id === userId
           );
           if (rowIndex !== -1 && !newSelection[rowIndex]) {
             toggleUserSelection(userId);
@@ -146,10 +160,7 @@ export function DataTable<TData, TValue>({
           className="max-w-sm"
           disabled={isLoading}
         />
-        <UserCreateModal
-          // TODO PRIO : <onCreate2> put onCreate here
-          onCreate={(newUser) => table.options.meta.onCreate(newUser)}
-        />
+        <UserCreateModal onCreate={(newUser) => onCreate?.(newUser)} />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto" disabled={isLoading}>
