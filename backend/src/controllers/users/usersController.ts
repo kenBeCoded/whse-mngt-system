@@ -19,16 +19,18 @@ export const createUser = async (
     //   req.body;
 
     // Check input
-    if (!data.username || !data.password) {
-      res.status(400).json({ message: "username and password are required" });
-      return;
-    }
+    // if (!data.username || !data.password) {
+    //   res.status(400).json({ message: "username and password are required" });
+    //   return;
+    // }
 
     await UserModel.create(data);
 
     // const test = await UserModel.updateById(3, {
     //   username: "test4",
-    // });
+    // });\
+
+    // TODO : clean comment
 
     res.status(201).json({ message: "User created successfully" });
   } catch (error) {

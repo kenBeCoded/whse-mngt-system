@@ -95,6 +95,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             {/* Profile Image Section */}
+            {/* TODO PRIO : apply the supabase upload image here as input file image maximum of 2mb size, make the input field box is clickable */}
             <div className="md:col-span-1">
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
                 {watch("user_profile_image_url") ? (
@@ -138,6 +139,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                     </p>
                   )}
                 </div>
+                {/* TODO PRIO : make this a select field */}
                 <div>
                   <Label htmlFor="role">Role</Label>
                   <Input

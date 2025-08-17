@@ -23,18 +23,61 @@ export class UserModel {
 
       // ensure the sequence is set correctly
       await client.query(
-        "SELECT setval('users_id_seq', COALESCE((SELECT MAX(id) FROM users), 0) + 1, false);"
+        `
+        SELECT setval(
+            'users_id_seq',
+            COALESCE(
+                (
+                    SELECT MAX(id)
+                    FROM users
+                ),
+                0
+            ) + 1,
+            false
+        )
+        `
       );
 
       await client.query(
-        "SELECT setval('user_account_id_seq', COALESCE((SELECT MAX(id) FROM users), 0) + 1, false);"
+        `
+        SELECT setval(
+            'user_account_id_seq',
+            COALESCE(
+                (
+                    SELECT MAX(id)
+                    FROM users
+                ),
+                0
+            ) + 1,
+            false
+        )
+        `
       );
 
-      const hashedPassword = await bcrypt.hash(userData.password, 12);
+      const hashedPassword = await bcrypt.hash(
+        userData.password ? userData.password : "12345",
+        12
+      );
       const query = `
-        INSERT INTO users (username, password_hash, email, first_name, middle_name, last_name, gender, user_profile_image_url, role)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-        RETURNING username, email, first_name, middle_name, last_name, gender, user_profile_image_url
+      INSERT INTO users (
+              username,
+              password_hash,
+              email,
+              first_name,
+              middle_name,
+              last_name,
+              gender,
+              user_profile_image_url,
+              role
+          )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      RETURNING username,
+          email,
+          first_name,
+          middle_name,
+          last_name,
+          gender,
+          user_profile_image_url
       `;
 
       const result = await client.query(query, [
@@ -58,7 +101,7 @@ export class UserModel {
         // PostgreSQL unique constraint violation
         throw new Error("Username or email already exists");
       }
-      console.error("Error creating user:", error);
+      // console.error("Error creating user:", error);
       throw new Error(`Failed to create user: ${error.message}`);
     } finally {
       client.release();
@@ -67,22 +110,61 @@ export class UserModel {
 
   // get all users
   static async findAllUsernames(): Promise<UserWithoutPassword[]> {
-    const query =
-      "SELECT username, user_account_id, email, first_name, middle_name, last_name, gender, user_profile_image_url, role, updated_at, created_at FROM users WHERE is_deleted = FALSE ORDER BY user_account_id ASC";
+    const query = `
+      SELECT username,
+          user_account_id,
+          email,
+          first_name,
+          middle_name,
+          last_name,
+          gender,
+          user_profile_image_url,
+          role,
+          updated_at,
+          created_at
+      FROM users
+      WHERE is_deleted = FALSE
+      ORDER BY user_account_id ASC
+    `;
     const result = await pool.query(query);
     return result.rows || null;
   }
 
   static async findByUsername(username: string): Promise<User | null> {
-    const query =
-      "SELECT user_account_id, username, password_hash, email, first_name, middle_name, last_name, gender, user_profile_image_url, created_at, updated_at FROM users WHERE username = $1";
+    const query = `
+      SELECT user_account_id,
+          username,
+          password_hash,
+          email,
+          first_name,
+          middle_name,
+          last_name,
+          gender,
+          user_profile_image_url,
+          created_at,
+          updated_at
+      FROM users
+      WHERE username = $1
+      `;
     const result = await pool.query(query, [username]);
     return result.rows[0] || null;
   }
 
   static async findById(id: number): Promise<User | null> {
-    const query =
-      "SELECT user_account_id, username, email, first_name, middle_name, last_name, gender, user_profile_image_url, created_at, updated_at FROM users WHERE id = $1";
+    const query = `
+    SELECT user_account_id,
+        username,
+        email,
+        first_name,
+        middle_name,
+        last_name,
+        gender,
+        user_profile_image_url,
+        created_at,
+        updated_at
+    FROM users
+    WHERE id = $1
+    `;
     const result = await pool.query(query, [id]);
     return result.rows[0] || null;
   }

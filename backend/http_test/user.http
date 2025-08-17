@@ -1,12 +1,12 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjQsInVzZXJuYW1lIjoidGVzdDQiLCJpYXQiOjE3NTE3OTk4ODMsImV4cCI6MTc1MTc5OTg5M30.ymDqN0X-ijTHDR0iyNvLaqOhcG7HFhebWWXrj-AdQgE
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3Q0IiwiaWF0IjoxNzU1NDM0NDA3LCJleHAiOjE3NTU0MzUzMDd9.smM-SfoGyMfbx2qwvY07CgdW0kxth2ikFyCaGP3Xs5U
 
 
 post http://localhost:8000/api/auth/login
 Content-Type: application/json
 
 {
-    "username":"test1",
-    "password":"test1",
+    "username":"test4",
+    "password":"12345"
 }
 
 ###
@@ -50,15 +50,15 @@ Content-Type: application/json
 #     "user_profile_image_url":"test1 profile image url"
 # }
 
+# no password 
 {
-    "username":"test2",
-    "password":"test2",
-    "email":"test2@gmail.com",
-    "first_name":"test2 first name",
-    "middle_name":"test2 middle name",
-    "last_name":"test2 last name",
+    "username":"test4",
+    "email":"test4@gmail.com",
+    "first_name":"test4 first name",
+    "middle_name":"test4 middle name",
+    "last_name":"test4 last name",
     "gender":"male",
-    "user_profile_image_url":"test2 profile image url"
+    "user_profile_image_url":"test4 profile image url"
 }
 
 ###

@@ -14,7 +14,7 @@ export function DemoPage() {
     deleteMultipleUsers,
     selectedUsers,
     clearError,
-    // addUser,
+    addUser,
   } = useUserStore();
 
   // Fetch users on component mount
@@ -66,8 +66,8 @@ export function DemoPage() {
   // TODO PRIO : <onCreate1> create onCreate function here transfer to DataTable
   const handleCreateUser = async (newUser: Omit<Users, "user_account_id">) => {
   try {
-    console.log("newUser", newUser);
-    // await addUser(newUser);
+    // console.log("newUser", newUser);
+    await addUser(newUser);
     console.log("User created successfully");
   } catch (error) {
     console.error("Failed to create user in component:", error);

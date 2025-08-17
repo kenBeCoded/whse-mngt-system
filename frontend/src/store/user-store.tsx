@@ -22,7 +22,7 @@ interface UserState {
 
   // User CRUD operations
   fetchUsers: () => Promise<void>;
-  addUser: (user: Users) => Promise<void>;
+  addUser: (user: Omit<Users, "user_account_id">) => Promise<void>;
   updateUser: (updatedUser: Users) => Promise<void>;
   deleteUser: (username: string) => Promise<void>;
   deleteMultipleUsers: (userIds: string[]) => Promise<void>;
