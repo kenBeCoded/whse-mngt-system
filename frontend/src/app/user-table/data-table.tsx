@@ -72,6 +72,8 @@ export function DataTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
 
+  console.log("data", data);
+
   // Get selection state and actions from Zustand store
   const {
     selectedUsers,

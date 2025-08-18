@@ -78,11 +78,13 @@ export const useUserStore = create<UserState>()(
         try {
           const response = await API.post("/api/users/create-user", user);
           if (response.status === 201 || response.status === 200) {
-            const newUser = response.data;
+            const newUser = response.data.data;
             set((state) => ({
               users: [...state.users, newUser],
               isLoading: false,
             }));
+            // TODO : to delete
+            console.log("get().users", get().users);
           } else {
             throw new Error(`Failed to create user: ${response.status}`);
           }

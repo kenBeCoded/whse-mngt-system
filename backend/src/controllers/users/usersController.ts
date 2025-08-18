@@ -24,7 +24,7 @@ export const createUser = async (
     //   return;
     // }
 
-    await UserModel.create(data);
+    const result = await UserModel.create(data);
 
     // const test = await UserModel.updateById(3, {
     //   username: "test4",
@@ -32,7 +32,9 @@ export const createUser = async (
 
     // TODO : clean comment
 
-    res.status(201).json({ message: "User created successfully" });
+    // TODO PRIO : to fix the response data based what frontend data-table needed
+
+    res.status(201).json({ message: "User created successfully", data: result });
   } catch (error) {
     next(error);
   }

@@ -65,14 +65,17 @@ export function DemoPage() {
 
   // TODO PRIO : <onCreate1> create onCreate function here transfer to DataTable
   const handleCreateUser = async (newUser: Omit<Users, "user_account_id">) => {
-  try {
-    // console.log("newUser", newUser);
-    await addUser(newUser);
-    console.log("User created successfully");
-  } catch (error) {
-    console.error("Failed to create user in component:", error);
-  }
-};
+    try {
+      // console.log("newUser", newUser);
+      await addUser(newUser);
+
+      console.log("User created successfully");
+    } catch (error) {
+      console.error("Failed to create user in component:", error);
+    }
+  };
+
+  console.log("users", users);
 
   // Show loading state
   if (isLoading && users.length === 0) {

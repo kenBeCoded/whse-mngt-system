@@ -1,12 +1,12 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3Q0IiwiaWF0IjoxNzU1NDM0NDA3LCJleHAiOjE3NTU0MzUzMDd9.smM-SfoGyMfbx2qwvY07CgdW0kxth2ikFyCaGP3Xs5U
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QxIiwiaWF0IjoxNzU1NDkwNDc3LCJleHAiOjE3NTU0OTEzNzd9.PLMbN19Rk1FR7kfXJzMghu1Ig79Lw5kBN_qpPcCbia4
 
 
 post http://localhost:8000/api/auth/login
 Content-Type: application/json
 
 {
-    "username":"test4",
-    "password":"12345"
+    "username":"test1",
+    "password":"test1"
 }
 
 ###
