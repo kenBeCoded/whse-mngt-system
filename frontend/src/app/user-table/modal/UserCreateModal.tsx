@@ -142,6 +142,27 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                 {/* TODO PRIO : make this a select field */}
                 <div>
                   <Label htmlFor="role">Role</Label>
+                  <Select
+                    value={watch("role")}
+                    onValueChange={(value) => setValue("role", value)}
+                    disabled={isSubmitting}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {errors.role && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.role.message}
+                    </p>
+                  )}
+                </div>
+                {/* <div>
+                  <Label htmlFor="role">Role</Label>
                   <Input
                     id="role"
                     {...register("role")}
@@ -153,7 +174,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                       {errors.role.message}
                     </p>
                   )}
-                </div>
+                </div> */}
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-2">
