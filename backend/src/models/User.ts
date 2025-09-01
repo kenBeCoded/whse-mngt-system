@@ -71,13 +71,18 @@ export class UserModel {
               role
           )
       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-      RETURNING username,
+      RETURNING
+          username,
           email,
           first_name,
           middle_name,
           last_name,
           gender,
-          user_profile_image_url
+          user_profile_image_url,
+          created_at,
+          role,
+          updated_at,
+          user_account_id
       `;
 
       const result = await client.query(query, [
