@@ -3,6 +3,7 @@ import { userColumns, type Users } from "./columns";
 import { DataTable } from "./data-table";
 import { useUserStore } from "../../store/user-store";
 
+// TODO : to change function name
 export function DemoPage() {
   const {
     users,

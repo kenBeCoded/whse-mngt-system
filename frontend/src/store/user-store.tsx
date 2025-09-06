@@ -75,6 +75,7 @@ export const useUserStore = create<UserState>()(
       // Add new user
       addUser: async (user) => {
         set({ isLoading: true, error: null });
+        // TODO PRIO : SUPABASE > save file to supabase if only there is provided url image on user form
         try {
           const response = await API.post("/api/users/create-user", user);
           if (response.status === 201 || response.status === 200) {
@@ -83,8 +84,6 @@ export const useUserStore = create<UserState>()(
               users: [...state.users, newUser],
               isLoading: false,
             }));
-            // TODO : to delete
-            console.log("get().users", get().users);
           } else {
             throw new Error(`Failed to create user: ${response.status}`);
           }
@@ -133,6 +132,8 @@ export const useUserStore = create<UserState>()(
         }
       },
 
+      // TODO PRIO : SUPABASE > add update img url of user
+
       // Delete single user
       deleteUser: async (username) => {
         set({ isLoading: true, error: null });
@@ -165,6 +166,7 @@ export const useUserStore = create<UserState>()(
         set({ isLoading: true, error: null });
         try {
           const response = await API.delete(
+            // TODO PRIO : link the delete multiple users on backend
             "/api/users/delete-multiple-users",
             {
               data: { user_ids: userIds },
