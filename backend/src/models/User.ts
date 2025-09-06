@@ -106,7 +106,6 @@ export class UserModel {
         // PostgreSQL unique constraint violation
         throw new Error("Username or email already exists");
       }
-      // console.error("Error creating user:", error);
       throw new Error(`Failed to create user: ${error.message}`);
     } finally {
       client.release();
@@ -115,7 +114,8 @@ export class UserModel {
 
   // get all users
   static async findAllUsernames(): Promise<UserWithoutPassword[]> {
-    const query = `
+    try {
+      const query = `
       SELECT username,
           user_account_id,
           email,
@@ -131,12 +131,16 @@ export class UserModel {
       WHERE is_deleted = FALSE
       ORDER BY user_account_id ASC
     `;
-    const result = await pool.query(query);
-    return result.rows || null;
+      const result = await pool.query(query);
+      return result.rows || [];
+    } catch (error: any) {
+      throw new Error(`Failed to fetch users: ${error.message}`);
+    }
   }
 
   static async findByUsername(username: string): Promise<User | null> {
-    const query = `
+    try {
+      const query = `
       SELECT user_account_id,
           username,
           password_hash,
@@ -151,70 +155,95 @@ export class UserModel {
       FROM users
       WHERE username = $1
       `;
-    const result = await pool.query(query, [username]);
-    return result.rows[0] || null;
+      const result = await pool.query(query, [username]);
+      return result.rows[0] || null;
+    } catch (error: any) {
+      throw new Error(`Failed to find user by username: ${error.message}`);
+    }
   }
 
   static async findById(id: number): Promise<User | null> {
-    const query = `
-    SELECT user_account_id,
-        username,
-        email,
-        first_name,
-        middle_name,
-        last_name,
-        gender,
-        user_profile_image_url,
-        created_at,
-        updated_at
-    FROM users
-    WHERE id = $1
-    `;
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    try {
+      const query = `
+      SELECT user_account_id,
+          username,
+          email,
+          first_name,
+          middle_name,
+          last_name,
+          gender,
+          user_profile_image_url,
+          created_at,
+          updated_at
+      FROM users
+      WHERE id = $1
+      `;
+      const result = await pool.query(query, [id]);
+      return result.rows[0] || null;
+    } catch (error: any) {
+      throw new Error(`Failed to find user by ID: ${error.message}`);
+    }
   }
 
   static async getIdByUsername(username: string): Promise<number | null> {
-    const query = "SELECT id FROM users WHERE username = $1";
-    const result = await pool.query(query, [username]);
-    return result.rows[0]?.id || null;
+    try {
+      const query = "SELECT id FROM users WHERE username = $1";
+      const result = await pool.query(query, [username]);
+      return result.rows[0]?.id || null;
+    } catch (error: any) {
+      throw new Error(`Failed to get user ID by username: ${error.message}`);
+    }
   }
 
   static async updateById(
     id: number,
     updates: Partial<User>
   ): Promise<User | null> {
-    const fields = Object.keys(updates).filter((key) => key !== "id");
-    const values = fields.map((field) => updates[field as keyof User]);
+    try {
+      const fields = Object.keys(updates).filter((key) => key !== "id");
+      const values = fields.map((field) => updates[field as keyof User]);
 
-    if (fields.length === 0) return null;
+      if (fields.length === 0) return null;
 
-    const setClause = fields
-      .map((field, index) => `${field} = $${index + 2}`)
-      .join(", ");
-    const query = `
+      const setClause = fields
+        .map((field, index) => `${field} = $${index + 2}`)
+        .join(", ");
+      const query = `
       UPDATE users
       SET ${setClause}, updated_at = CURRENT_TIMESTAMP
       WHERE id = $1
-      RETURNING id, username,  created_at, updated_at
-    `;
+      RETURNING id, username, created_at, updated_at
+      `;
 
-    const result = await pool.query(query, [id, ...values]);
-    return result.rows[0] || null;
+      const result = await pool.query(query, [id, ...values]);
+      return result.rows[0] || null;
+    } catch (error: any) {
+      throw new Error(`Failed to update user: ${error.message}`);
+    }
   }
 
   // TODO: set this as update the is_deleted
   static async deleteById(id: number): Promise<void> {
-    const query =
-      "UPDATE users SET is_deleted = TRUE WHERE id = $1 RETURNING id";
-    const result = await pool.query(query, [id]);
-    return result.rows[0] || null;
+    try {
+      const query =
+        "UPDATE users SET is_deleted = TRUE WHERE id = $1 RETURNING id";
+      const result = await pool.query(query, [id]);
+      if (!result.rows[0]) {
+        throw new Error("User not found");
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to delete user: ${error.message}`);
+    }
   }
 
   static async validatePassword(
     user: User,
     password: string
   ): Promise<boolean> {
-    return bcrypt.compare(password, user.password_hash);
+    try {
+      return await bcrypt.compare(password, user.password_hash);
+    } catch (error: any) {
+      throw new Error(`Failed to validate password: ${error.message}`);
+    }
   }
 }

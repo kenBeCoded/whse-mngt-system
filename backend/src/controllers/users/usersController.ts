@@ -15,26 +15,12 @@ export const createUser = async (
       password: string;
       role: string;
     } = req.body;
-    // const { username, password }: { username: string; password: string } =
-    //   req.body;
-
-    // Check input
-    // if (!data.username || !data.password) {
-    //   res.status(400).json({ message: "username and password are required" });
-    //   return;
-    // }
 
     const result = await UserModel.create(data);
 
-    // const test = await UserModel.updateById(3, {
-    //   username: "test4",
-    // });\
-
-    // TODO : clean comment
-
-    // TODO PRIO : to fix the response data based what frontend data-table needed
-
-    res.status(201).json({ message: "User created successfully", data: result });
+    res
+      .status(201)
+      .json({ message: "User created successfully", data: result });
   } catch (error) {
     next(error);
   }
