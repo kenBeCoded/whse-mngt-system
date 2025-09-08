@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Users } from "../columns";
 import { useForm } from "react-hook-form";
 import {
@@ -29,7 +29,10 @@ const userSchema = z.object({
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
   gender: z.enum(["male", "female"]),
-  user_profile_image_url: z.string().optional(),
+  // user_profile_image_url: z.string().optional(),
+  user_profile_image_url: z
+    .instanceof(File, { message: "Profile image must be a file" })
+    .optional(),
   role: z.string().min(1, "Role is required"),
 });
 
@@ -41,6 +44,38 @@ interface UserCreateModalProps {
 
 export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    if (file && file.size <= 2 * 1024 * 1024) {
+      const newPreviewUrl = URL.createObjectURL(file);
+      setPreviewUrl(newPreviewUrl);
+      setValue("user_profile_image_url", file);
+    } else {
+      alert("Please select an image file under 2MB");
+      e.target.value = "";
+    }
+  };
+
+  const handleReset = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      setPreviewUrl(null);
+    }
+    reset();
+    setIsOpen(false);
+  };
 
   const {
     register,
@@ -58,7 +93,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
       middle_name: "",
       last_name: "",
       gender: "male",
-      user_profile_image_url: "",
+      user_profile_image_url: undefined,
       role: "",
     },
   });
@@ -96,7 +131,39 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             {/* Profile Image Section */}
             {/* TODO PRIO : SUPABASE > apply the supabase upload image here as input file image maximum of 2mb size, make the input field box is clickable */}
+            {/* make the image preview box is clickable to open file dialog */}
             <div className="md:col-span-1">
+              <div
+                className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2 cursor-pointer overflow-hidden"
+                onClick={() =>
+                  document.getElementById("picture-input")?.click()
+                }
+              >
+                {watch("user_profile_image_url") ? (
+                  <img
+                    src={previewUrl || ""}
+                    alt="Profile Preview"
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-gray-500">Click to upload</span>
+                )}
+              </div>
+              <Input
+                id="picture-input"
+                type="file"
+                className="hidden"
+                accept="image/jpeg,image/png,image/gif"
+                onChange={handleImageChange}
+              />
+              {errors.user_profile_image_url && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.user_profile_image_url.message}
+                </p>
+              )}
+            </div>
+
+            {/* <div className="md:col-span-1">
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
                 {watch("user_profile_image_url") ? (
                   <img
@@ -120,7 +187,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                   {errors.user_profile_image_url.message}
                 </p>
               )}
-            </div>
+            </div> */}
 
             {/* First row of fields */}
             <div className="md:col-span-1">
@@ -273,10 +340,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
             <Button
               variant="outline"
               type="button"
-              onClick={() => {
-                setIsOpen(false);
-                reset();
-              }}
+              onClick={handleReset}
               disabled={isSubmitting}
             >
               Cancel
