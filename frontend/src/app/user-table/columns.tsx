@@ -88,7 +88,7 @@ export const userColumns: ColumnDef<Users>[] = [
     header: "Actions",
     cell: ({ row, table }) => {
       const user = row.original;
-      // const onSave = (table.options.meta as any)?.onSave;
+      // const onSave = (table.options.meta as any)?.onSave; 
       // Ensure we always pass a function to UserDetailsModal by providing a noop default
       const onSave =
         (table.options.meta as TableMeta | undefined)?.onSave ?? ((u: Users) => { void u; });
