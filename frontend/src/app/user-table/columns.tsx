@@ -27,6 +27,11 @@ export type Users = {
   created_at: string;
 };
 
+// Add a lightweight TableMeta type so we can access table.options.meta?.onSave safely
+type TableMeta = {
+  onSave?: (updatedUser: Users) => void;
+};
+
 // User Columns (assuming this is part of the same file or imported)
 export const userColumns: ColumnDef<Users>[] = [
   {
@@ -84,7 +89,9 @@ export const userColumns: ColumnDef<Users>[] = [
     cell: ({ row, table }) => {
       const user = row.original;
       // const onSave = (table.options.meta as any)?.onSave;
-      const onSave = table.options.meta?.onSave;
+      // Ensure we always pass a function to UserDetailsModal by providing a noop default
+      const onSave =
+        (table.options.meta as TableMeta | undefined)?.onSave ?? ((u: Users) => { void u; });
 
       return (
         <div className="flex gap-2">
