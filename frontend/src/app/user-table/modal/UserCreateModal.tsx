@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Users } from "../columns";
 import { useForm } from "react-hook-form";
 import {
@@ -24,12 +24,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const userSchema = z.object({
   username: z.string().min(1, "Username is required"),
-  email: z.email("Invalid email address"),
+  email: z.string().email("Invalid email address"),
   first_name: z.string().min(1, "First name is required"),
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
   gender: z.enum(["male", "female"]),
-  user_profile_image_url: z.string().optional(),
+  user_profile_image_file: z.instanceof(File).optional(),
   role: z.string().min(1, "Role is required"),
 });
 
@@ -41,6 +41,8 @@ interface UserCreateModalProps {
 
 export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -58,19 +60,25 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
       middle_name: "",
       last_name: "",
       gender: "male",
-      user_profile_image_url: "",
+      user_profile_image_file: undefined,
       role: "",
     },
   });
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      await onCreate({
+      const formData = {
         ...data,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      });
+        // Check if the file exists and create a URL for it
+        // user_profile_image: data.user_profile_image_file
+        //   ? URL.createObjectURL(data.user_profile_image_file)
+        //   : undefined,
+      };
+      await onCreate(formData);
       setIsOpen(false);
+      setPreviewImage(null);
       reset();
     } catch (error) {
       console.error("Failed to create user:", error);
@@ -78,6 +86,16 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
   };
 
   const genderValue = watch("gender");
+  // const userProfileImageFile = watch("user_profile_image_file");
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    console.log(file);
+    if (file) {
+      setValue("user_profile_image_file", file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -95,12 +113,11 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
             {/* Profile Image Section */}
-            {/* TODO PRIO : SUPABASE > apply the supabase upload image here as input file image maximum of 2mb size, make the input field box is clickable */}
             <div className="md:col-span-1">
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
-                {watch("user_profile_image_url") ? (
+                {previewImage ? (
                   <img
-                    src={watch("user_profile_image_url")}
+                    src={previewImage}
                     alt="Profile Preview"
                     className="w-full h-full object-cover rounded"
                   />
@@ -108,16 +125,18 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                   <span>No Image</span>
                 )}
               </div>
-              <Label htmlFor="user_profile_image_url">Profile Image URL</Label>
+              <Label htmlFor="user_profile_image_file">Profile Image</Label>
               <Input
-                id="user_profile_image_url"
-                {...register("user_profile_image_url")}
+                id="user_profile_image_file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
                 disabled={isSubmitting}
-                placeholder="Enter image URL"
               />
-              {errors.user_profile_image_url && (
+              {errors.user_profile_image_file && (
                 <p className="text-red-500 text-sm mt-1">
-                  {errors.user_profile_image_url.message}
+                  {errors.user_profile_image_file.message}
                 </p>
               )}
             </div>
@@ -160,20 +179,6 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                     </p>
                   )}
                 </div>
-                {/* <div>
-                  <Label htmlFor="role">Role</Label>
-                  <Input
-                    id="role"
-                    {...register("role")}
-                    disabled={isSubmitting}
-                    placeholder="Enter role"
-                  />
-                  {errors.role && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.role.message}
-                    </p>
-                  )}
-                </div> */}
               </div>
 
               <div className="grid grid-cols-2 gap-2 mt-2">
@@ -275,6 +280,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
               type="button"
               onClick={() => {
                 setIsOpen(false);
+                setPreviewImage(null);
                 reset();
               }}
               disabled={isSubmitting}

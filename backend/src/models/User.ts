@@ -21,7 +21,7 @@ export class UserModel {
     try {
       await client.query("BEGIN");
 
-      // ensure the sequence is set correctly
+      // ensure the sequence of users_id and user_account_id is set correctly
       await client.query(
         `
         SELECT setval(
@@ -143,6 +143,7 @@ export class UserModel {
       const query = `
       SELECT user_account_id,
           username,
+          id,
           password_hash,
           email,
           first_name,

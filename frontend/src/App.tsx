@@ -11,40 +11,63 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 import AppPage from "./pages/AppPage";
+import Page from "./app/dashboard";
+import { ThemeProvider } from "./components/theme-provider";
+import { DemoPage } from "./app/user-table/page";
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <HomePage />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to={"/admin/dashboard"} />} />
-              <Route path="admin" element={<AppPage />}>
-                <Route path="dashboard" element={<DashboardPage />}></Route>
-              </Route>
-            </Route>
-            <Route path="/login" element={<LoginPage />} />
+    <ThemeProvider>
+      <AuthProvider>
+        <Router>
+          <div className="App">
+            {/* <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <HomePage />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to={"/admin/dashboard"} />} />
+                <Route path="admin" element={<AppPage />}>
+                  <Route path="dashboard" element={<DashboardPage />}></Route>
+                </Route>
+              </Route> */}
+            {/* <Route path="/login" element={<LoginPage />} /> */}
+            {/* <Route path="/login" element={<Page />} /> */}
             {/* <Route path="/register" element={<RegisterPage />} /> */}
-            {/* <Route
-              path="/dashboard"
-              element={
-                <ProtectedRoute>
-                  <DashboardPage />
-                </ProtectedRoute>
-              }
-            /> */}
-          </Routes>
-        </div>
-      </Router>
-    </AuthProvider>
+            {/* </Routes> */}
+
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <ProtectedRoute>
+                    <HomePage />
+                  </ProtectedRoute>
+                }
+              >
+                <Route element={<Navigate to="admin" />} />
+                <Route path="admin" element={<Page />}>
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="users" element={<DemoPage />} />
+                </Route>
+                {/* Example nested routes - extend with your full nav structure */}
+
+                {/* Add routes for Architecture, Community, etc., following the same pattern */}
+                <Route
+                  path="*"
+                  element={<div>404 - Page Not Found</div>} // Optional: catch-all for unmatched nested routes
+                />
+              </Route>
+              <Route path="/login" element={<LoginPage />} />
+            </Routes>
+          </div>
+        </Router>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 

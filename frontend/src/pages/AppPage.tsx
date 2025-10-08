@@ -282,7 +282,6 @@ function PersistentDrawer() {
           <DemoPage />
           {/* <TableDemo /> */}
           <Button>test</Button>
-          <Outlet />
         </main>
       </div>
     </div>

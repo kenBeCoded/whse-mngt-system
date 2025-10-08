@@ -21,6 +21,7 @@ export type Users = {
   last_name: string;
   gender: "male" | "female";
   user_profile_image_url?: string;
+  user_profile_image_file?: File;
   role: string;
   updated_at: string;
   created_at: string;
