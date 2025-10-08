@@ -84,43 +84,40 @@ export const userColumns: ColumnDef<Users>[] = [
     header: "Last Updated",
   },
   {
-    id: "actions",
-    header: "Actions",
-    cell: ({ row, table }) => {
-      const user = row.original;
-      // const onSave = (table.options.meta as any)?.onSave; 
-      // Ensure we always pass a function to UserDetailsModal by providing a noop default
-      const onSave =
-        (table.options.meta as TableMeta | undefined)?.onSave ?? ((u: Users) => { void u; });
+  id: "actions",
+  header: "Actions",
+  cell: ({ row, table }) => {
+    const user = row.original;
+    const onSave = (table.options.meta as TableMeta)?.onSave ?? ((u: Users) => { void u; });
 
-      return (
-        <div className="flex gap-2">
-          <UserDetailsModal user={user} onSave={onSave} />
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() =>
-                  navigator.clipboard.writeText(user.user_account_id)
-                }
-              >
-                Copy user ID
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>Edit user</DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">
-                Delete user
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      );
-    },
+    return (
+      <div className="flex gap-2">
+        <UserDetailsModal user={user} onSave={onSave} />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem
+              onClick={() =>
+                navigator.clipboard.writeText(user.user_account_id)
+              }
+            >
+              Copy user ID
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem>Edit user</DropdownMenuItem>
+            <DropdownMenuItem className="text-red-600">
+              Delete user
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    );
   },
+}
 ];
