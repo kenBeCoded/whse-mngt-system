@@ -13,14 +13,14 @@ import {
   SidebarInput,
 } from "@/components/ui/sidebar"
 
-interface SearchFormProps extends React.ComponentProps<"form"> {
+interface SearchFormProps extends Omit<React.ComponentProps<'form'>, 'onChange' | 'onSubmit'> {
   value: string
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void
   onSubmit?: (query: string) => void
 }
 
 export function SearchForm({ value, onChange, onSubmit, ...props }: SearchFormProps) {
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault()
     if (onSubmit && value.trim()) {
       onSubmit(value)
