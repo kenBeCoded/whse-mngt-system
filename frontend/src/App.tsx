@@ -10,7 +10,7 @@ import LoginPage from "./pages/LoginPage";
 // import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
-import AppPage from "./pages/AppPage";
+// import AppPage from "./pages/AppPage";
 import Page from "./app/dashboard";
 import { ThemeProvider } from "./components/theme-provider";
 import { DemoPage } from "./app/user-table/page";

@@ -143,7 +143,6 @@ export const useUserStore = create<UserState>()(
             ...updatedUser,
             updated_at: undefined, // Remove updated_at as it's handled by backend
           };
-          console.log(body);
 
           const response = await API.patch("/api/users/update-user", body);
           if (response.status === 200) {

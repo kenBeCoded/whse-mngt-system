@@ -11,18 +11,18 @@ const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-export const validateRegister = (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  const { error } = registerSchema.validate(req.body);
-  if (error) {
-    res.status(400).json({ message: error.details[0].message });
-    return;
-  }
-  next();
-};
+// export const validateRegister = (
+//   req: Request,
+//   res: Response,
+//   next: NextFunction
+// ) => {
+//   const { error } = registerSchema.validate(req.body);
+//   if (error) {
+//     res.status(400).json({ message: error.details[0].message });
+//     return;
+//   }
+//   next();
+// };
 
 export const validateLogin = (
   req: Request,

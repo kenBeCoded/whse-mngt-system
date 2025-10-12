@@ -3,12 +3,6 @@ import pool from "../config/database.js";
 import { UserModel } from "./User.js";
 
 export class Attendance {
-  /**
-   * Insert an attendance image. If a client is provided, the insert will use
-   * that client and will NOT manage transactions or release the client.
-   * If no client is provided, this method will create its own client and
-   * perform a transaction around the insert.
-   */
   private static async create_attendance_img(
     data: {
       image_url: string;
@@ -56,6 +50,7 @@ export class Attendance {
    *              1 = check-in update
    *              2 = check-out update
    */
+
   static async create_attendance_records(data: {
     username: string;
     image_url: string;
@@ -79,7 +74,7 @@ export class Attendance {
       const imageRow = await this.create_attendance_img(
         {
           image_url: data.image_url,
-          record_type: data.record_type,
+          record_type: (data.record_type).toLowerCase(),
           user_id: user.id,
           image_capture_date: data.image_capture_date,
         },
@@ -206,4 +201,7 @@ export class Attendance {
       client.release();
     }
   }
+
+  // TODO PRIO: attendance audit
+  // static async audit_attendance_update
 }

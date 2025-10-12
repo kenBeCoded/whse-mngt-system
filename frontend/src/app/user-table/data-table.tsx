@@ -33,18 +33,8 @@ import { useState } from "react";
 import { DataTablePagination } from "./data-table-pagination";
 import { DataTableViewOptions } from "./data-table-column-toggle";
 import { useUserStore } from "../../store/user-store";
-// import { type Users } from "./columns";
 import { UserCreateModal } from "./modal/UserCreateModal";
 import type { Users } from "./columns";
-
-// interface DataTableProps<TData, TValue> {
-//   columns: ColumnDef<TData, TValue>[];
-//   data: TData[];
-//   onSave?: (updatedItem: TData) => void;
-//   onDelete?: (id: string) => void;
-//   isLoading?: boolean;
-//   onCreate?: (newUser: TData) => void;
-// }
 
 interface DataTableProps {
   columns: ColumnDef<Users, unknown>[];
@@ -141,16 +131,6 @@ export function DataTable({
       rowSelection,
     },
   });
-
-  // Handle "Select All" functionality
-  // const handleSelectAll = () => {
-  //   const allSelected = table.getIsAllPageRowsSelected();
-  //   if (allSelected) {
-  //     unselectAllUsers();
-  //   } else {
-  //     selectAllUsers();
-  //   }
-  // };
 
   return (
     <div>

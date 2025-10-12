@@ -1,6 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-// import pool from "../../config/database.js";
-// import hashPassword from "../../utils/hashPassword.js";
 import { UserModel } from "../../models/User.js";
 import { User } from "../../types/index.js";
 

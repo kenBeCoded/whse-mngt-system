@@ -70,7 +70,6 @@ export const UserDetailsModal = ({
   });
 
   const onSubmit = async (data: UserFormData) => {
-    console.log("data", data);
     try {
       await onSave(data);
       setIsOpen(false);

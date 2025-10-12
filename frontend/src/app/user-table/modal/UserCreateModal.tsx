@@ -90,7 +90,6 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    console.log(file);
     if (file) {
       setValue("user_profile_image_file", file);
       setPreviewImage(URL.createObjectURL(file));

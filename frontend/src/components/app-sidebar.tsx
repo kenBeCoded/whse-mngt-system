@@ -188,7 +188,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [searchQuery, setSearchQuery] = React.useState("");
 
   const isActive = (url: string): boolean => {
-    console.log(pathname, url)
     return pathname === url || pathname.startsWith(url + "/");
   };
 
