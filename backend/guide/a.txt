@@ -1,0 +1,16 @@
+    // create attendance img data
+    
+    // create attendance records
+        // if check in submitted, attendance record will be created at the same time of attendance img data
+
+    // upload check in update
+        // if check in uploaded, check in data will updated (check_in_image_id, check_in_time, updated_at)
+
+    // upload check out update
+        // if check out uploaded, check out data will updated (check_out_image_id, check_out_time, updated_at)
+
+    // update is_audited
+        // update audited (0: false, 1: true)
+
+    // update status('fail', 'pass', 'pending')
+        // update status (0: fail, 1: pass, 2: pending)
