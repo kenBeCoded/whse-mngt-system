@@ -24,6 +24,16 @@ Content-Type: application/json
     "update_code": 2
 }
 
+###
+
 #? update check out details on attendance_record
+patch http://localhost:8000/api/attendance/audit-attendance-update
+Content-Type: application/json
+
+{
+    "id": 1,
+    "attendance_date": "2025-10-07",
+    "update_code": 2
+}
 
 # "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",

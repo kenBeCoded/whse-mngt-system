@@ -21,19 +21,17 @@ import {
 } from "@/components/ui/table";
 
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
-  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 import { useState } from "react";
-import { DataTablePagination } from "./data-table-pagination";
-import { DataTableViewOptions } from "./data-table-column-toggle";
+import { DataTablePagination } from "../../components/data-table/data-table-pagination";
+import { DataTableViewOptions } from "../../components/data-table/data-table-column-toggle";
 import { useUserStore } from "../../store/user-store";
-import { UserCreateModal } from "./modal/UserCreateModal";
+import { UserCreateModal } from "./dialog/UserCreateModal";
 import type { Users } from "./columns";
 
 interface DataTableProps {
@@ -61,8 +59,6 @@ export function DataTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [globalFilter, setGlobalFilter] = useState<string>("");
-
-  console.log("data", data);
 
   // Get selection state and actions from Zustand store
   const {
@@ -143,12 +139,9 @@ export function DataTable({
           disabled={isLoading}
         />
         <UserCreateModal onCreate={(newUser) => onCreate?.(newUser)} />
+        {/* view column */}
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto" disabled={isLoading}>
-              Columns
-            </Button>
-          </DropdownMenuTrigger>
+          <DataTableViewOptions table={table} />
           <DropdownMenuContent align="end">
             {table
               .getAllColumns()
@@ -230,7 +223,6 @@ export function DataTable({
 
       <div className="mt-2">
         <DataTablePagination table={table} />
-        <DataTableViewOptions table={table} />
       </div>
     </div>
   );

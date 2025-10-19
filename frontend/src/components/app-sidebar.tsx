@@ -34,140 +34,6 @@ const data = {
         { title: "Demo", url: "/admin/users" },
       ],
     },
-    // {
-    //   title: "Getting Started",
-    //   url: "/getting-started",
-    //   items: [
-    //     {
-    //       title: "Installation",
-    //       url: "/getting-started/installation",
-    //     },
-    //     {
-    //       title: "Project Structure",
-    //       url: "/getting-started/project-structure",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Building Your Application",
-    //   url: "/building-your-application",
-    //   items: [
-    //     {
-    //       title: "Routing",
-    //       url: "/building-your-application/routing",
-    //     },
-    //     {
-    //       title: "Data Fetching",
-    //       url: "/building-your-application/data-fetching",
-    //     },
-    //     {
-    //       title: "Rendering",
-    //       url: "/building-your-application/rendering",
-    //     },
-    //     {
-    //       title: "Caching",
-    //       url: "/building-your-application/caching",
-    //     },
-    //     {
-    //       title: "Styling",
-    //       url: "/building-your-application/styling",
-    //     },
-    //     {
-    //       title: "Optimizing",
-    //       url: "/building-your-application/optimizing",
-    //     },
-    //     {
-    //       title: "Configuring",
-    //       url: "/building-your-application/configuring",
-    //     },
-    //     {
-    //       title: "Testing",
-    //       url: "/building-your-application/testing",
-    //     },
-    //     {
-    //       title: "Authentication",
-    //       url: "/building-your-application/authentication",
-    //     },
-    //     {
-    //       title: "Deploying",
-    //       url: "/building-your-application/deploying",
-    //     },
-    //     {
-    //       title: "Upgrading",
-    //       url: "/building-your-application/upgrading",
-    //     },
-    //     {
-    //       title: "Examples",
-    //       url: "/building-your-application/examples",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "API Reference",
-    //   url: "/api-reference",
-    //   items: [
-    //     {
-    //       title: "Components",
-    //       url: "/api-reference/components",
-    //     },
-    //     {
-    //       title: "File Conventions",
-    //       url: "/api-reference/file-conventions",
-    //     },
-    //     {
-    //       title: "Functions",
-    //       url: "/api-reference/functions",
-    //     },
-    //     {
-    //       title: "next.config.js Options",
-    //       url: "/api-reference/next-config-options",
-    //     },
-    //     {
-    //       title: "CLI",
-    //       url: "/api-reference/cli",
-    //     },
-    //     {
-    //       title: "Edge Runtime",
-    //       url: "/api-reference/edge-runtime",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Architecture",
-    //   url: "/architecture",
-    //   items: [
-    //     {
-    //       title: "Accessibility",
-    //       url: "/architecture/accessibility",
-    //     },
-    //     {
-    //       title: "Fast Refresh",
-    //       url: "/architecture/fast-refresh",
-    //     },
-    //     {
-    //       title: "Next.js Compiler",
-    //       url: "/architecture/nextjs-compiler",
-    //     },
-    //     {
-    //       title: "Supported Browsers",
-    //       url: "/architecture/supported-browsers",
-    //     },
-    //     {
-    //       title: "Turbopack",
-    //       url: "/architecture/turbopack",
-    //     },
-    //   ],
-    // },
-    // {
-    //   title: "Community",
-    //   url: "/community",
-    //   items: [
-    //     {
-    //       title: "Contribution Guide",
-    //       url: "/community/contribution-guide",
-    //     },
-    //   ],
-    // },
   ],
 };
 
@@ -220,8 +86,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const hasSearchResults = searchQuery.trim() !== "";
 
   return (
-    <Sidebar {...props}>
-      <SidebarHeader>
+    <Sidebar {...props} className="border-r">
+      <SidebarHeader className="border-b px-4 py-3">
         <VersionSwitcher
           versions={data.versions}
           defaultVersion={data.versions[0]}
@@ -232,7 +98,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           onSubmit={handleSearchSubmit}
         />
       </SidebarHeader>
-      <SidebarContent className="gap-0">
+      <SidebarContent className="gap-0 overflow-y-auto">
         {hasSearchResults ? (
           // Show filtered search results
           <SidebarGroup>

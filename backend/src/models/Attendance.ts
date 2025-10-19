@@ -74,7 +74,7 @@ export class Attendance {
       const imageRow = await this.create_attendance_img(
         {
           image_url: data.image_url,
-          record_type: (data.record_type).toLowerCase(),
+          record_type: data.record_type.toLowerCase(),
           user_id: user.id,
           image_capture_date: data.image_capture_date,
         },
@@ -202,6 +202,56 @@ export class Attendance {
     }
   }
 
-  // TODO PRIO: attendance audit
-  // static async audit_attendance_update
+  static async audit_attendance_update(data: {
+    update_code: number;
+    attendance_date: string;
+    id: number;
+  }): Promise<any> {
+    console.log("data:", data);
+    if (data.update_code !== 0 && data.update_code !== 1 && data.update_code !== 2) {
+      throw new Error(
+        `Missing or unsupported update code: ${data.update_code}`
+      );
+    }
+    try {
+      const updateQuery = `
+        UPDATE attendance_records
+        SET is_audited = $1,
+            status = $2
+        WHERE id = $3 AND attendance_date = $4
+        RETURNING *;
+      `;
+
+      if (data.update_code === 0) {
+        const result = await pool.query(updateQuery, [
+          true,
+          "pass",
+          data.id,
+          data.attendance_date,
+        ]);
+        return result.rows[0] || null;
+      } else if (data.update_code === 1) {
+        const result = await pool.query(updateQuery, [
+          true,
+          "fail",
+          data.id,
+          data.attendance_date,
+        ]);
+        return result.rows[0] || null;
+      } else if (data.update_code === 2) {
+        const result = await pool.query(updateQuery, [
+          false,
+          "pending",
+          data.id,
+          data.attendance_date,
+        ]);
+        return result.rows[0] || null;
+      } else {
+        throw new Error(`Unsupported update_code: ${data.update_code}`);
+      }
+    } catch (error) {
+      console.error("audit_attendance_update failed:", error);
+      throw error;
+    }
+  }
 }

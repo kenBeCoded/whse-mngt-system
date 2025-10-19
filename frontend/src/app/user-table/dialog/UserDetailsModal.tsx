@@ -38,10 +38,8 @@ const userSchema = z.object({
   created_at: z.string(),
 });
 
-
 type UserFormData = z.infer<typeof userSchema>;
 
-// User Details Modal Component
 export const UserDetailsModal = ({
   user,
   onSave,
@@ -52,7 +50,6 @@ export const UserDetailsModal = ({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Get delete function and loading state from Zustand store
   const { deleteUser, isLoading } = useUserStore();
 
   const {
@@ -65,7 +62,12 @@ export const UserDetailsModal = ({
     resolver: zodResolver(userSchema),
     defaultValues: {
       ...user,
-      created_at: user.created_at || new Date().toISOString(),
+      created_at: user.created_at
+        ? new Date(user.created_at).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      updated_at: user.updated_at
+        ? new Date(user.updated_at).toLocaleDateString()
+        : new Date().toLocaleDateString(),
     },
   });
 
@@ -97,7 +99,7 @@ export const UserDetailsModal = ({
           Details
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="w-[95vw] max-w-[425px] sm:max-w-[600px] lg:max-w-[800px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>USER DETAILS</DialogTitle>
           <DialogDescription>
@@ -106,9 +108,9 @@ export const UserDetailsModal = ({
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 py-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 py-4">
             {/* Profile Image Section */}
-            <div className="md:col-span-1">
+            <div className="lg:col-span-1 flex flex-col items-center">
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
                 {user.user_profile_image_url ? (
                   <img
@@ -117,103 +119,111 @@ export const UserDetailsModal = ({
                     className="w-full h-full object-cover rounded"
                   />
                 ) : (
-                  <span>No Image</span>
+                  <span className="text-sm text-gray-500">No Image</span>
                 )}
               </div>
-              {/* <Label htmlFor="user_profile_image_url">Profile Image URL</Label>
-              <Input
-                id="user_profile_image_url"
-                {...register("user_profile_image_url")}
-                disabled={isSubmitting || isLoading}
-              />
-              {errors.user_profile_image_url && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.user_profile_image_url.message}
-                </p>
-              )} */}
             </div>
 
-            {/* First row of fields */}
-            <div className="md:col-span-1">
-              <div className="grid grid-cols-2 gap-2">
+            {/* Form Fields */}
+            <div className="lg:col-span-1 space-y-3">
+              {/* Username & Role */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="username">Username</Label>
+                  <Label htmlFor="username" className="text-sm">
+                    Username
+                  </Label>
                   <Input
                     id="username"
                     {...register("username")}
                     readOnly
-                    className="bg-gray-100"
+                    className="bg-gray-100 mt-1"
                   />
                   {errors.username && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-xs mt-1">
                       {errors.username.message}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="role">Role</Label>
+                  <Label htmlFor="role" className="text-sm">
+                    Role
+                  </Label>
                   <Input
                     id="role"
                     {...register("role")}
                     readOnly
-                    className="bg-gray-100"
+                    className="bg-gray-100 mt-1"
                   />
                   {errors.role && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-xs mt-1">
                       {errors.role.message}
                     </p>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              {/* First & Middle Name */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="first_name">First Name</Label>
+                  <Label htmlFor="first_name" className="text-sm">
+                    First Name
+                  </Label>
                   <Input
                     id="first_name"
                     {...register("first_name")}
                     disabled={isSubmitting || isLoading}
+                    className="mt-1"
                   />
                   {errors.first_name && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-xs mt-1">
                       {errors.first_name.message}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="middle_name">Middle Name</Label>
+                  <Label htmlFor="middle_name" className="text-sm">
+                    Middle Name
+                  </Label>
                   <Input
                     id="middle_name"
                     {...register("middle_name")}
                     disabled={isSubmitting || isLoading}
+                    className="mt-1"
                   />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 mt-2">
+              {/* Last Name & Email */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <Label htmlFor="last_name">Last Name</Label>
+                  <Label htmlFor="last_name" className="text-sm">
+                    Last Name
+                  </Label>
                   <Input
                     id="last_name"
                     {...register("last_name")}
                     disabled={isSubmitting || isLoading}
+                    className="mt-1"
                   />
                   {errors.last_name && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-xs mt-1">
                       {errors.last_name.message}
                     </p>
                   )}
                 </div>
                 <div>
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-sm">
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
                     {...register("email")}
                     disabled={isSubmitting || isLoading}
+                    className="mt-1"
                   />
                   {errors.email && (
-                    <p className="text-red-500 text-sm mt-1">
+                    <p className="text-red-500 text-xs mt-1">
                       {errors.email.message}
                     </p>
                   )}
@@ -222,10 +232,12 @@ export const UserDetailsModal = ({
             </div>
           </div>
 
-          {/* Second row of fields */}
-          <div className="grid grid-cols-3 gap-4 mb-4">
+          {/* Gender, Created At, Updated At */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
             <div>
-              <Label htmlFor="gender">Gender</Label>
+              <Label htmlFor="gender" className="text-sm">
+                Gender
+              </Label>
               <Select
                 value={genderValue}
                 onValueChange={(value) =>
@@ -233,7 +245,7 @@ export const UserDetailsModal = ({
                 }
                 disabled={isSubmitting || isLoading}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full mt-1">
                   <SelectValue placeholder="Select gender" />
                 </SelectTrigger>
                 <SelectContent>
@@ -242,37 +254,37 @@ export const UserDetailsModal = ({
                 </SelectContent>
               </Select>
               {errors.gender && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-500 text-xs mt-1">
                   {errors.gender.message}
                 </p>
               )}
             </div>
             <div>
-              <Label htmlFor="created_at">Created At</Label>
+              <Label htmlFor="created_at" className="text-sm">
+                Created At
+              </Label>
               <Input
                 id="created_at"
                 {...register("created_at")}
                 readOnly
-                className="bg-gray-100"
-                value={new Date(
-                  user.created_at || Date.now()
-                ).toLocaleDateString()}
+                className="bg-gray-100 mt-1"
               />
             </div>
             <div>
-              <Label htmlFor="updated_at">Updated At</Label>
+              <Label htmlFor="updated_at" className="text-sm">
+                Updated At
+              </Label>
               <Input
                 id="updated_at"
                 {...register("updated_at")}
                 readOnly
-                className="bg-gray-100"
-                value={new Date(user.updated_at).toLocaleDateString()}
+                className="bg-gray-100 mt-1"
               />
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex justify-between items-center pt-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-4 border-t">
             <div>
               {!isDeleteDialogOpen ? (
                 <Button
@@ -309,20 +321,14 @@ export const UserDetailsModal = ({
               )}
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-2 w-full sm:w-auto">
               <Button
                 variant="outline"
                 type="submit"
                 disabled={isSubmitting || isLoading}
+                className="flex-1 sm:flex-none"
               >
                 {isSubmitting ? "Saving..." : "Save changes"}
-              </Button>
-              <Button
-                variant="destructive"
-                type="button"
-                disabled={isSubmitting || isLoading}
-              >
-                Delete
               </Button>
             </div>
           </div>
