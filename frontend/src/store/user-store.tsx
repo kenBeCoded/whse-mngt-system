@@ -1,10 +1,10 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import axios from "axios";
+import axios from "../api/axios";
 import { type Users } from "@/app/user-table/columns";
+import { supabase } from "../supabase.ts";
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000",
   withCredentials: true,
 });
 
@@ -76,13 +76,51 @@ export const useUserStore = create<UserState>()(
       addUser: async (user) => {
         return console.log(user);
         set({ isLoading: true, error: null });
-        // TODO PRIO : SUPABASE > save file to supabase if only there is provided url image on user form
+
+        let imageUrl = null;
+
+        // Check if a file is provided before attempting to upload
+        if (user.user_profile_image_file) {
+          const uuid_v4 = crypto.randomUUID();
+          const fileExt = user.user_profile_image_file.name.split(".").pop();
+          const fileName = `img-${uuid_v4}-${Date.now()}.${fileExt}`;
+          const filePath = `user-images-uploads/${fileName}`;
+
+          // Upload file to Supabase
+          const { error: uploadError } = await supabase.storage
+            .from("App-File-Storage")
+            .upload(filePath, user.user_profile_image_file);
+
+          if (uploadError) {
+            set({
+              error: `Failed to upload image: ${uploadError.message}`,
+              isLoading: false,
+            });
+            console.error("Upload error:", uploadError);
+            return; // Exit the function if upload fails
+          }
+
+          // Get the public URL for the uploaded file
+          const { data: publicUrlData } = supabase.storage
+            .from("App-File-Storage")
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrlData.publicUrl;
+        }
+
         try {
-          const response = await API.post("/api/users/create-user", user);
+          // Create the new user object to send to the API
+          const newUser = {
+            ...user,
+            user_profile_image_url: imageUrl, // Add the image URL here
+            user_profile_image_file: undefined, // Remove the file object
+          };
+
+          const response = await API.post("/api/users/create-user", newUser);
           if (response.status === 201 || response.status === 200) {
-            const newUser = response.data.data;
+            const addedUser = response.data.data;
             set((state) => ({
-              users: [...state.users, newUser],
+              users: [...state.users, addedUser],
               isLoading: false,
             }));
           } else {
@@ -105,7 +143,6 @@ export const useUserStore = create<UserState>()(
             ...updatedUser,
             updated_at: undefined, // Remove updated_at as it's handled by backend
           };
-          console.log(body);
 
           const response = await API.patch("/api/users/update-user", body);
           if (response.status === 200) {

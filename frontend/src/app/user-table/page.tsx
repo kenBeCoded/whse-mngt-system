@@ -28,7 +28,6 @@ export function DemoPage() {
     if (error) {
       console.error("User store error:", error);
       // You can add toast notification here
-      // toast.error(error);
     }
   }, [error]);
 
@@ -75,8 +74,6 @@ export function DemoPage() {
       console.error("Failed to create user in component:", error);
     }
   };
-
-  console.log("users", users);
 
   // Show loading state
   if (isLoading && users.length === 0) {

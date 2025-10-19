@@ -1,4 +1,3 @@
-// login account
 import { Router, Request, Response } from "express";
 import { validateLogin } from "../validation/user/user-validation.js";
 import { UserModel } from "../models/User.js";
@@ -123,47 +122,5 @@ router.get(
     }
   }
 );
-
-// Register endpoint
-// router.post('/register', validateRegister, async (req: Request, res: Response) => {
-//   try {
-//     const { username, password, email } = req.body;
-
-//     // Check if user already exists
-//     const existingUser = await UserModel.findByUsername(username);
-//     if (existingUser) {
-//       return res.status(409).json({ message: 'Username already exists' });
-//     }
-
-//     // Create new user
-//     const newUser = await UserModel.create(username, password, email);
-
-//     // Generate tokens
-//     const tokenPayload = { userId: newUser.id, username: newUser.username };
-//     const accessToken = generateAccessToken(tokenPayload);
-//     const refreshToken = generateRefreshToken(tokenPayload);
-
-//     // Set refresh token cookie
-//     res.cookie('refreshToken', refreshToken, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === 'production',
-//       sameSite: 'strict',
-//       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-//     });
-
-//     res.status(201).json({
-//       message: 'User created successfully',
-//       accessToken,
-//       user: {
-//         id: newUser.id,
-//         username: newUser.username,
-//         email: newUser.email
-//       }
-//     });
-//   } catch (error) {
-//     console.error('Registration error:', error);
-//     res.status(500).json({ message: 'Internal server error' });
-//   }
-// });
 
 export default router;

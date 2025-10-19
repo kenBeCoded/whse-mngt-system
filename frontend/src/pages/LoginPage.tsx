@@ -8,11 +8,13 @@ function LoginPage() {
   const { user, login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
 
+  console.log("user", user)
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await login(username, password);
-      navigate("/admin/dashboard");
+      navigate("/admin");
     } catch (err) {
       // Error is handled by the AuthProvider
       console.log(err);
@@ -20,7 +22,7 @@ function LoginPage() {
   };
 
   if (user) {
-    return <Navigate to="/admin/dashboard" replace />;
+    return <Navigate to="/admin" replace />;
   }
 
   return (

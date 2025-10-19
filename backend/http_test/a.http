@@ -1,0 +1,13 @@
+post http://localhost:8000/api/users/create-user
+Content-Type: application/json
+
+{
+    "username":"test3",
+    "password":"test3",
+    "email":"test3@gmail.com",
+    "first_name":"test3 first name",
+    "middle_name":"test3 middle name",
+    "last_name":"test3 last name",
+    "gender":"male",
+    "user_profile_image_url":"test3 profile image url"
+}

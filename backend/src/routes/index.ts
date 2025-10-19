@@ -1,10 +1,12 @@
 import { Router } from "express";
 import userRoutes from "./sub-routes/users.js";
+import attendanceRoute from "./sub-routes/attendance.js"
 import authController from "../auth/authController.js"
 
 const router = Router();
 
 router.use("/users", userRoutes);
+router.use("/attendance", attendanceRoute)
 router.use("/auth", authController)
 
 // API info route
