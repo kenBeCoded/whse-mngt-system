@@ -44,12 +44,18 @@ export class Attendance {
     }
   }
 
-  /**
-   * Create or update attendance records based on update_code.
-   * update_code: 0 = create (check-in submitted)
-   *              1 = check-in update
-   *              2 = check-out update
-   */
+  static async get_attendance_records() {
+    try {
+      const insertQuery = `
+        SELECT 
+      `;
+
+      const result = await pool.query(insertQuery);
+      return result.rows || [];
+    } catch (error: any) {
+      throw new Error(`Failed to fetch attendance records: ${error.message}`);
+    }
+  }
 
   static async create_attendance_records(data: {
     username: string;
@@ -58,6 +64,12 @@ export class Attendance {
     image_capture_date?: string;
     update_code: number;
   }) {
+    /**
+     * Create or update attendance records based on update_code.
+     * update_code: 0 = create (check-in submitted)
+     *              1 = check-in update
+     *              2 = check-out update
+     */
     const client = await pool.connect();
     try {
       await client.query("BEGIN");
@@ -207,8 +219,18 @@ export class Attendance {
     attendance_date: string;
     id: number;
   }): Promise<any> {
-    console.log("data:", data);
-    if (data.update_code !== 0 && data.update_code !== 1 && data.update_code !== 2) {
+    /**
+     * update code:
+     * 0 - update status to pass
+     * 1 - update status to fail
+     * 2 - revert status to pending
+     */
+
+    if (
+      data.update_code !== 0 &&
+      data.update_code !== 1 &&
+      data.update_code !== 2
+    ) {
       throw new Error(
         `Missing or unsupported update code: ${data.update_code}`
       );
