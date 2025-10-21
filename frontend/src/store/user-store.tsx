@@ -74,6 +74,7 @@ export const useUserStore = create<UserState>()(
 
       // Add new user
       addUser: async (user) => {
+        return console.log(user);
         set({ isLoading: true, error: null });
 
         let imageUrl = null;
