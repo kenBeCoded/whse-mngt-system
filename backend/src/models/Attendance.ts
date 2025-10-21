@@ -47,7 +47,31 @@ export class Attendance {
   static async get_attendance_records() {
     try {
       const insertQuery = `
-        SELECT 
+      SELECT
+        ar.attendance_date,
+	      ar.check_in_time,
+	      ar.check_out_time,
+	      ar.is_audited,
+	      ar.status,
+        u.username,
+        u.user_account_id,
+	      u.username,
+	      u.first_name,
+	      u.middle_name,
+	      u.last_name,
+	      u.gender,
+	      u.user_profile_image_url,
+	      u.role,
+        ci.image_url AS check_in_image_url,
+        co.image_url AS check_out_image_url
+      FROM
+        attendance_records ar
+      LEFT JOIN
+        users u ON ar.user_id = u.id
+      LEFT JOIN
+        attendance_images ci ON ar.check_in_image_id = ci.id  -- Assuming 'id' is the primary key in attendance_images
+      LEFT JOIN
+        attendance_images co ON ar.check_out_image_id = co.id; -- Assuming 'id' is the primary key in attendance_images
       `;
 
       const result = await pool.query(insertQuery);
@@ -59,9 +83,9 @@ export class Attendance {
 
   static async create_attendance_records(data: {
     username: string;
-    image_url: string;
+    image_url: string; // url from supabase
     record_type: string;
-    image_capture_date?: string;
+    image_capture_date?: string; // from metadata of image
     update_code: number;
   }) {
     /**

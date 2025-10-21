@@ -44,18 +44,17 @@ export const useAttendanceStore = create<AttendanceState>()(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
-    //   fetchRecord: async () => {
-    //     set({ isLoading: true, error: null });
-    //     try {
-    //       const response = await API.get<AttendanceRecords[]>("/attendance");
-    //       set({ Attendance: response.data });
-    //     } catch (error) {
-    //       console.error("Failed to fetch attendance records:", error);
-    //       set({ error: error.message || "Failed to fetch attendance records" });
-    //     } finally {
-    //       set({ isLoading: false });
-    //     }
-    //   }
+      fetchRecord: async () => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await API.get(
+            "/api/attendance/get-attendance-record"
+          );
+          set({ Attendance: response.data });
+        } catch (error) {
+          set({ error: error.message || "Failed to fetch attendance records" });
+        }
+      },
     }),
     { name: "attendance-store" }
   )

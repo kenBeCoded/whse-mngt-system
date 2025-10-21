@@ -29,6 +29,8 @@ Content-Type: application/json
     "update_code": 2
 }
 
+# "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
+
 ###
 
 #? update check out details on attendance_record
@@ -41,4 +43,10 @@ Content-Type: application/json
     "update_code": 2
 }
 
-# "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
+###
+
+#? update check out details on attendance_record
+get http://localhost:8000/api/attendance/get-attendance-record
+Content-Type: application/json
+
+{}
