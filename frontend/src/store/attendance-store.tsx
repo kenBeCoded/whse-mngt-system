@@ -1,4 +1,4 @@
-import type { AttendanceRecords } from "@/app/attendance-table/columns";
+// import type { AttendanceRecords } from "@/app/attendance-table/columns";
 import axios from "axios";
 import { devtools } from "zustand/middleware/devtools";
 import { create } from "zustand/react";
@@ -6,6 +6,24 @@ import { create } from "zustand/react";
 const API = axios.create({
   withCredentials: true,
 });
+
+interface AttendanceRecords {
+  attendance_date: string;
+  check_in_time: string | null;
+  check_out_time?: string | null;
+  is_audited: boolean;
+  status: string;
+  username: string;
+  user_account_id: string;
+  first_name: string;
+  middle_name: string;
+  last_name: string;
+  gender: string;
+  user_profile_image_url: string;
+  role: string;
+  check_in_image_url: string | null;
+  check_out_image_url: string | null;
+}
 
 interface AttendanceState {
   // State

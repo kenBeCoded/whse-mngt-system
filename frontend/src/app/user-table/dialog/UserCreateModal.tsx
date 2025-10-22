@@ -1,8 +1,4 @@
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-import { useEffect, useState } from "react";
-=======
 import { useState, useRef } from "react";
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
 import type { Users } from "../columns";
 import { useForm } from "react-hook-form";
 import {
@@ -33,14 +29,7 @@ const userSchema = z.object({
   middle_name: z.string().optional(),
   last_name: z.string().min(1, "Last name is required"),
   gender: z.enum(["male", "female"]),
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-  // user_profile_image_url: z.string().optional(),
-  user_profile_image_url: z
-    .instanceof(File, { message: "Profile image must be a file" })
-    .optional(),
-=======
   user_profile_image_file: z.instanceof(File).optional(),
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
   role: z.string().min(1, "Role is required"),
 });
 
@@ -52,43 +41,8 @@ interface UserCreateModalProps {
 
 export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
   const [isOpen, setIsOpen] = useState(false);
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  useEffect(() => {
-    return () => {
-      if (previewUrl) {
-        URL.revokeObjectURL(previewUrl);
-      }
-    };
-  }, [previewUrl]);
-
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-    }
-    if (file && file.size <= 2 * 1024 * 1024) {
-      const newPreviewUrl = URL.createObjectURL(file);
-      setPreviewUrl(newPreviewUrl);
-      setValue("user_profile_image_url", file);
-    } else {
-      alert("Please select an image file under 2MB");
-      e.target.value = "";
-    }
-  };
-
-  const handleReset = () => {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      setPreviewUrl(null);
-    }
-    reset();
-    setIsOpen(false);
-  };
-=======
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
 
   const {
     register,
@@ -106,11 +60,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
       middle_name: "",
       last_name: "",
       gender: "male",
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-      user_profile_image_url: undefined,
-=======
       user_profile_image_file: undefined,
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
       role: "",
     },
   });
@@ -157,44 +107,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 py-4">
             {/* Profile Image Section */}
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-            {/* TODO PRIO : SUPABASE > apply the supabase upload image here as input file image maximum of 2mb size, make the input field box is clickable */}
-            {/* make the image preview box is clickable to open file dialog */}
-            <div className="md:col-span-1">
-              <div
-                className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2 cursor-pointer overflow-hidden"
-                onClick={() =>
-                  document.getElementById("picture-input")?.click()
-                }
-              >
-                {watch("user_profile_image_url") ? (
-                  <img
-                    src={previewUrl || ""}
-                    alt="Profile Preview"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <span className="text-gray-500">Click to upload</span>
-                )}
-              </div>
-              <Input
-                id="picture-input"
-                type="file"
-                className="hidden"
-                accept="image/jpeg,image/png,image/gif"
-                onChange={handleImageChange}
-              />
-              {errors.user_profile_image_url && (
-                <p className="text-red-500 text-sm mt-1">
-                  {errors.user_profile_image_url.message}
-                </p>
-              )}
-            </div>
-
-            {/* <div className="md:col-span-1">
-=======
             <div className="lg:col-span-1 flex flex-col items-center">
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
                 {previewImage ? (
                   <img
@@ -223,7 +136,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                   {errors.user_profile_image_file.message}
                 </p>
               )}
-            </div> */}
+            </div> 
 
             {/* Form Fields */}
             <div className="lg:col-span-1 space-y-3">
@@ -384,15 +297,11 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
             <Button
               variant="outline"
               type="button"
-<<<<<<< HEAD:frontend/src/app/user-table/modal/UserCreateModal.tsx
-              onClick={handleReset}
-=======
               onClick={() => {
                 setIsOpen(false);
                 setPreviewImage(null);
                 reset();
               }}
->>>>>>> 76d6e58687023e804aad8a812396035b0bd47e9b:frontend/src/app/user-table/dialog/UserCreateModal.tsx
               disabled={isSubmitting}
               className="w-full sm:w-auto"
             >
