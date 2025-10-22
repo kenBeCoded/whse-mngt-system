@@ -4,7 +4,7 @@ import { DataTable } from "./data-table";
 import { useUserStore } from "../../store/user-store";
 
 // TODO : to change function name
-export function DemoPage() {
+export function UsersPage() {
   const {
     users,
     isLoading,

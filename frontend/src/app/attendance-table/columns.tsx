@@ -1,43 +1,41 @@
-// type attendance_records
-
+// Import the type from the store instead of redefining it
 import type { ColumnDef } from "@tanstack/react-table";
+import type { AttendanceRecords } from "@/store/attendance-store";
 
-// user_id, attendance_date, check_in_image_id, check_in_time, check_out_image_id, check_out_time, is_audited, status, created_at, updated_at
-export type AttendanceRecords = {
-  user_id: string;
-  attendance_date: string; // ISO date string
-  check_in_image_id?: string;
-  check_in_time?: string; // ISO date string
-  check_out_image_id?: string;
-  check_out_time?: string; // ISO date string
-  is_audited: boolean;
-  status: "fail" | "pass" | "pending";
-  created_at: string; // ISO date string
-  updated_at: string; // ISO date string
-};
+// Remove the duplicate type definition and use the one from the store
 
-// type TableMeta = {
-//   <function> like update, create, delete, etc...
-// };
-
-// attendanceColumns ColumnDef<Users>
-// user_id, attendance_date, check_in_image_id, check_in_time, check_out_image_id, check_out_time, is_audited, status, created_at, updated_at
-export const attendanceColumns: ColumnDef<AttendanceRecords>[] = [
-  {
-    accessorKey: "user_id",
-    header: "User ID",
-  },
+export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
   {
     accessorKey: "attendance_date",
     header: "Attendance Date",
+    cell: ({ row }) =>
+      new Date(row.original.attendance_date).toLocaleDateString(),
   },
+  {
+    accessorKey: "user_account_id",
+    header: "User ID",
+  },
+  {
+    header: "Full Name",
+    accessorFn: (row) =>
+      `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim(),
+  },
+
   {
     accessorKey: "check_in_time",
     header: "Check-In Time",
+    cell: ({ row }) =>
+      row.original.check_in_time
+        ? new Date(row.original.check_in_time).toLocaleTimeString()
+        : "N/A",
   },
   {
     accessorKey: "check_out_time",
     header: "Check-Out Time",
+    cell: ({ row }) =>
+      row.original.check_out_time
+        ? new Date(row.original.check_out_time).toLocaleTimeString()
+        : "N/A",
   },
   {
     accessorKey: "is_audited",
@@ -47,13 +45,18 @@ export const attendanceColumns: ColumnDef<AttendanceRecords>[] = [
   {
     accessorKey: "status",
     header: "Status",
-  },
-  {
-    accessorKey: "created_at",
-    header: "Created At",
-  },
-  {
-    accessorKey: "updated_at",
-    header: "Updated At",
+    cell: ({ row }) => {
+      const status = row.original.status;
+      const statusColors = {
+        pass: "text-green-600",
+        fail: "text-red-600",
+        pending: "text-yellow-600",
+      };
+      return (
+        <span className={statusColors[status as keyof typeof statusColors]}>
+          {status.toUpperCase()}
+        </span>
+      );
+    },
   },
 ];

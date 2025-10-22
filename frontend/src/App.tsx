@@ -13,7 +13,8 @@ import HomePage from "./pages/HomePage";
 // import AppPage from "./pages/AppPage";
 import Page from "./app/dashboard";
 import { ThemeProvider } from "./components/theme-provider";
-import { DemoPage } from "./app/user-table/page";
+import { UsersPage } from "./app/user-table/page";
+import { AttendanceRecordsPage } from "./app/attendance-table/page";
 
 function App() {
   return (
@@ -52,7 +53,11 @@ function App() {
                 <Route element={<Navigate to="admin" />} />
                 <Route path="admin" element={<Page />}>
                   <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="users" element={<DemoPage />} />
+                  <Route path="users" element={<UsersPage />} />
+                  <Route
+                    path="attendance-records"
+                    element={<AttendanceRecordsPage />}
+                  />
                 </Route>
                 {/* Example nested routes - extend with your full nav structure */}
 

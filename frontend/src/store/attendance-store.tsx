@@ -1,16 +1,15 @@
-// import type { AttendanceRecords } from "@/app/attendance-table/columns";
 import axios from "axios";
-import { devtools } from "zustand/middleware/devtools";
+import { devtools } from "zustand/middleware";
 import { create } from "zustand/react";
 
 const API = axios.create({
   withCredentials: true,
 });
 
-interface AttendanceRecords {
+export interface AttendanceRecords {
   attendance_date: string;
   check_in_time: string | null;
-  check_out_time?: string | null;
+  check_out_time: string | null;
   is_audited: boolean;
   status: string;
   username: string;
@@ -68,9 +67,15 @@ export const useAttendanceStore = create<AttendanceState>()(
           const response = await API.get(
             "/api/attendance/get-attendance-record"
           );
-          set({ Attendance: response.data });
+          set({ Attendance: response.data.data });
         } catch (error) {
-          set({ error: error.message || "Failed to fetch attendance records" });
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch attendance records";
+          set({ error: errorMessage });
+        } finally {
+          set({ isLoading: false });
         }
       },
     }),
