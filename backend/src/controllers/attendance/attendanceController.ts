@@ -52,7 +52,24 @@ export const getAttendanceRecord = async (
 
     res
       .status(200)
-      .json({ message: "Attendance updated successfully", data: result });
+      .json({ message: "Attendance fetch successfully", data: result });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetAttendanceRecord = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { body } = req;
+  try {
+    const result = await Attendance.reset_attendance_record(body);
+
+    res
+      .status(200)
+      .json({ message: "Attendance reset successfully", data: result });
   } catch (error) {
     next(error);
   }

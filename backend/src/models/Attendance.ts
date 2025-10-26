@@ -1,14 +1,15 @@
 import { PoolClient } from "pg";
 import pool from "../config/database.js";
 import { UserModel } from "./User.js";
+import { formatDateToYYYYMMDD } from "../utils/formatDate.js";
 
 export class Attendance {
   private static async create_attendance_img(
     data: {
-      image_url: string;
-      record_type: string;
+      image_url: string; // url from supabase
+      record_type: string; // check_in or check_out
       user_id: number;
-      image_capture_date?: string;
+      image_capture_date?: string; // from metadata of image
     },
     clientParam?: PoolClient
   ) {
@@ -48,6 +49,7 @@ export class Attendance {
     try {
       const insertQuery = `
       SELECT
+        ar.id,
         ar.attendance_date,
 	      ar.check_in_time,
 	      ar.check_out_time,
@@ -84,15 +86,16 @@ export class Attendance {
   static async create_attendance_records(data: {
     username: string;
     image_url: string; // url from supabase
-    record_type: string;
-    image_capture_date?: string; // from metadata of image
+    record_type: string; // check_in or check_out
     update_code: number;
+    selected_date: string;
+    image_capture_date?: string; // from metadata of image
   }) {
     /**
      * Create or update attendance records based on update_code.
      * update_code: 0 = create (check-in submitted)
-     *              1 = check-in update
-     *              2 = check-out update
+     * 1 = check-in update
+     * 2 = check-out update
      */
     const client = await pool.connect();
     try {
@@ -104,24 +107,15 @@ export class Attendance {
         return { message: "user not found" };
       }
 
-      // return console.log("user",user)
-
-      // Insert attendance image within this transaction and get the image row
-      const imageRow = await this.create_attendance_img(
-        {
-          image_url: data.image_url,
-          record_type: data.record_type.toLowerCase(),
-          user_id: user.id,
-          image_capture_date: data.image_capture_date,
-        },
-        client
-      );
+      // Variable to hold the newly created image row
+      let imageRow: any;
+      let attendanceRecord;
 
       // Derive the attendance_date (DATE) from image_capture_date if provided, else use current date
       const attendanceDateObj = data.image_capture_date
         ? new Date(data.image_capture_date)
         : new Date();
-      const attendance_date = attendanceDateObj.toISOString().split("T")[0];
+      const attendance_date = attendanceDateObj.toLocaleString().split("T")[0];
 
       // Use the provided image_capture_date as timestamp for check times, else CURRENT_TIMESTAMP
       const imageTimestamp = data.image_capture_date
@@ -161,70 +155,128 @@ export class Attendance {
         return res.rows[0];
       };
 
-      let attendanceRecord;
+      const targetDate = formatDateToYYYYMMDD(new Date(data.selected_date));
 
-      if (data.update_code === 0) {
-        // Create a new attendance record for check-in
-        attendanceRecord = await createRecord({
-          check_in_image_id: imageRow.id,
-          check_in_time: imageTimestamp,
-          status: "pending",
-        });
-      } else if (data.update_code === 1) {
-        // Update check-in fields on existing record
-        const updateQ = `
-          UPDATE attendance_records
-          SET check_in_image_id = $1,
-              check_in_time = $2,
-              updated_at = CURRENT_TIMESTAMP
-          WHERE user_id = $3 AND attendance_date = $4
-          RETURNING *;
-        `;
-        const res = await client.query(updateQ, [
-          imageRow.id,
-          imageTimestamp,
-          user.id,
-          attendance_date,
-        ]);
-        if (res.rowCount === 0) {
-          // No existing record -> create one
+      // First check if record exists
+      const checkQuery = `
+            SELECT id FROM attendance_records
+            WHERE user_id = $1 AND attendance_date = $2;
+          `;
+      const { rowCount: checkRowCount } = await client.query(checkQuery, [
+        user.id,
+        targetDate,
+      ]);
+
+      // Use a switch statement for update_code logic
+      switch (data.update_code) {
+        case 0:
+          // create (check-in submitted)
+          // Create Image Record
+          imageRow = await this.create_attendance_img(
+            {
+              image_url: data.image_url,
+              record_type: data.record_type.toLowerCase(),
+              user_id: user.id,
+              image_capture_date: data.image_capture_date,
+            },
+            client
+          );
+
           attendanceRecord = await createRecord({
             check_in_image_id: imageRow.id,
             check_in_time: imageTimestamp,
             status: "pending",
           });
-        } else {
-          attendanceRecord = res.rows[0];
-        }
-      } else if (data.update_code === 2) {
-        // Update check-out fields on existing record
-        const updateQ = `
-          UPDATE attendance_records
-          SET check_out_image_id = $1,
-              check_out_time = $2,
-              updated_at = CURRENT_TIMESTAMP
-          WHERE user_id = $3 AND attendance_date = $4
-          RETURNING *;
-        `;
-        const res = await client.query(updateQ, [
-          imageRow.id,
-          imageTimestamp,
-          user.id,
-          attendance_date,
-        ]);
-        if (res.rowCount === 0) {
-          // No existing record -> create one with check_out fields
-          attendanceRecord = await createRecord({
-            check_out_image_id: imageRow.id,
-            check_out_time: imageTimestamp,
-            status: "pending",
-          });
-        } else {
-          attendanceRecord = res.rows[0];
-        }
-      } else {
-        await client.query("ROLLBACK");
-        throw new Error(`Unsupported update_code: ${data.update_code}`);
+          break;
+
+        case 1:
+          // check-in update
+          if (checkRowCount === 0) {
+            // No existing record found, rollback and throw error
+            await client.query("ROLLBACK");
+            throw new Error(
+              `No attendance record found for user ${user.id} on ${targetDate}. Cannot check out without checking in first.`
+            );
+          }
+
+          imageRow = await this.create_attendance_img(
+            {
+              image_url: data.image_url,
+              record_type: data.record_type.toLowerCase(),
+              user_id: user.id,
+              image_capture_date: data.image_capture_date,
+            },
+            client
+          );
+
+          const updateQ1 = `
+            UPDATE attendance_records
+            SET check_in_image_id = $1,
+                check_in_time = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = $3 AND attendance_date = $4
+            RETURNING *;
+          `;
+          const res1 = await client.query(updateQ1, [
+            imageRow.id,
+            imageTimestamp,
+            user.id,
+            targetDate,
+          ]);
+
+          if (res1.rowCount === 0) {
+            // No existing record -> create one
+            attendanceRecord = await createRecord({
+              check_in_image_id: imageRow.id,
+              check_in_time: imageTimestamp,
+              status: "pending",
+            });
+          } else {
+            attendanceRecord = res1.rows[0];
+          }
+          break;
+
+        case 2:
+          if (checkRowCount === 0) {
+            // No existing record found, rollback and throw error
+            await client.query("ROLLBACK");
+            throw new Error(
+              `No attendance record found for user ${user.id} on ${targetDate}. Cannot check out without checking in first.`
+            );
+          }
+
+          // Record exists, create image
+          imageRow = await this.create_attendance_img(
+            {
+              image_url: data.image_url,
+              record_type: data.record_type.toLowerCase(),
+              user_id: user.id,
+              image_capture_date: data.image_capture_date,
+            },
+            client
+          );
+
+          const updateQ2 = `
+            UPDATE attendance_records
+            SET check_out_image_id = $1,
+                check_out_time = $2,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE user_id = $3 AND attendance_date = $4
+            RETURNING *;
+          `;
+          const res2 = await client.query(updateQ2, [
+            imageRow.id,
+            imageTimestamp,
+            user.id,
+            targetDate,
+          ]);
+
+          attendanceRecord = res2.rows[0];
+          break;
+
+        default:
+          await client.query("ROLLBACK");
+          throw new Error(`Unsupported update_code: ${data.update_code}`);
       }
 
       await client.query("COMMIT");
@@ -250,6 +302,7 @@ export class Attendance {
      * 2 - revert status to pending
      */
 
+    // This block remains the same for initial validation
     if (
       data.update_code !== 0 &&
       data.update_code !== 1 &&
@@ -268,35 +321,75 @@ export class Attendance {
         RETURNING *;
       `;
 
-      if (data.update_code === 0) {
-        const result = await pool.query(updateQuery, [
-          true,
-          "pass",
-          data.id,
-          data.attendance_date,
-        ]);
-        return result.rows[0] || null;
-      } else if (data.update_code === 1) {
-        const result = await pool.query(updateQuery, [
-          true,
-          "fail",
-          data.id,
-          data.attendance_date,
-        ]);
-        return result.rows[0] || null;
-      } else if (data.update_code === 2) {
-        const result = await pool.query(updateQuery, [
-          false,
-          "pending",
-          data.id,
-          data.attendance_date,
-        ]);
-        return result.rows[0] || null;
-      } else {
-        throw new Error(`Unsupported update_code: ${data.update_code}`);
+      let result;
+      // Convert if/else if chain to a switch statement
+      switch (data.update_code) {
+        case 0:
+          // Update status to 'pass' and set is_audited to true
+          result = await pool.query(updateQuery, [
+            true,
+            "pass",
+            data.id,
+            data.attendance_date,
+          ]);
+          break;
+        case 1:
+          // Update status to 'fail' and set is_audited to true
+          result = await pool.query(updateQuery, [
+            true,
+            "fail",
+            data.id,
+            data.attendance_date,
+          ]);
+          break;
+        case 2:
+          // Revert status to 'pending' and set is_audited to false
+          result = await pool.query(updateQuery, [
+            false,
+            "pending",
+            data.id,
+            data.attendance_date,
+          ]);
+          break;
+        default:
+          // This should be caught by the initial check, but included for robustness
+          throw new Error(`Unsupported update_code: ${data.update_code}`);
       }
+
+      return result.rows[0] || null;
     } catch (error) {
       console.error("audit_attendance_update failed:", error);
+      throw error;
+    }
+  }
+
+  static async reset_attendance_record(data: { id: number }) {
+    console.log("data.id", data.id);
+    try {
+      const insertQuery = `
+      UPDATE ATTENDANCE_RECORDS
+      SET
+        CHECK_IN_IMAGE_ID = NULL,
+        CHECK_IN_TIME = NULL,
+        CHECK_OUT_IMAGE_ID = NULL,
+        CHECK_OUT_TIME = NULL,
+        IS_AUDITED = FALSE,
+        STATUS = 'pending'
+      WHERE
+        ID = $1
+      RETURNING
+        *
+      `;
+
+      const { rowCount, rows } = await pool.query(insertQuery, [data.id]);
+
+      if (rowCount === 0) {
+        throw new Error(`No attendance record found to update!`);
+      }
+
+      return rows[0] || null;
+    } catch (error) {
+      console.error("reset_attendance_record:", error);
       throw error;
     }
   }
