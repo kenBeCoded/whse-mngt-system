@@ -11,7 +11,7 @@ const router = Router();
 
 router.post("/create-attendance-record", createAttendanceRec);
 router.patch("/audit-attendance-update", auditAttendanceUpdate);
-router.get("/get-attendance-record", getAttendanceRecord);
+router.post("/get-attendance-record", getAttendanceRecord);
 router.patch("/reset-attendance-record", resetAttendanceRecord);
 
 export default router;

@@ -36,7 +36,7 @@ interface AttendanceState {
   setError: (error: string | null) => void;
 
   // User CRUD operations
-  fetchRecord: () => Promise<void>;
+  fetchRecord: (user_id: number) => Promise<void>;
   //   addUser: (user: Omit<Users, "user_account_id">) => Promise<void>;
   //   updateUser: (updatedUser: Users) => Promise<void>;
   //   deleteUser: (username: string) => Promise<void>;
@@ -50,7 +50,7 @@ interface AttendanceState {
 
 export const useAttendanceStore = create<AttendanceState>()(
   devtools(
-    (set, get) => ({
+    (set) => ({
       // Initial State
       Attendance: [],
       isLoading: false,
@@ -61,11 +61,18 @@ export const useAttendanceStore = create<AttendanceState>()(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
-      fetchRecord: async () => {
+      fetchRecord: async (user_id) => {
+        if (!user_id) {
+          // Handle case where user is not logged in or ID is missing
+          set({ isLoading: false, error: "User is not authenticated." });
+          return;
+        }
+
         set({ isLoading: true, error: null });
         try {
-          const response = await API.get(
-            "/api/attendance/get-attendance-record"
+          const response = await API.post(
+            "/api/attendance/get-attendance-record",
+            { request_code: 1, user_id: user_id }
           );
           set({ Attendance: response.data.data });
         } catch (error) {
@@ -78,6 +85,8 @@ export const useAttendanceStore = create<AttendanceState>()(
           set({ isLoading: false });
         }
       },
+      clearError: () => set({ error: null }),
+      reset: () => set({ Attendance: [], isLoading: false, error: null }),
     }),
     { name: "attendance-store" }
   )

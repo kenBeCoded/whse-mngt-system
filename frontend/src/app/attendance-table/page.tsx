@@ -2,14 +2,22 @@ import { useAttendanceStore } from "@/store/attendance-store";
 import { useEffect } from "react";
 import { DataTable } from "./data-table";
 import { attendanceColumns } from "./columns";
+import { useAuth } from "@/hooks/useAuth";
 
 export function AttendanceRecordsPage() {
-  const { Attendance, isLoading, error, fetchRecord, clearError } =
-    useAttendanceStore();
+  const { Attendance, isLoading, error, fetchRecord } = useAttendanceStore();
+
+  const { user } = useAuth();
 
   useEffect(() => {
-    fetchRecord();
-  }, [fetchRecord]);
+    // 1. Null Check: Ensure user and user.id exist before proceeding.
+    if (user?.id) {
+      // 2. Type Correction: Pass user.id as a string if fetchRecord expects string,
+      //    or parse it to a number if fetchRecord was updated to accept number.
+      //    Assuming the original store change was to accept a string (which is typical for user IDs).
+      fetchRecord(user.id);
+    }
+  }, [fetchRecord, user?.id]); // 3. Dependency Array: Include user?.id to re-run when the user logs in/out.
 
   useEffect(() => {
     if (error) {
