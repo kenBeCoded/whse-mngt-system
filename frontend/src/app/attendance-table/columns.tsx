@@ -1,6 +1,7 @@
 // Import the type from the store instead of redefining it
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AttendanceRecords } from "@/store/attendance-store";
+import { Badge } from "@/components/ui/badge";
 
 // Remove the duplicate type definition and use the one from the store
 
@@ -47,15 +48,36 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     header: "Status",
     cell: ({ row }) => {
       const status = row.original.status;
-      const statusColors = {
-        pass: "text-green-600",
-        fail: "text-red-600",
-        pending: "text-yellow-600",
-      };
+
+      // Define variants or classes for your badges
+      let variant: "default" | "secondary" | "destructive" | "outline" =
+        "default";
+      let className = "";
+
+      switch (status) {
+        case "pass":
+          // Use a green background for 'pass'
+          className = "bg-green-100 text-green-700 hover:bg-green-100/80";
+          variant = "default"; // or keep it as 'default' for custom styling
+          break;
+        case "fail":
+          // Use the 'destructive' variant or a custom red class
+          variant = "destructive";
+          break;
+        case "pending":
+          // Use a yellow/amber background for 'pending'
+          className = "bg-yellow-100 text-yellow-700 hover:bg-yellow-100/80";
+          variant = "default";
+          break;
+        default:
+          variant = "outline";
+          break;
+      }
+
       return (
-        <span className={statusColors[status as keyof typeof statusColors]}>
+        <Badge variant={variant} className={className}>
           {status.toUpperCase()}
-        </span>
+        </Badge>
       );
     },
   },

@@ -13,8 +13,8 @@ Content-Type: application/json
     "username": "test1",
     "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
     "record_type": "check_in",
-    "image_capture_date": "2025-10-13T12:34:33.205Z",
-    "selected_date": "2025-10-13T12:34:33.205Z",
+    "image_capture_date": "2025-10-17T12:34:33.205Z",
+    "selected_date": "2025-10-17T12:34:33.205Z",
     "update_code": 0
 }
 
@@ -26,8 +26,8 @@ Content-Type: application/json
     "username": "test1",
     "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
     "record_type": "check_out",
-    "image_capture_date": "2025-10-12T12:34:33.205Z",
-    "selected_date": "2025-10-12T08:03:55.618Z",
+    "image_capture_date": "2025-10-17T12:34:33.205Z",
+    "selected_date": "2025-10-17T08:03:55.618Z",
     "update_code": 2
 }
 
@@ -36,13 +36,19 @@ Content-Type: application/json
 ###
 
 #? update check out details on attendance_record
+
+# update code:
+#   0 - update status to pass
+#   1 - update status to fail
+#   2 - revert status to pending
+
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
 
 {
-    "id": 34,
-    "attendance_date": "2025-10-11",
-    "update_code": 1
+    "id": 12,
+    "attendance_date": "2025-10-17",
+    "update_code": 0
 }
 
 ###

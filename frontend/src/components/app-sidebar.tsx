@@ -30,7 +30,7 @@ const data = {
       title: "Option",
       url: "/admin",
       items: [
-        { title: "dashboard", url: "/admin/dashboard" },
+        { title: "Dashboard", url: "/admin/dashboard" },
         { title: "Demo", url: "/admin/users" },
       ],
     },
