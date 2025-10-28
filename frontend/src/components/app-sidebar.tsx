@@ -21,21 +21,9 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
+import { navigationData } from "@/config/navigation";
 
 // This is sample data with updated URLs (adjust to your routes)
-const data = {
-  versions: ["1.0.1", "1.1.0-alpha", "2.0.0-beta1"],
-  navMain: [
-    {
-      title: "Option",
-      url: "/admin",
-      items: [
-        { title: "Dashboard", url: "/admin/dashboard" },
-        { title: "Demo", url: "/admin/users" },
-      ],
-    },
-  ],
-};
 
 interface NavItem {
   title: string;
@@ -82,15 +70,15 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     // e.g., navigate(`/search?q=${query}`)
   };
 
-  const filteredNavMain = filterSections(data.navMain, searchQuery);
+  const filteredNavMain = filterSections(navigationData.navMain, searchQuery);
   const hasSearchResults = searchQuery.trim() !== "";
 
   return (
     <Sidebar {...props} className="border-r">
       <SidebarHeader className="border-b px-4 py-3">
         <VersionSwitcher
-          versions={data.versions}
-          defaultVersion={data.versions[0]}
+          versions={navigationData.versions}
+          defaultVersion={navigationData.versions[0]}
         />
         <SearchForm
           value={searchQuery}
@@ -128,7 +116,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ) : (
           // Normal collapsible navigation
-          data.navMain.map((item) => (
+          navigationData.navMain.map((item) => (
             <Collapsible
               key={item.title}
               defaultOpen={isActive(item.url)} // Auto-open active section

@@ -113,6 +113,7 @@ router.get(
       res.json({
         id: user.id,
         username: user.username,
+        role: user.role,
         createdAt: user.created_at,
         updatedAt: user.updated_at,
       });

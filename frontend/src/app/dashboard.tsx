@@ -16,24 +16,14 @@ import {
 } from "@/components/ui/sidebar";
 import React from "react";
 import { Outlet, useLocation } from "react-router-dom";
-
-// Navigation data structure (should match the one in app-sidebar.tsx)
-const navData = {
-  navMain: [
-    {
-      title: "Option",
-      url: "s",
-      items: [
-        { title: "dashboard", url: "dashboard" },
-        { title: "Demo", url: "users" },
-      ],
-    },
-  ],
-};
+import { navigationData } from "../config/navigation";
 
 export default function Page() {
   const location = useLocation();
   const pathname = location.pathname;
+
+  console.log("pathname", pathname);
+  console.log("location", location);
 
   const getBreadcrumbs = () => {
     // Handle root/home
@@ -42,7 +32,7 @@ export default function Page() {
     }
 
     // Search through nav structure to find matching path
-    for (const section of navData.navMain) {
+    for (const section of navigationData.navMain) {
       // Check if we're on a section page
       if (pathname === section.url || pathname === `/${section.url}`) {
         return [{ title: section.title, isCurrent: true }];
@@ -74,15 +64,27 @@ export default function Page() {
     }
 
     // Capitalize and format segments as breadcrumbs
-    return segments.map((segment, index) => ({
-      title:
-        segment.charAt(0).toUpperCase() + segment.slice(1).replace(/-/g, " "),
-      href: "/" + segments.slice(0, index + 1).join("/"),
-      isCurrent: index === segments.length - 1,
-    }));
+    return segments.map((segment, index) => {
+      // 1. Replace hyphens with spaces
+      const spacedSegment = segment.replace(/-/g, " ");
+
+      // 2. Capitalize the first letter of every word using a regex
+      const title = spacedSegment.replace(/\b\w/g, (char) =>
+        char.toUpperCase()
+      );
+
+      return {
+        title: title,
+        // Construct the full path up to this segment
+        href: "/" + segments.slice(0, index + 1).join("/"),
+        isCurrent: index === segments.length - 1,
+      };
+    });
   };
 
   const breadcrumbs = getBreadcrumbs();
+
+  console.log(breadcrumbs);
 
   return (
     <SidebarProvider>

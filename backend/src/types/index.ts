@@ -13,6 +13,7 @@ export interface User {
   user_profile_image_url?: string;
   created_at: Date;
   updated_at: Date;
+  role: string;
 }
 
 export interface AuthenticatedRequest extends Request {

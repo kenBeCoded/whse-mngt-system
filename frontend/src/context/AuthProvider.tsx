@@ -1,9 +1,12 @@
-import { createContext, useState, useEffect, type ReactNode } from "react";
+import { createContext, useState, useEffect, type ReactNode, use } from "react";
 import { authService } from "../services/userService";
 import type { AxiosError } from "axios";
 interface User {
   id: number;
   username: string;
+  role: string;
+  updatedAt: string;
+  createdAt: string;
 }
 interface AuthContextType {
   user: User | null;

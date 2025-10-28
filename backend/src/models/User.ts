@@ -2,8 +2,6 @@ import pool from "../config/database.js";
 import bcrypt from "bcrypt";
 import { User } from "../types/index.js";
 
-// TODO PRIO : need put all of func try catch
-
 type UserWithoutPassword = Omit<User, "password_hash">;
 
 export class UserModel {
@@ -152,7 +150,8 @@ export class UserModel {
           gender,
           user_profile_image_url,
           created_at,
-          updated_at
+          updated_at,
+          role
       FROM users
       WHERE username = $1
       `;

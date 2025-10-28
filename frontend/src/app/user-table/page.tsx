@@ -3,7 +3,6 @@ import { userColumns, type Users } from "./columns";
 import { DataTable } from "./data-table";
 import { useUserStore } from "../../store/user-store";
 
-// TODO : to change function name
 export function UsersPage() {
   const {
     users,
@@ -63,7 +62,6 @@ export function UsersPage() {
     }
   };
 
-  // TODO PRIO : <onCreate1> create onCreate function here transfer to DataTable
   const handleCreateUser = async (newUser: Omit<Users, "user_account_id">) => {
     try {
       // console.log("newUser", newUser);
