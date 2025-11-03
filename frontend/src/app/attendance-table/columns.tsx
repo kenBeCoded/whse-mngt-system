@@ -9,8 +9,7 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
   {
     accessorKey: "attendance_date",
     header: "Attendance Date",
-    cell: ({ row }) =>
-      new Date(row.original.attendance_date).toLocaleDateString(),
+    accessorFn: (row) => new Date(row.attendance_date).toLocaleDateString(),
   },
   {
     accessorKey: "user_account_id",
@@ -21,7 +20,6 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     accessorFn: (row) =>
       `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim(),
   },
-
   {
     accessorKey: "check_in_time",
     header: "Check-In Time",

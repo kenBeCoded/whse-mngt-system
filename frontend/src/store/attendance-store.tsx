@@ -48,6 +48,7 @@ interface AttendanceState {
   reset: () => void;
 }
 
+
 export const useAttendanceStore = create<AttendanceState>()(
   devtools(
     (set) => ({
@@ -72,7 +73,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         try {
           const response = await API.post(
             "/api/attendance/get-attendance-record",
-            { request_code: 1, user_id: user_id }
+            { request_code: 0, user_id: user_id }
           );
           set({ Attendance: response.data.data });
         } catch (error) {

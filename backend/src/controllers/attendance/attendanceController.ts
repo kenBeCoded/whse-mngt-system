@@ -52,10 +52,6 @@ export const getAttendanceRecord = async (
       body: { request_code, user_id },
     } = req;
 
-    //! for delete
-    console.log(request_code);
-    // return;
-
     // 0: get all (use for audit access account)
     // 1: get by user id (use for viewwing payroll)
     let result;
@@ -63,6 +59,7 @@ export const getAttendanceRecord = async (
     switch (parseInt(request_code)) {
       case 0:
         result = await Attendance.get_attendance_records();
+
         break;
 
       case 1:
@@ -74,8 +71,6 @@ export const getAttendanceRecord = async (
       default:
         throw new Error(`Unsupported request_code: ${request_code}`);
     }
-
-    // const result = await Attendance.get_attendance_records();
 
     res
       .status(200)
