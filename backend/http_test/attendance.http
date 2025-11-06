@@ -46,9 +46,9 @@ patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
 
 {
-    "id": 12,
-    "attendance_date": "2025-10-17",
-    "update_code": 0
+    "id": 34,
+    "attendance_date": "2025-10-09",
+    "update_code": 2
 }
 
 ###

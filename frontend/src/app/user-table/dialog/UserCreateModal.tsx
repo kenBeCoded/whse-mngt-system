@@ -31,6 +31,8 @@ const userSchema = z.object({
   gender: z.enum(["male", "female"]),
   user_profile_image_file: z.instanceof(File).optional(),
   role: z.string().min(1, "Role is required"),
+  u_sched_in: z.string().optional(),
+  u_sched_out: z.string().optional(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -62,6 +64,8 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
       gender: "male",
       user_profile_image_file: undefined,
       role: "",
+      u_sched_in: undefined,
+      u_sched_out: undefined,
     },
   });
 
@@ -136,7 +140,7 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                   {errors.user_profile_image_file.message}
                 </p>
               )}
-            </div> 
+            </div>
 
             {/* Form Fields */}
             <div className="lg:col-span-1 space-y-3">
@@ -256,6 +260,44 @@ export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {
                   {errors.email && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.email.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Sched In & Out */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="u_sched_in" className="text-sm">
+                    Schedule In
+                  </Label>
+                  <Input
+                    id="u_sched_in"
+                    type="time"
+                    {...register("u_sched_in")}
+                    disabled={isSubmitting}
+                    className="mt-1"
+                  />
+                  {errors.u_sched_in && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.u_sched_in.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="u_sched_out" className="text-sm">
+                    Schedule Out
+                  </Label>
+                  <Input
+                    id="u_sched_out"
+                    type="time"
+                    {...register("u_sched_out")}
+                    disabled={isSubmitting}
+                    className="mt-1"
+                  />
+                  {errors.u_sched_out && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.u_sched_out.message}
                     </p>
                   )}
                 </div>

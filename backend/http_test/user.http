@@ -40,14 +40,14 @@ Content-Type: application/json
 # }
 
 {
-    "username":"test1",
-    "password":"test1",
-    "email":"test1@gmail.com",
-    "first_name":"test1 first name",
-    "middle_name":"test1 middle name",
-    "last_name":"test1 last name",
+    "username":"test6",
+    "password":"test6",
+    "email":"test6@gmail.com",
+    "first_name":"test6",
+    "middle_name":"test6",
+    "last_name":"test6",
     "gender":"male",
-    "user_profile_image_url":"test1 profile image url"
+    "user_profile_image_url":"test6 profile image url"
 }
 
 # no password 

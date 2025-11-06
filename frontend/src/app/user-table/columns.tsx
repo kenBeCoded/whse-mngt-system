@@ -16,6 +16,8 @@ export type Users = {
   role: string;
   updated_at: string;
   created_at: string;
+  u_sched_in?: string;
+  u_sched_out?: string;
 };
 
 // Add a lightweight TableMeta type so we can access table.options.meta?.onSave safely
@@ -60,9 +62,13 @@ export const userColumns: ColumnDef<Users>[] = [
     //   }${user.last_name}`;
     // },
     accessorFn: (row) => {
-  const fullName = `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim();
-  return fullName.length > 20 ? fullName.substring(0, 20) + '...' : fullName;
-}
+      const fullName = `${row.first_name} ${row.middle_name || ""} ${
+        row.last_name
+      }`.trim();
+      return fullName.length > 20
+        ? fullName.substring(0, 20) + "..."
+        : fullName;
+    },
   },
   {
     accessorKey: "gender",
@@ -75,7 +81,7 @@ export const userColumns: ColumnDef<Users>[] = [
   {
     accessorKey: "updated_at",
     header: "Last Updated",
-    accessorFn: (row) => new Date(row.updated_at).toLocaleString(), 
+    accessorFn: (row) => new Date(row.updated_at).toLocaleString(),
   },
   {
     id: "actions",

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import type { Users } from "../columns";
 import { useUserStore } from "@/store/user-store";
 import { useForm } from "react-hook-form";
@@ -31,11 +31,14 @@ const userSchema = z.object({
   first_name: z.string().min(1, "First name is required"),
   middle_name: z.string(),
   last_name: z.string().min(1, "Last name is required"),
+  user_profile_image_file: z.instanceof(File).optional(),
   gender: z.enum(["male", "female"]),
   user_profile_image_url: z.string(),
   role: z.string(),
   updated_at: z.string(),
   created_at: z.string(),
+  u_sched_in: z.string().optional(),
+  u_sched_out: z.string().optional(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -51,6 +54,19 @@ export const UserDetailsModal = ({
   const [isOpen, setIsOpen] = useState(false);
 
   const { deleteUser, isLoading } = useUserStore();
+
+  const [previewImage, setPreviewImage] = useState<string | null>(
+    user.user_profile_image_url ?? null
+  );
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setValue("user_profile_image_file", file);
+      setPreviewImage(URL.createObjectURL(file));
+    }
+  };
 
   const {
     register,
@@ -73,6 +89,7 @@ export const UserDetailsModal = ({
 
   const onSubmit = async (data: UserFormData) => {
     try {
+      console.log("data:", data);
       await onSave(data);
       setIsOpen(false);
     } catch (error) {
@@ -91,6 +108,8 @@ export const UserDetailsModal = ({
   };
 
   const genderValue = watch("gender");
+
+  console.log("user",user)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -112,9 +131,9 @@ export const UserDetailsModal = ({
             {/* Profile Image Section */}
             <div className="lg:col-span-1 flex flex-col items-center">
               <div className="w-32 h-32 bg-gray-200 border-2 border-dashed border-gray-300 rounded flex items-center justify-center mb-2">
-                {user.user_profile_image_url ? (
+                {previewImage ? (
                   <img
-                    src={user.user_profile_image_url}
+                    src={previewImage}
                     alt="Profile"
                     className="w-full h-full object-cover rounded"
                   />
@@ -122,6 +141,23 @@ export const UserDetailsModal = ({
                   <span className="text-sm text-gray-500">No Image</span>
                 )}
               </div>
+              <Label htmlFor="user_profile_image_file" className="text-sm mb-1">
+                Profile Image
+              </Label>
+              <Input
+                id="user_profile_image_file"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                ref={fileInputRef}
+                disabled={isSubmitting || isLoading}
+                className="max-w-[200px]"
+              />
+              {errors.user_profile_image_file && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.user_profile_image_file.message}
+                </p>
+              )}
             </div>
 
             {/* Form Fields */}
@@ -225,6 +261,44 @@ export const UserDetailsModal = ({
                   {errors.email && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.email.message}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Sched In & Out */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label htmlFor="u_sched_in" className="text-sm">
+                    Schedule In
+                  </Label>
+                  <Input
+                    id="u_sched_in"
+                    type="time"
+                    {...register("u_sched_in")}
+                    disabled={isSubmitting || isLoading}
+                    className="mt-1"
+                  />
+                  {errors.u_sched_in && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.u_sched_in.message}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="u_sched_out" className="text-sm">
+                    Schedule Out
+                  </Label>
+                  <Input
+                    id="u_sched_out"
+                    type="time"
+                    {...register("u_sched_out")}
+                    disabled={isSubmitting || isLoading}
+                    className="mt-1"
+                  />
+                  {errors.u_sched_out && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {errors.u_sched_out.message}
                     </p>
                   )}
                 </div>

@@ -136,11 +136,60 @@ export const useUserStore = create<UserState>()(
       },
 
       // Update existing user
+      // Update the updateUser function in user-store.tsx
       updateUser: async (updatedUser) => {
         set({ isLoading: true, error: null });
+
+        let imageUrl = updatedUser.user_profile_image_url;
+
+        // Check if a new file is provided before attempting to upload
+        if (updatedUser.user_profile_image_file) {
+          const uuid_v4 = crypto.randomUUID();
+          const fileExt = updatedUser.user_profile_image_file.name
+            .split(".")
+            .pop();
+          const fileName = `img-${uuid_v4}-${Date.now()}.${fileExt}`;
+          const filePath = `user-images-uploads/${fileName}`;
+
+          // Upload file to Supabase
+          const { error: uploadError } = await supabase.storage
+            .from("App-File-Storage")
+            .upload(filePath, updatedUser.user_profile_image_file);
+
+          if (uploadError) {
+            set({
+              error: `Failed to upload image: ${uploadError.message}`,
+              isLoading: false,
+            });
+            console.error("Upload error:", uploadError);
+            return; // Exit the function if upload fails
+          }
+
+          // Get the public URL for the uploaded file
+          const { data: publicUrlData } = supabase.storage
+            .from("App-File-Storage")
+            .getPublicUrl(filePath);
+
+          imageUrl = publicUrlData.publicUrl;
+
+          // Optional: Delete old image if it exists
+          if (updatedUser.user_profile_image_url) {
+            const oldPath = updatedUser.user_profile_image_url.split(
+              "/user-images-uploads/"
+            )[1];
+            if (oldPath) {
+              await supabase.storage
+                .from("App-File-Storage")
+                .remove([`user-images-uploads/${oldPath}`]);
+            }
+          }
+        }
+
         try {
           const body = {
             ...updatedUser,
+            user_profile_image_url: imageUrl, // Use new or existing URL
+            user_profile_image_file: undefined, // Remove the file object
             updated_at: undefined, // Remove updated_at as it's handled by backend
           };
 
@@ -151,6 +200,7 @@ export const useUserStore = create<UserState>()(
                 user.user_account_id === updatedUser.user_account_id
                   ? {
                       ...updatedUser,
+                      user_profile_image_url: imageUrl,
                       updated_at:
                         response.data.updated_at || new Date().toISOString(),
                     }
