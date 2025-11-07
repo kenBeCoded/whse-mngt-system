@@ -374,6 +374,8 @@ export class Attendance {
           break;
         case 2:
           // Revert status to 'pending' and set is_audited to false
+
+          // TODO PRIO : fetch get_attendance_records then get id and delete that attendance_images in database including the file in supabase
           result = await pool.query(updateQuery, [
             false,
             "pending",

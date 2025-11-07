@@ -124,7 +124,9 @@ export class UserModel {
           user_profile_image_url,
           role,
           updated_at,
-          created_at
+          created_at,
+          u_sched_in,
+          u_sched_out
       FROM users
       WHERE is_deleted = FALSE
       ORDER BY user_account_id ASC
@@ -198,7 +200,10 @@ export class UserModel {
   static async updateById(
     id: number,
     updates: Partial<User>
-  ): Promise<User | null> {
+  ): Promise<Pick<
+    User,
+    "id" | "username" | "created_at" | "updated_at"
+  > | null> {
     try {
       const fields = Object.keys(updates).filter((key) => key !== "id");
       const values = fields.map((field) => updates[field as keyof User]);
