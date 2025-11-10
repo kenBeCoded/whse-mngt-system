@@ -200,7 +200,10 @@ export class UserModel {
   static async updateById(
     id: number,
     updates: Partial<User>
-  ): Promise<User | null> {
+  ): Promise<Pick<
+    User,
+    "id" | "username" | "created_at" | "updated_at"
+  > | null> {
     try {
       const fields = Object.keys(updates).filter((key) => key !== "id");
       const values = fields.map((field) => updates[field as keyof User]);

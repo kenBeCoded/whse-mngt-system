@@ -385,51 +385,10 @@ export class Attendance {
           break;
 
         case 2:
-          // First, get the image IDs to delete
-          const getImagesQuery = `
-          SELECT check_in_image_id, check_out_image_id
-          FROM attendance_records
-          WHERE id = $1 AND attendance_date = $2;
-        `;
-          const recordResult = await client.query(getImagesQuery, [
-            data.id,
-            data.attendance_date,
-          ]);
+          // Revert status to 'pending' and set is_audited to false
 
-          if (recordResult.rows.length === 0) {
-            throw new Error(`No attendance record found for id: ${data.id}`);
-          }
-
-          const { check_in_image_id, check_out_image_id } =
-            recordResult.rows[0];
-
-          // Delete images from attendance_images table if they exist
-          if (check_in_image_id) {
-            await client.query(`DELETE FROM attendance_images WHERE id = $1`, [
-              check_in_image_id,
-            ]);
-          }
-
-          if (check_out_image_id) {
-            await client.query(`DELETE FROM attendance_images WHERE id = $1`, [
-              check_out_image_id,
-            ]);
-          }
-
-          // Update attendance record: revert to pending and null out check-in/out fields
-          const updateQuery2 = `
-          UPDATE attendance_records
-          SET is_audited = $1,
-              status = $2,
-              check_in_image_id = NULL,
-              check_in_time = NULL,
-              check_out_image_id = NULL,
-              check_out_time = NULL,
-              updated_at = CURRENT_TIMESTAMP
-          WHERE id = $3 AND attendance_date = $4
-          RETURNING *;
-        `;
-          result = await client.query(updateQuery2, [
+          // TODO PRIO : fetch get_attendance_records then get id and delete that attendance_images in database including the file in supabase
+          result = await pool.query(updateQuery, [
             false,
             "pending",
             data.id,
