@@ -329,10 +329,9 @@ export class Attendance {
      * update code:
      * 0 - update status to pass
      * 1 - update status to fail
-     * 2 - revert status to pending
+     * 2 - revert status to pending (delete images and reset check-in/out data)
      */
 
-    // This block remains the same for initial validation
     if (
       data.update_code !== 0 &&
       data.update_code !== 1 &&
@@ -342,54 +341,114 @@ export class Attendance {
         `Missing or unsupported update code: ${data.update_code}`
       );
     }
+
+    const client = await pool.connect();
+
     try {
-      const updateQuery = `
-        UPDATE attendance_records
-        SET is_audited = $1,
-            status = $2
-        WHERE id = $3 AND attendance_date = $4
-        RETURNING *;
-      `;
+      await client.query("BEGIN");
 
       let result;
-      // Convert if/else if chain to a switch statement
+
       switch (data.update_code) {
         case 0:
           // Update status to 'pass' and set is_audited to true
-          result = await pool.query(updateQuery, [
+          const updateQuery0 = `
+          UPDATE attendance_records
+          SET is_audited = $1,
+              status = $2
+          WHERE id = $3 AND attendance_date = $4
+          RETURNING *;
+        `;
+          result = await client.query(updateQuery0, [
             true,
             "pass",
             data.id,
             data.attendance_date,
           ]);
           break;
+
         case 1:
           // Update status to 'fail' and set is_audited to true
-          result = await pool.query(updateQuery, [
+          const updateQuery1 = `
+          UPDATE attendance_records
+          SET is_audited = $1,
+              status = $2
+          WHERE id = $3 AND attendance_date = $4
+          RETURNING *;
+        `;
+          result = await client.query(updateQuery1, [
             true,
             "fail",
             data.id,
             data.attendance_date,
           ]);
           break;
+
         case 2:
-          // Revert status to 'pending' and set is_audited to false
-          result = await pool.query(updateQuery, [
+          // First, get the image IDs to delete
+          const getImagesQuery = `
+          SELECT check_in_image_id, check_out_image_id
+          FROM attendance_records
+          WHERE id = $1 AND attendance_date = $2;
+        `;
+          const recordResult = await client.query(getImagesQuery, [
+            data.id,
+            data.attendance_date,
+          ]);
+
+          if (recordResult.rows.length === 0) {
+            throw new Error(`No attendance record found for id: ${data.id}`);
+          }
+
+          const { check_in_image_id, check_out_image_id } =
+            recordResult.rows[0];
+
+          // Delete images from attendance_images table if they exist
+          if (check_in_image_id) {
+            await client.query(`DELETE FROM attendance_images WHERE id = $1`, [
+              check_in_image_id,
+            ]);
+          }
+
+          if (check_out_image_id) {
+            await client.query(`DELETE FROM attendance_images WHERE id = $1`, [
+              check_out_image_id,
+            ]);
+          }
+
+          // Update attendance record: revert to pending and null out check-in/out fields
+          const updateQuery2 = `
+          UPDATE attendance_records
+          SET is_audited = $1,
+              status = $2,
+              check_in_image_id = NULL,
+              check_in_time = NULL,
+              check_out_image_id = NULL,
+              check_out_time = NULL,
+              updated_at = CURRENT_TIMESTAMP
+          WHERE id = $3 AND attendance_date = $4
+          RETURNING *;
+        `;
+          result = await client.query(updateQuery2, [
             false,
             "pending",
             data.id,
             data.attendance_date,
           ]);
           break;
+
         default:
-          // This should be caught by the initial check, but included for robustness
           throw new Error(`Unsupported update_code: ${data.update_code}`);
       }
 
+      await client.query("COMMIT");
       return result.rows[0] || null;
     } catch (error) {
+      await client.query("ROLLBACK");
       console.error("audit_attendance_update failed:", error);
       throw error;
+    } finally {
+      client.release();
     }
   }
 

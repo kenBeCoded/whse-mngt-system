@@ -89,7 +89,7 @@ export const UserDetailsModal = ({
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      console.log("data:", data);
+      // console.log("data:", data);
       await onSave(data);
       setIsOpen(false);
     } catch (error) {
@@ -108,8 +108,6 @@ export const UserDetailsModal = ({
   };
 
   const genderValue = watch("gender");
-
-  console.log("user",user)
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>

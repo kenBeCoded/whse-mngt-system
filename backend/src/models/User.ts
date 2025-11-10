@@ -124,7 +124,9 @@ export class UserModel {
           user_profile_image_url,
           role,
           updated_at,
-          created_at
+          created_at,
+          u_sched_in,
+          u_sched_out
       FROM users
       WHERE is_deleted = FALSE
       ORDER BY user_account_id ASC
@@ -214,6 +216,8 @@ export class UserModel {
       WHERE id = $1
       RETURNING id, username, created_at, updated_at
       `;
+
+      console.log("values:",values)
 
       const result = await pool.query(query, [id, ...values]);
       return result.rows[0] || null;

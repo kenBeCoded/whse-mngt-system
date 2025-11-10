@@ -136,11 +136,11 @@ export const useUserStore = create<UserState>()(
       },
 
       // Update existing user
-      // Update the updateUser function in user-store.tsx
       updateUser: async (updatedUser) => {
         set({ isLoading: true, error: null });
 
         let imageUrl = updatedUser.user_profile_image_url;
+        let oldImagePath: string | null = null;
 
         // Check if a new file is provided before attempting to upload
         if (updatedUser.user_profile_image_file) {
@@ -162,7 +162,7 @@ export const useUserStore = create<UserState>()(
               isLoading: false,
             });
             console.error("Upload error:", uploadError);
-            return; // Exit the function if upload fails
+            return;
           }
 
           // Get the public URL for the uploaded file
@@ -172,15 +172,13 @@ export const useUserStore = create<UserState>()(
 
           imageUrl = publicUrlData.publicUrl;
 
-          // Optional: Delete old image if it exists
+          // Store old image path for deletion after successful update
           if (updatedUser.user_profile_image_url) {
-            const oldPath = updatedUser.user_profile_image_url.split(
+            const pathParts = updatedUser.user_profile_image_url.split(
               "/user-images-uploads/"
-            )[1];
-            if (oldPath) {
-              await supabase.storage
-                .from("App-File-Storage")
-                .remove([`user-images-uploads/${oldPath}`]);
+            );
+            if (pathParts.length > 1) {
+              oldImagePath = `user-images-uploads/${pathParts[1]}`;
             }
           }
         }
@@ -188,13 +186,26 @@ export const useUserStore = create<UserState>()(
         try {
           const body = {
             ...updatedUser,
-            user_profile_image_url: imageUrl, // Use new or existing URL
-            user_profile_image_file: undefined, // Remove the file object
-            updated_at: undefined, // Remove updated_at as it's handled by backend
+            user_profile_image_url: imageUrl,
+            user_profile_image_file: undefined,
+            updated_at: undefined,
           };
 
           const response = await API.patch("/api/users/update-user", body);
+
           if (response.status === 200) {
+            // Delete old image only after successful database update
+            if (oldImagePath) {
+              const { error: deleteError } = await supabase.storage
+                .from("App-File-Storage")
+                .remove([oldImagePath]);
+
+              if (deleteError) {
+                console.error("Failed to delete old image:", deleteError);
+                // Don't throw error - the update was successful
+              }
+            }
+
             set((state) => ({
               users: state.users.map((user) =>
                 user.user_account_id === updatedUser.user_account_id
@@ -212,6 +223,19 @@ export const useUserStore = create<UserState>()(
             throw new Error(`Failed to update user: ${response.status}`);
           }
         } catch (error) {
+          // If database update fails, delete the newly uploaded image
+          if (
+            updatedUser.user_profile_image_file &&
+            imageUrl !== updatedUser.user_profile_image_url
+          ) {
+            const newPath = imageUrl.split("/user-images-uploads/")[1];
+            if (newPath) {
+              await supabase.storage
+                .from("App-File-Storage")
+                .remove([`user-images-uploads/${newPath}`]);
+            }
+          }
+
           const errorMessage =
             error instanceof Error ? error.message : "Failed to update user";
           set({ error: errorMessage, isLoading: false });
