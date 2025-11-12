@@ -1,10 +1,8 @@
-import axios from "axios";
+import axios from "../api/axios";
 import { devtools } from "zustand/middleware";
 import { create } from "zustand/react";
 
-const API = axios.create({
-  withCredentials: true,
-});
+const API = axios; // use shared configured axios instance (withCredentials + auth header)
 
 export interface AttendanceRecords {
   attendance_date: string;

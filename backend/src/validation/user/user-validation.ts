@@ -1,10 +1,10 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
 
-const registerSchema = Joi.object({
-  username: Joi.string().alphanum().min(3).max(30).required(),
-  password: Joi.string().min(6).required(),
-});
+// const registerSchema = Joi.object({
+//   username: Joi.string().alphanum().min(3).max(30).required(),
+//   password: Joi.string().min(6).required(),
+// });
 
 const loginSchema = Joi.object({
   username: Joi.string().required(),

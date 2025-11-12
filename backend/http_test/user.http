@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QxIiwiaWF0IjoxNzU5ODQxMDE1LCJleHAiOjE3NTk4NDE5MTV9.cM3gAXvOX7XPR3bcH2gxURXERK4VzU9OrJLww94LUKo
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2Mjk1NDA1OCwiZXhwIjoxNzYyOTU0OTU4fQ.z_tGGnx2jSMyfY1DavU3r5H9jZ8VL3pHuXRkjUwmr6I
 
 
 post http://localhost:8000/api/auth/login
@@ -64,6 +64,7 @@ Content-Type: application/json
 ###
 
 get http://localhost:8000/api/users/get-all-users
+Authorization: Bearer {{AT}}
 
 ###
 

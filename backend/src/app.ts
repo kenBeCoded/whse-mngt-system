@@ -6,7 +6,6 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import { logger } from "./middleware/logger.js";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-
 import { authenticateToken } from "./middleware/authToken.js";
 
 const app = express();
@@ -31,7 +30,7 @@ app.use(cookieParser());
 // logger
 app.use(logger);
 // auth middleware
-// app.use(authenticateToken);
+app.use(authenticateToken);
 
 // Rate limiting
 const limiter = rateLimit({

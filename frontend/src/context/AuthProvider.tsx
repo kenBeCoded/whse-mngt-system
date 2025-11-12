@@ -1,5 +1,6 @@
-import { createContext, useState, useEffect, type ReactNode, use } from "react";
+import { createContext, useState, useEffect, type ReactNode } from "react";
 import { authService } from "../services/userService";
+import { setAuthToken } from "../api/axios";
 import type { AxiosError } from "axios";
 interface User {
   id: number;
@@ -36,6 +37,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { accessToken } = await authService.login(email, password);
       setAccessToken(accessToken);
+      // Update axios instance so stores/services use the latest token
+      setAuthToken(accessToken ?? null);
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
     } catch (err) {
@@ -49,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     await authService.logout();
     setAccessToken(null);
+    setAuthToken(null);
     setUser(null);
   };
 
@@ -56,6 +60,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { accessToken } = await authService.refresh();
       setAccessToken(accessToken);
+      setAuthToken(accessToken ?? null);
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
     } catch (err) {

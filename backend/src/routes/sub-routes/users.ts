@@ -8,7 +8,6 @@ import {
   deleteUser,
   getUserByUsername,
 } from "../../controllers/users/usersController.js";
-// import { authenticateToken } from "../../middleware/authToken.js";
 
 const router = Router();
 

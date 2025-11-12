@@ -1,10 +1,7 @@
 // import axios from "axios";
 import axios from "../api/axios";
 
-const API = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:8000", // replace with your API
-  withCredentials: true, // to send cookies (refresh token)
-});
+const API = axios; // use shared configured axios instance (baseURL + withCredentials + auth interceptor)
 
 export const authService = {
   login: async (username: string, password: string) => {

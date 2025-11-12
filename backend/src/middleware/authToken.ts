@@ -7,6 +7,18 @@ export const authenticateToken = (
   res: Response,
   next: NextFunction
 ): void => {
+  // Public routes that don't require authentication
+  const publicRoutes = [
+    "/api/auth/login",
+    "/api/auth/refresh",
+    "/api/auth/register",
+    "/health",
+  ];
+
+  if (publicRoutes.some((route) => req.path.startsWith(route))) {
+    return next();
+  }
+
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 

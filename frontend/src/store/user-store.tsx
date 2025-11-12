@@ -4,9 +4,7 @@ import axios from "../api/axios";
 import { type Users } from "@/app/user-table/columns";
 import { supabase } from "../supabase.ts";
 
-const API = axios.create({
-  withCredentials: true,
-});
+const API = axios; // configured axios instance (withCredentials and auth set via setAuthToken)
 
 interface UserState {
   // State
@@ -225,6 +223,7 @@ export const useUserStore = create<UserState>()(
         } catch (error) {
           // If database update fails, delete the newly uploaded image
           if (
+            imageUrl &&
             updatedUser.user_profile_image_file &&
             imageUrl !== updatedUser.user_profile_image_url
           ) {
