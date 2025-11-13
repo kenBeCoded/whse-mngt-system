@@ -324,19 +324,21 @@ export class Attendance {
     update_code: number;
     attendance_date: string;
     id: number;
+    u_sched_in: string;
+    u_sched_out: string;
   }): Promise<any> {
     /**
      * update code:
      * 0 - update status to pass
      * 1 - update status to fail
      * 2 - revert status to pending (delete images and reset check-in/out data)
+     * 3 - update attendance schedule
+     * 4 - update overtime
      */
 
-    if (
-      data.update_code !== 0 &&
-      data.update_code !== 1 &&
-      data.update_code !== 2
-    ) {
+    const disallowedCodes = [0, 1, 2, 3, 4];
+
+    if (!disallowedCodes.includes(data.update_code)) {
       throw new Error(
         `Missing or unsupported update code: ${data.update_code}`
       );
@@ -435,6 +437,24 @@ export class Attendance {
               check_out_image_id,
             ]);
           }
+
+          break;
+
+        case 3:
+          const updateSchedQuery = `
+          UPDATE attendance_records
+          SET u_sched_in = $1,
+              u_sched_out = $2
+          WHERE id = $3 AND attendance_date = $4
+          RETURNING *;
+        `;
+
+          result = await client.query(updateSchedQuery, [
+            data.u_sched_in,
+            data.u_sched_out,
+            data.id,
+            data.attendance_date,
+          ]);
 
           break;
 

@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2Mjk1NDA1OCwiZXhwIjoxNzYyOTU0OTU4fQ.z_tGGnx2jSMyfY1DavU3r5H9jZ8VL3pHuXRkjUwmr6I
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzAzNjUwMSwiZXhwIjoxNzYzMDM3NDAxfQ.Yd6gbI-876F7cQ7H3elEqGMUoJkzkgVnIIVYNoL5SUE
 
 
 post http://localhost:8000/api/auth/login
@@ -25,6 +25,7 @@ post http://localhost:8000/api/auth/refresh
 ###
 
 post http://localhost:8000/api/users/create-user
+Authorization: Bearer {{AT}}
 Content-Type: application/json
 
 # {
@@ -40,14 +41,14 @@ Content-Type: application/json
 # }
 
 {
-    "username":"test6",
-    "password":"test6",
-    "email":"test6@gmail.com",
-    "first_name":"test6",
-    "middle_name":"test6",
-    "last_name":"test6",
+    "username":"test8",
+    "password":"test8",
+    "email":"test8@gmail.com",
+    "first_name":"test8",
+    "middle_name":"test8",
+    "last_name":"test8",
     "gender":"male",
-    "user_profile_image_url":"test6 profile image url"
+    "user_profile_image_url":"test8 profile image url"
 }
 
 # no password 

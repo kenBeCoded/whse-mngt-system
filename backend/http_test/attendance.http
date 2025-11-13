@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6InRlc3QxIiwiaWF0IjoxNzU5ODQxMDE1LCJleHAiOjE3NTk4NDE5MTV9.cM3gAXvOX7XPR3bcH2gxURXERK4VzU9OrJLww94LUKo
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzAzODExNywiZXhwIjoxNzYzMDM5MDE3fQ.uYIty3Ma5LTjQSsdGoGwA0z5HFVa5TeYrHPwjPzabM8
 
 
 # update code(create_attendance_records):
@@ -49,6 +49,21 @@ Content-Type: application/json
     "id": 38,
     "attendance_date": "2025-10-12",
     "update_code": 2
+}
+
+###
+#? update schedule attendance records
+
+patch http://localhost:8000/api/attendance/audit-attendance-update
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "id": 40,
+    "attendance_date": "2025-10-13",
+    "update_code": 3,
+    "u_sched_in": "08:00",
+    "u_sched_out": "16:00"
 }
 
 ###
