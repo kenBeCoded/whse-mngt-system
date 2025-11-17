@@ -19,6 +19,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { navigationData } from "@/config/navigation";
@@ -115,42 +117,39 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         ) : (
-          // Normal collapsible navigation
-          navigationData.navMain.map((item) => (
-            <Collapsible
-              key={item.title}
-              defaultOpen={isActive(item.url)} // Auto-open active section
-              className="group/collapsible"
-            >
-              <SidebarGroup>
-                <SidebarGroupLabel
-                  asChild
-                  className="group/label text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sm"
-                >
-                  <CollapsibleTrigger>
-                    {item.title}{" "}
-                    <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+          // Normal collapsible navigation - UPDATED FORMAT
+          <SidebarMenu>
+            {navigationData.navMain.map((item) => (
+              <Collapsible
+                key={item.title}
+                defaultOpen={isActive(item.url)} // Auto-open active section
+                className="group/collapsible"
+              >
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton className="w-full justify-between text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground">
+                      {item.title}
+                      <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                    </SidebarMenuButton>
                   </CollapsibleTrigger>
-                </SidebarGroupLabel>
-                <CollapsibleContent>
-                  <SidebarGroupContent>
-                    <SidebarMenu>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
                       {item.items.map((subItem) => (
-                        <SidebarMenuItem key={subItem.title}>
+                        <SidebarMenuSubItem key={subItem.title}>
                           <SidebarMenuButton
                             asChild
                             isActive={isActive(subItem.url)}
                           >
                             <Link to={subItem.url}>{subItem.title}</Link>
                           </SidebarMenuButton>
-                        </SidebarMenuItem>
+                        </SidebarMenuSubItem>
                       ))}
-                    </SidebarMenu>
-                  </SidebarGroupContent>
-                </CollapsibleContent>
-              </SidebarGroup>
-            </Collapsible>
-          ))
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            ))}
+          </SidebarMenu>
         )}
       </SidebarContent>
       <SidebarRail />

@@ -59,6 +59,7 @@ function App() {
                     element={<AttendanceRecordsPage />}
                   />
                 </Route>
+
                 {/* Example nested routes - extend with your full nav structure */}
 
                 {/* Add routes for Architecture, Community, etc., following the same pattern */}
