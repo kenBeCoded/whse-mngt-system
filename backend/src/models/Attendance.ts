@@ -458,6 +458,8 @@ export class Attendance {
 
           break;
 
+        // update overtime single or multiple dates selected
+
         default:
           throw new Error(`Unsupported update_code: ${data.update_code}`);
       }

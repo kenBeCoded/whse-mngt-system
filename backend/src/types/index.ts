@@ -14,6 +14,8 @@ export interface User {
   created_at: Date;
   updated_at: Date;
   role: string;
+  u_sched_in: string;
+  u_sched_out: string;
 }
 
 export interface AuthenticatedRequest extends Request {

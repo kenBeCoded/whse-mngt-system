@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzAzNjUwMSwiZXhwIjoxNzYzMDM3NDAxfQ.Yd6gbI-876F7cQ7H3elEqGMUoJkzkgVnIIVYNoL5SUE
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzM4MjEwNywiZXhwIjoxNzYzMzgzMDA3fQ.GlX8RESsq9wbIrJ8silwEhZ9nznA2nSSX1uQBxmv4ko
 
 
 post http://localhost:8000/api/auth/login
@@ -48,7 +48,9 @@ Content-Type: application/json
     "middle_name":"test8",
     "last_name":"test8",
     "gender":"male",
-    "user_profile_image_url":"test8 profile image url"
+    "user_profile_image_url":"test8 profile image url",
+    "u_sched_in": "08:18",
+    "u_sched_out": "20:18"
 }
 
 # no password 

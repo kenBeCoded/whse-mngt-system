@@ -66,9 +66,11 @@ export class UserModel {
               last_name,
               gender,
               user_profile_image_url,
-              role
+              role,
+              u_sched_in,
+              u_sched_out
           )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
       RETURNING
           username,
           email,
@@ -80,7 +82,9 @@ export class UserModel {
           created_at,
           role,
           updated_at,
-          user_account_id
+          user_account_id,
+          u_sched_in,
+          u_sched_out
       `;
 
       const result = await client.query(query, [
@@ -93,6 +97,8 @@ export class UserModel {
         userData.gender,
         userData.user_profile_image_url,
         userData.role ? userData.role : "employee",
+        userData.u_sched_in ? userData.u_sched_in : "",
+        userData.u_sched_out ? userData.u_sched_out : "",
       ]);
 
       await client.query("COMMIT");
@@ -114,7 +120,8 @@ export class UserModel {
   static async findAllUsernames(): Promise<UserWithoutPassword[]> {
     try {
       const query = `
-      SELECT username,
+      SELECT id,
+          username,
           user_account_id,
           email,
           first_name,
@@ -220,7 +227,7 @@ export class UserModel {
       RETURNING id, username, created_at, updated_at
       `;
 
-      console.log("values:",values)
+      console.log("values:", values);
 
       const result = await pool.query(query, [id, ...values]);
       return result.rows[0] || null;

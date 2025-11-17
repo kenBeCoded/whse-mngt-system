@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserDetailsModal } from "./dialog/UserDetailsModal";
 
 export type Users = {
+  id: string;
   username: string;
   user_account_id: string;
   email: string;
