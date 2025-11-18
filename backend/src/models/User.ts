@@ -160,7 +160,9 @@ export class UserModel {
           user_profile_image_url,
           created_at,
           updated_at,
-          role
+          role,
+          u_sched_in,
+          u_sched_out
       FROM users
       WHERE username = $1
       `;

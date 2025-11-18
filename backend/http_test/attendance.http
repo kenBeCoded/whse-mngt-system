@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzAzODExNywiZXhwIjoxNzYzMDM5MDE3fQ.uYIty3Ma5LTjQSsdGoGwA0z5HFVa5TeYrHPwjPzabM8
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzQ3MDE0OCwiZXhwIjoxNzYzNDcxMDQ4fQ.KurRbWHKxKBNntxlTMxAEssliQ8OWVQ7hEm6E5YAI3I
 
 
 # update code(create_attendance_records):
@@ -8,6 +8,7 @@
 #? Create attendance_record and update check in details
 post http://localhost:8000/api/attendance/create-attendance-record
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
 {
     "username": "test1",
@@ -21,13 +22,14 @@ Content-Type: application/json
 ###
 post http://localhost:8000/api/attendance/create-attendance-record
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
 {
-    "username": "test1",
+    "username": "test9",
     "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
     "record_type": "check_out",
-    "image_capture_date": "2025-10-17T12:34:33.205Z",
-    "selected_date": "2025-10-17T08:03:55.618Z",
+    "image_capture_date": "2025-11-17T08:34:33.205Z",
+    "selected_date": "2025-11-16T08:03:55.618Z",
     "update_code": 2
 }
 

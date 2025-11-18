@@ -168,8 +168,10 @@ export class Attendance {
             check_in_time,
             check_out_image_id,
             check_out_time,
-            status
-          ) VALUES ($1,$2,$3,$4,$5,$6,$7)
+            status,
+            u_sched_in,
+            u_sched_out
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
           RETURNING *;
         `;
         const vals = [
@@ -180,6 +182,8 @@ export class Attendance {
           fields.check_out_image_id ?? null,
           fields.check_out_time ?? null,
           fields.status ?? null,
+          user.u_sched_in,
+          user.u_sched_out,
         ];
         const res = await client.query(insertQ, vals);
         return res.rows[0];
@@ -326,14 +330,15 @@ export class Attendance {
     id: number;
     u_sched_in: string;
     u_sched_out: string;
+    idArr: number[];
   }): Promise<any> {
     /**
      * update code:
      * 0 - update status to pass
      * 1 - update status to fail
      * 2 - revert status to pending (delete images and reset check-in/out data)
-     * 3 - update attendance schedule
-     * 4 - update overtime
+     * 3 - update attendance record schedule
+     * 4 - update overtime (multiple or single)
      */
 
     const disallowedCodes = [0, 1, 2, 3, 4];
