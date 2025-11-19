@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzQ3MDE0OCwiZXhwIjoxNzYzNDcxMDQ4fQ.KurRbWHKxKBNntxlTMxAEssliQ8OWVQ7hEm6E5YAI3I
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzU1NTY1NSwiZXhwIjoxNzYzNTU2NTU1fQ._G9Izzk-Kr9tUJgJRnomDHOg7FVZfDeKkZlPNPlRzuI
 
 
 # update code(create_attendance_records):
@@ -46,6 +46,7 @@ Authorization: Bearer {{AT}}
 
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
 {
     "id": 38,
@@ -66,6 +67,19 @@ Authorization: Bearer {{AT}}
     "update_code": 3,
     "u_sched_in": "08:00",
     "u_sched_out": "16:00"
+}
+
+###
+#? update single/multiple ot hours
+
+patch http://localhost:8000/api/attendance/audit-attendance-update
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "idArr": [1, 2],
+    "ot_hours": 3,
+    "update_code": 4
 }
 
 ###

@@ -27,12 +27,16 @@ export const auditAttendanceUpdate = async (
   try {
     const { body } = req;
 
-    if (!body.attendance_date || !body.id || body.id <= 0) {
-      res.status(400).json({ message: "attendance_date and id are required" });
-      return;
-    }
+    // if (!body.attendance_date || !body.id || body.id <= 0) {
+    //   res.status(400).json({ message: "attendance_date and id are required" });
+    //   return;
+    // }
 
     const result = await Attendance.audit_attendance_update(body);
+
+    if (!result.success) {
+      res.status(400).json({ message: result.message });
+    }
 
     res
       .status(200)

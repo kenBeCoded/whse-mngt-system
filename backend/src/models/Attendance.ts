@@ -331,6 +331,7 @@ export class Attendance {
     u_sched_in: string;
     u_sched_out: string;
     idArr: number[];
+    ot_hours: number;
   }): Promise<any> {
     /**
      * update code:
@@ -357,7 +358,15 @@ export class Attendance {
       let result;
 
       switch (data.update_code) {
+        // update status to pass
         case 0:
+          if (!data.id || !data.attendance_date) {
+            return {
+              success: false,
+              message: "attendance date and id are required",
+            };
+          }
+
           // Update status to 'pass' and set is_audited to true
           const updateQuery0 = `
           UPDATE attendance_records
@@ -374,7 +383,15 @@ export class Attendance {
           ]);
           break;
 
+        // update status to fail
         case 1:
+          if (!data.id || !data.attendance_date) {
+            return {
+              success: false,
+              message: "attendance date and id are required",
+            };
+          }
+
           // Update status to 'fail' and set is_audited to true
           const updateQuery1 = `
           UPDATE attendance_records
@@ -391,7 +408,15 @@ export class Attendance {
           ]);
           break;
 
+        // revert status to pending (delete images and reset check-in/out data)
         case 2:
+          if (!data.id || !data.attendance_date) {
+            return {
+              success: false,
+              message: "attendance date and id are required",
+            };
+          }
+
           // First, get the image IDs to delete
           const getImagesQuery = `
           SELECT check_in_image_id, check_out_image_id
@@ -445,7 +470,21 @@ export class Attendance {
 
           break;
 
+        // update attendance record schedule
         case 3:
+          if (
+            !data.u_sched_in ||
+            !data.u_sched_out ||
+            !data.id ||
+            !data.attendance_date
+          ) {
+            return {
+              success: false,
+              message:
+                "schedule in & out, attendance date, and id are required",
+            };
+          }
+
           const updateSchedQuery = `
           UPDATE attendance_records
           SET u_sched_in = $1,
@@ -464,6 +503,26 @@ export class Attendance {
           break;
 
         // update overtime single or multiple dates selected
+        case 4:
+          if (!data.ot_hours || !data.idArr) {
+            return {
+              success: false,
+              message: "overtime hours and id are required",
+            };
+          }
+
+          const updateOtQuery = `
+          UPDATE ot_sched
+          SET ot_hours = $1
+          WHERE id = ANY($2::int[])
+          `;
+
+          result = await client.query(updateOtQuery, [
+            data.ot_hours,
+            data.idArr,
+          ]);
+
+          break;
 
         default:
           throw new Error(`Unsupported update_code: ${data.update_code}`);
