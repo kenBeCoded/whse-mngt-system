@@ -4,7 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserDetailsModal } from "./dialog/UserDetailsModal";
 
 export type Users = {
-  id: string;
+  id: string | number;
   username: string;
   user_account_id: string;
   email: string;
@@ -12,13 +12,13 @@ export type Users = {
   middle_name?: string;
   last_name: string;
   gender: "male" | "female";
-  user_profile_image_url?: string;
+  user_profile_image_url?: string | null;
   user_profile_image_file?: File;
   role: string;
   updated_at: string;
   created_at: string;
-  u_sched_in?: string;
-  u_sched_out?: string;
+  u_sched_in?: string | null;
+  u_sched_out?: string | null;
 };
 
 // Add a lightweight TableMeta type so we can access table.options.meta?.onSave safely

@@ -25,6 +25,7 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 const userSchema = z.object({
+  id: z.string().or(z.number()),
   username: z.string(),
   user_account_id: z.string(),
   email: z.email("Invalid email address"),
