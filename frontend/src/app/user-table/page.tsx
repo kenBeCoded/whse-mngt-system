@@ -34,8 +34,6 @@ export function UsersPage() {
     try {
       // return console.log("updatedUser", updatedUser);
       await updateUser(updatedUser);
-      // Success feedback could go here
-      console.log("User updated successfully");
     } catch (error) {
       // Error handling is already done in the store
       console.error("Failed to update user in component:", error);

@@ -1,6 +1,4 @@
 export function formatDateToYYYYMMDD(date: Date): string {
- 
-
   // Get the year, padded to 4 digits
   const year = date.getFullYear();
 

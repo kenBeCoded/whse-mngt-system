@@ -3,6 +3,8 @@ import { devtools } from "zustand/middleware";
 import axios from "../api/axios";
 import { type Users } from "@/app/user-table/columns";
 import { supabase } from "../supabase.ts";
+import { toast } from "sonner";
+import { formatCustomDate1 } from "../utils/formatTime.ts";
 
 const API = axios; // configured axios instance (withCredentials and auth set via setAuthToken)
 
@@ -217,6 +219,9 @@ export const useUserStore = create<UserState>()(
               ),
               isLoading: false,
             }));
+            toast.success("User updated successfully", {
+              description: formatCustomDate1(new Date()),
+            });
           } else {
             throw new Error(`Failed to update user: ${response.status}`);
           }

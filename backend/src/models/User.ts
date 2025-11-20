@@ -229,8 +229,6 @@ export class UserModel {
       RETURNING id, username, created_at, updated_at
       `;
 
-      console.log("values:", values);
-
       const result = await pool.query(query, [id, ...values]);
       return result.rows[0] || null;
     } catch (error: any) {
