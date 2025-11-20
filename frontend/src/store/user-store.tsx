@@ -221,6 +221,7 @@ export const useUserStore = create<UserState>()(
             }));
             toast.success("User updated successfully", {
               description: formatCustomDate1(new Date()),
+              descriptionClassName: "!text-secondary-foreground",
             });
           } else {
             throw new Error(`Failed to update user: ${response.status}`);

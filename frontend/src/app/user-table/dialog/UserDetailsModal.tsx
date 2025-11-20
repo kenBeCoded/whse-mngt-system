@@ -23,7 +23,6 @@ import {
 import { Trash2 } from "lucide-react";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "sonner";
 
 const userSchema = z.object({
   username: z.string(),
@@ -34,12 +33,12 @@ const userSchema = z.object({
   last_name: z.string().min(1, "Last name is required"),
   user_profile_image_file: z.instanceof(File).optional(),
   gender: z.enum(["male", "female"]),
-  user_profile_image_url: z.string(),
+  user_profile_image_url: z.string().nullable(),
   role: z.string(),
   updated_at: z.string(),
   created_at: z.string(),
-  u_sched_in: z.string().optional(),
-  u_sched_out: z.string().optional(),
+  u_sched_in: z.string().nullable(),
+  u_sched_out: z.string().nullable(),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -90,7 +89,6 @@ export const UserDetailsModal = ({
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      // console.log("data:", data);
       await onSave(data);
       setIsOpen(false);
     } catch (error) {
@@ -266,40 +264,58 @@ export const UserDetailsModal = ({
               </div>
 
               {/* Sched In & Out */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <Label htmlFor="u_sched_in" className="text-sm">
-                    Schedule In
-                  </Label>
-                  <Input
-                    id="u_sched_in"
-                    type="time"
-                    {...register("u_sched_in")}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <Label className="text-sm">Schedule</Label>
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setValue("u_sched_in", null);
+                      setValue("u_sched_out", null);
+                    }}
                     disabled={isSubmitting || isLoading}
-                    className="mt-1"
-                  />
-                  {errors.u_sched_in && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.u_sched_in.message}
-                    </p>
-                  )}
+                    className="h-7 text-xs"
+                  >
+                    Clear Schedule
+                  </Button>
                 </div>
-                <div>
-                  <Label htmlFor="u_sched_out" className="text-sm">
-                    Schedule Out
-                  </Label>
-                  <Input
-                    id="u_sched_out"
-                    type="time"
-                    {...register("u_sched_out")}
-                    disabled={isSubmitting || isLoading}
-                    className="mt-1"
-                  />
-                  {errors.u_sched_out && (
-                    <p className="text-red-500 text-xs mt-1">
-                      {errors.u_sched_out.message}
-                    </p>
-                  )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <Label htmlFor="u_sched_in" className="text-sm">
+                      Schedule In
+                    </Label>
+                    <Input
+                      id="u_sched_in"
+                      type="time"
+                      {...register("u_sched_in")}
+                      disabled={isSubmitting || isLoading}
+                      className="mt-1"
+                    />
+                    {errors.u_sched_in && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.u_sched_in.message}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <Label htmlFor="u_sched_out" className="text-sm">
+                      Schedule Out
+                    </Label>
+                    <Input
+                      id="u_sched_out"
+                      type="time"
+                      {...register("u_sched_out")}
+                      disabled={isSubmitting || isLoading}
+                      className="mt-1"
+                    />
+                    {errors.u_sched_out && (
+                      <p className="text-red-500 text-xs mt-1">
+                        {errors.u_sched_out.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

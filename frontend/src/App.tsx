@@ -15,7 +15,7 @@ import Page from "./app/dashboard";
 import { ThemeProvider } from "./components/theme-provider";
 import { UsersPage } from "./app/user-table/page";
 import { AttendanceRecordsPage } from "./app/attendance-table/page";
-import {Toaster} from "@/components/ui/sonner"
+import { Toaster } from "@/components/ui/sonner";
 
 function App() {
   return (
@@ -73,7 +73,7 @@ function App() {
             </Routes>
           </div>
         </Router>
-        <Toaster position="top-center" closeButton={true} />
+        <Toaster closeButton={true} />
       </AuthProvider>
     </ThemeProvider>
   );
