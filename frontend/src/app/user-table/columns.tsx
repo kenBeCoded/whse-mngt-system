@@ -4,9 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UserDetailsModal } from "./dialog/UserDetailsModal";
 
 export type Users = {
-  id: string | number;
+  id?: string | number;
   username: string;
-  user_account_id: string;
+  user_account_id?: string;
   email: string;
   first_name: string;
   middle_name?: string;
@@ -51,10 +51,12 @@ export const userColumns: ColumnDef<Users>[] = [
     enableHiding: false,
   },
   {
+    id: "USER ID",
     accessorKey: "user_account_id",
     header: "User ID",
   },
   {
+    id: "FULL NAME",
     header: "Fullname",
     // cell: ({ row }) => {
     //   const user = row.original;
@@ -72,14 +74,17 @@ export const userColumns: ColumnDef<Users>[] = [
     },
   },
   {
+    id: "GENDER",
     accessorKey: "gender",
     header: "Gender",
   },
   {
+    id:"ROLE",
     accessorKey: "role",
     header: "Role",
   },
   {
+    id: "LAST UPDATE",
     accessorKey: "updated_at",
     header: "Last Updated",
     accessorFn: (row) => new Date(row.updated_at).toLocaleString(),

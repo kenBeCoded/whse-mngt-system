@@ -5,6 +5,7 @@ import { create } from "zustand/react";
 const API = axios; // use shared configured axios instance (withCredentials + auth header)
 
 export interface AttendanceRecords {
+  id?: string | number;
   attendance_date: string;
   check_in_time: string | null;
   check_out_time: string | null;
@@ -45,7 +46,6 @@ interface AttendanceState {
   clearError: () => void;
   reset: () => void;
 }
-
 
 export const useAttendanceStore = create<AttendanceState>()(
   devtools(

@@ -7,20 +7,24 @@ import { Badge } from "@/components/ui/badge";
 
 export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
   {
+    id: "ATTENDANCE DATE",
     accessorKey: "attendance_date",
     header: "Attendance Date",
     accessorFn: (row) => new Date(row.attendance_date).toLocaleDateString(),
   },
   {
+    id: "USER ID",
     accessorKey: "user_account_id",
     header: "User ID",
   },
   {
+    id: "FULL NAME",
     header: "Full Name",
     accessorFn: (row) =>
       `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim(),
   },
   {
+    id: "CHECK IN TIME",
     accessorKey: "check_in_time",
     header: "Check-In Time",
     cell: ({ row }) =>
@@ -29,6 +33,7 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
         : "N/A",
   },
   {
+    id: "CHECK OUT TIME",
     accessorKey: "check_out_time",
     header: "Check-Out Time",
     cell: ({ row }) =>
@@ -37,11 +42,13 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
         : "N/A",
   },
   {
+    id: "AUDITED",
     accessorKey: "is_audited",
     header: "Audited",
     cell: ({ row }) => (row.original.is_audited ? "Yes" : "No"),
   },
   {
+    id: "STATUS",
     accessorKey: "status",
     header: "Status",
     cell: ({ row }) => {
