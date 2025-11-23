@@ -19,7 +19,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { navigationData } from "../config/navigation";
 
 // TODO : hide access url depends on user account roles
-export default function Page() {
+export default function MainPage() {
   const location = useLocation();
   const pathname = location.pathname;
 

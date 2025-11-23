@@ -11,7 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import HomePage from "./pages/HomePage";
 // import AppPage from "./pages/AppPage";
-import Page from "./app/dashboard";
+import MainPage from "./app/MainPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { UsersPage } from "./app/user-table/page";
 import { AttendanceRecordsPage } from "./app/attendance-table/page";
@@ -52,7 +52,7 @@ function App() {
                 }
               >
                 <Route element={<Navigate to="admin" />} />
-                <Route path="admin" element={<Page />}>
+                <Route path="admin" element={<MainPage />}>
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="users" element={<UsersPage />} />
                   <Route

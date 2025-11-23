@@ -38,7 +38,7 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 interface UserCreateModalProps {
-  onCreate: (newUser: Omit<Users, "user_account_id">) => void;
+  onCreate: (newUser: Users) => void;
 }
 
 export const UserCreateModal = ({ onCreate }: UserCreateModalProps) => {

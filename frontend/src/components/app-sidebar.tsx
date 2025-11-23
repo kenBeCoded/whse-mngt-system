@@ -1,5 +1,11 @@
 import * as React from "react";
-import { ChevronRight, Search as SearchIcon } from "lucide-react";
+import {
+  ChevronRight,
+  ChevronUp,
+  LogOut,
+  Search as SearchIcon,
+  User2,
+} from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 import { SearchForm } from "@/components/search-form";
@@ -12,6 +18,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -24,8 +31,13 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar";
 import { navigationData } from "@/config/navigation";
-
-// This is sample data with updated URLs (adjust to your routes)
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/hooks/useAuth";
 
 interface NavItem {
   title: string;
@@ -39,6 +51,7 @@ interface NavSection {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { user, logout } = useAuth();
   const location = useLocation();
   const pathname = location.pathname;
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -67,9 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   };
 
   const handleSearchSubmit = (query: string) => {
-    // Optional: Navigate to a search results page or perform global search
     console.log("Searching for:", query);
-    // e.g., navigate(`/search?q=${query}`)
   };
 
   const filteredNavMain = filterSections(navigationData.navMain, searchQuery);
@@ -90,7 +101,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
       <SidebarContent className="gap-0 overflow-y-auto">
         {hasSearchResults ? (
-          // Show filtered search results
           <SidebarGroup>
             <SidebarGroupLabel className="flex items-center gap-2">
               <SearchIcon className="size-4" />
@@ -117,12 +127,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             </SidebarGroupContent>
           </SidebarGroup>
         ) : (
-          // Normal collapsible navigation - UPDATED FORMAT
           <SidebarMenu>
             {navigationData.navMain.map((item) => (
               <Collapsible
                 key={item.title}
-                defaultOpen={isActive(item.url)} // Auto-open active section
+                defaultOpen={isActive(item.url)}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -152,6 +161,59 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         )}
       </SidebarContent>
+      <SidebarFooter className="border-t">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <SidebarMenuButton className="h-12 hover:bg-sidebar-accent">
+                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                    {user?.user_profile_image_url ? (
+                      <img
+                        src={user.user_profile_image_url}
+                        alt={user.username}
+                        className="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center flex-shrink-0">
+                        <User2 className="w-4 h-4 text-white" />
+                      </div>
+                    )}
+                    <div className="flex flex-col items-start min-w-0 flex-1">
+                      <span className="text-sm font-medium truncate w-full">
+                        {user?.username || "Guest"}
+                      </span>
+                      <span className="text-xs text-muted-foreground truncate w-full">
+                        {user?.email || "<e-mail>"}
+                      </span>
+                    </div>
+                  </div>
+                  <ChevronUp className="ml-auto flex-shrink-0" />
+                </SidebarMenuButton>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                side="top"
+                align="center"
+                className="w-[var(--radix-dropdown-menu-trigger-width)] bg-popover border rounded-md shadow-md p-1"
+              >
+                <DropdownMenuItem className="cursor-pointer hover:bg-accent rounded-sm px-2 py-1.5">
+                  <Link to="#" className="flex items-center w-full">
+                    <User2 className="mr-2 h-4 w-4" />
+                    <span>My Profile</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="cursor-pointer hover:bg-accent rounded-sm px-2 py-1.5"
+                  onClick={logout}
+                >
+                  <LogOut />
+                  <span className="flex items-center w-full">Sign Out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   );

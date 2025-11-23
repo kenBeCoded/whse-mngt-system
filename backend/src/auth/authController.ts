@@ -116,6 +116,8 @@ router.get(
         role: user.role,
         createdAt: user.created_at,
         updatedAt: user.updated_at,
+        user_profile_image_url: user.user_profile_image_url,
+        email: user.email,
       });
     } catch (error) {
       console.error("Profile error:", error);
