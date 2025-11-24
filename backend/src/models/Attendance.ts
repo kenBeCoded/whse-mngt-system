@@ -123,7 +123,8 @@ export class Attendance {
   }) {
     /**
      * Create or update attendance records based on update_code.
-     * update_code: 0 = create (check-in submitted)
+     * update_code:
+     * 0 = create (check-in submitted)
      * 1 = check-in update
      * 2 = check-out update
      */
