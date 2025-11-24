@@ -26,8 +26,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 import { useState, useMemo } from "react";
-import { DataTablePagination } from "../../components/data-table/data-table-pagination";
-import { DataTableViewOptions } from "../../components/data-table/data-table-column-toggle";
 import type { AttendanceRecords } from "@/store/attendance-store";
 
 import { CalendarIcon } from "lucide-react";
@@ -41,6 +39,8 @@ import {
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
 import type { DateRange } from "react-day-picker";
+import { DataTableViewOptions } from "@/components/data-table/data-table-column-toggle";
+import { DataTablePagination } from "@/components/data-table/data-table-pagination";
 
 interface DataTableProps {
   columns: ColumnDef<AttendanceRecords, unknown>[];

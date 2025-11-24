@@ -14,8 +14,8 @@ import HomePage from "./pages/HomePage";
 import MainPage from "./app/MainPage";
 import { ThemeProvider } from "./components/theme-provider";
 import { UsersPage } from "./app/user-table/page";
-import { AttendanceRecordsPage } from "./app/attendance-table/page";
 import { Toaster } from "@/components/ui/sonner";
+import { AttendanceRecordsPage } from "./app/attendance/attendance-table/page";
 
 function App() {
   return (

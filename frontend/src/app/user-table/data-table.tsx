@@ -97,7 +97,7 @@ export function DataTable({
         // Convert back to user IDs and update store
         Object.keys(newSelection).forEach((rowIndex) => {
           const user = data[parseInt(rowIndex)];
-          if (user && newSelection[rowIndex]) {
+          if (user && user.user_account_id && newSelection[rowIndex]) {
             if (!selectedUsers.includes(user.user_account_id)) {
               toggleUserSelection(user.user_account_id);
             }

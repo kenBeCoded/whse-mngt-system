@@ -292,7 +292,9 @@ export const useUserStore = create<UserState>()(
           if (response.status === 200 || response.status === 204) {
             set((state) => ({
               users: state.users.filter(
-                (user) => !userIds.includes(user.user_account_id)
+                (user) =>
+                  user.user_account_id &&
+                  !userIds.includes(user.user_account_id)
               ),
               selectedUsers: state.selectedUsers.filter(
                 (id) => !userIds.includes(id)
@@ -328,7 +330,9 @@ export const useUserStore = create<UserState>()(
 
       selectAllUsers: () => {
         set((state) => ({
-          selectedUsers: state.users.map((user) => user.user_account_id),
+          selectedUsers: state.users
+            .map((user) => user.user_account_id)
+            .filter((id): id is string => id !== undefined),
         }));
       },
 

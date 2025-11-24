@@ -1,7 +1,11 @@
-import { createContext, useState, useEffect, type ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { authService } from "../services/userService";
 import { setAuthToken } from "../api/axios";
 import type { AxiosError } from "axios";
+import { AuthContext } from "./AuthContext";
+
+
+
 interface User {
   id: number;
   username: string;
@@ -11,23 +15,10 @@ interface User {
   user_profile_image_url: string;
   email?: string;
 }
-interface AuthContextType {
-  user: User | null;
-  accessToken: string | null;
-  login: (email: string, password: string) => Promise<void>;
-  logout: () => Promise<void>;
-  loading: boolean;
-  error: string | null;
-  clearError: () => void;
-}
 
 interface ErrorResponse {
   message: string;
 }
-
-export const AuthContext = createContext<AuthContextType | undefined>(
-  undefined
-);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
