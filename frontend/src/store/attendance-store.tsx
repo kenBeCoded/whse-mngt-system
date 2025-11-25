@@ -17,7 +17,7 @@ export interface AttendanceRecords {
   middle_name: string;
   last_name: string;
   gender: string;
-  user_profile_image_url: string;
+  user_profile_image_url: string | null;
   role: string;
   check_in_image_url: string | null;
   check_out_image_url: string | null;
@@ -36,6 +36,10 @@ interface AttendanceState {
 
   // User CRUD operations
   fetchRecord: (user_id: number) => Promise<void>;
+  fetchRecordByID: (
+    user_id: number,
+    selected_date: string
+  ) => AttendanceRecords | undefined;
   //   addUser: (user: Omit<Users, "user_account_id">) => Promise<void>;
   //   updateUser: (updatedUser: Users) => Promise<void>;
   //   deleteUser: (username: string) => Promise<void>;
@@ -84,6 +88,38 @@ export const useAttendanceStore = create<AttendanceState>()(
           set({ isLoading: false });
         }
       },
+
+      fetchRecordByID: async (user_id, selected_date) => {
+        if (!selected_date) {
+          set({ isLoading: false, error: "No selected date detected!" });
+          return;
+        }
+        if (!user_id) {
+          // Handle case where user is not logged in or ID is missing
+          set({ isLoading: false, error: "User is not authenticated!" });
+          return;
+        }
+
+        set({ isLoading: true, error: null });
+
+        try {
+          const response = await API.post(
+            "/api/attendance/get-attendance-record",
+            { request_code: 1, user_id, selected_date }
+          );
+          return { attendance_record: response.data.data };
+          // set({ Attendance: response.data.data });
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch attendance records";
+          set({ error: errorMessage });
+        } finally {
+          set({ isLoading: false });
+        }
+      },
+
       clearError: () => set({ error: null }),
       reset: () => set({ Attendance: [], isLoading: false, error: null }),
     }),

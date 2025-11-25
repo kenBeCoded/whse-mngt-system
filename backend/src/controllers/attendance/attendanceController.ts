@@ -53,7 +53,7 @@ export const getAttendanceRecord = async (
 ): Promise<void> => {
   try {
     const {
-      body: { request_code, user_id },
+      body: { request_code, user_id, selected_date },
     } = req;
 
     // 0: get all (use for audit access account)
@@ -68,7 +68,8 @@ export const getAttendanceRecord = async (
 
       case 1:
         result = await Attendance.get_attendance_records_byID(
-          parseInt(user_id)
+          parseInt(user_id),
+          selected_date
         );
         break;
 

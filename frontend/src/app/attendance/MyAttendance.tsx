@@ -1,6 +1,4 @@
-"use client";
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +11,8 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { UploadAttendanceDialog } from "./UploadAttendanceDialog";
+import { formatDateToYYYYMMDD } from "@/utils/formatTime";
+import { useAttendanceStore } from "@/store/attendance-store";
 
 // Mock attendance record type - replace with your actual type
 interface AttendanceRecord {
@@ -25,40 +25,58 @@ interface AttendanceRecord {
 }
 
 export default function MyAttendance() {
+  const { fetchRecordByID } = useAttendanceStore();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendanceRecord, setAttendanceRecord] =
     useState<AttendanceRecord | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  const [calendarDate, setCalendarDate] = useState<Date | undefined>(
+    selectedDate
+  );
+
+  const fetchAttendanceRecord = useCallback(
+    async (date: Date) => {
+      setIsLoading(true);
+      const formattedDate = formatDateToYYYYMMDD(date);
+      console.log(formattedDate);
+      try {
+        // TODO: Replace with actual API call
+        // const response = await API.get(`/api/attendance/get-by-date`, {
+        //   params: { date: formattedDate }
+        // });
+        // setAttendanceRecord(response.data);
+        const test = await fetchRecordByID(2, formattedDate);
+        console.log(test);
+
+        // Mock data for demonstration
+        setAttendanceRecord({
+          date: formattedDate,
+          check_in_time: "08:00:00",
+          check_out_time: "20:00:00",
+          check_in_photo_url: null,
+          check_out_photo_url: null,
+          audit_status: "pending",
+        });
+      } catch (error) {
+        console.error("Error fetching attendance record:", error);
+        setAttendanceRecord(null);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [fetchRecordByID] // Dependencies for useCallback
+  );
+
   // Fetch attendance record based on selected date
   useEffect(() => {
     fetchAttendanceRecord(selectedDate);
-  }, [selectedDate]);
+  }, [selectedDate, fetchAttendanceRecord]);
 
-  const fetchAttendanceRecord = async (date: Date) => {
-    setIsLoading(true);
-    console.log(date);
-    try {
-      // TODO: Replace with actual API call
-      // const response = await API.get(`/api/attendance/get-by-date`, {
-      //   params: { date: format(date, 'yyyy-MM-dd') }
-      // });
-      // setAttendanceRecord(response.data);
-
-      // Mock data for demonstration
-      setAttendanceRecord({
-        date: format(date, "yyyy-MM-dd"),
-        check_in_time: "08:00:00",
-        check_out_time: "20:00:00",
-        check_in_photo_url: null,
-        check_out_photo_url: null,
-        audit_status: "pending",
-      });
-    } catch (error) {
-      console.error("Error fetching attendance record:", error);
-      setAttendanceRecord(null);
-    } finally {
-      setIsLoading(false);
+  const handleDateSelect = (date: Date | undefined) => {
+    setCalendarDate(date);
+    if (date) {
+      setSelectedDate(date); // Only update the main app state when a selection is confirmed
     }
   };
 
@@ -106,8 +124,9 @@ export default function MyAttendance() {
             <PopoverContent className="w-auto p-0" align="center">
               <CalendarComponent
                 mode="single"
-                selected={selectedDate}
-                onSelect={(date) => date && setSelectedDate(date)}
+                selected={calendarDate}
+                defaultMonth={calendarDate}
+                onSelect={handleDateSelect}
                 autoFocus
               />
             </PopoverContent>
@@ -126,11 +145,11 @@ export default function MyAttendance() {
         </div>
 
         {/* Selected Date Display */}
-        {/* <div className="text-center">
+        <div className="text-center">
           <p className="text-sm text-muted-foreground mb-2">
-            {format(selectedDate, 'MMMM dd, yyyy')}
+            {format(selectedDate, "MMMM dd, yyyy")}
           </p>
-        </div> */}
+        </div>
 
         {/* Day Section */}
         <div className="text-center space-y-6">

@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2MzU1NTY1NSwiZXhwIjoxNzYzNTU2NTU1fQ._G9Izzk-Kr9tUJgJRnomDHOg7FVZfDeKkZlPNPlRzuI
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NDA3NTM5MCwiZXhwIjoxNzY0MDc2MjkwfQ.AUunYVpLqPAB-ca_zhmio2FEzl9G6DbdonaVACaFlIQ
 
 
 # update code(create_attendance_records):
@@ -85,10 +85,13 @@ Authorization: Bearer {{AT}}
 ###
 
 #? get attendance records
-get http://localhost:8000/api/attendance/get-attendance-record
+post http://localhost:8000/api/attendance/get-attendance-record
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
-{}
+{
+    "request_code": 0
+}
 
 
 ###
@@ -96,18 +99,21 @@ Content-Type: application/json
 
 patch http://localhost:8000/api/attendance/reset-attendance-record
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
 {
     "id": 32
 }
 
 ###
-#? reset attendance records
+#? get attendance records by id
 
-get http://localhost:8000/api/attendance/get-attendance-record
+post http://localhost:8000/api/attendance/get-attendance-record
 Content-Type: application/json
+Authorization: Bearer {{AT}}
 
 {
     "request_code": 1,
-    "user_id": 2
+    "user_id": 2,
+    "selected_date": "2025-10-10"
 }
