@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,7 +17,8 @@ import { Badge } from "@/components/ui/badge";
 import { X, Upload, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/supabase";
-import axios from "axios";
+import axios from "../../api/axios";
+import type { User } from "@/context/AuthContext";
 
 const API = axios;
 
@@ -43,20 +44,18 @@ interface UploadAttendanceDialogProps {
   selectedDate: Date;
   attendanceRecord: AttendanceRecord | null;
   onSuccess: () => void;
+  user: User;
 }
 
 export const UploadAttendanceDialog = ({
   selectedDate,
   attendanceRecord,
   onSuccess,
+  user,
 }: UploadAttendanceDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [checkInPreview, setCheckInPreview] = useState<string | null>(
-    attendanceRecord?.check_in_photo_url ?? null
-  );
-  const [checkOutPreview, setCheckOutPreview] = useState<string | null>(
-    attendanceRecord?.check_out_photo_url ?? null
-  );
+  const [checkInPreview, setCheckInPreview] = useState<string | null>(null);
+  const [checkOutPreview, setCheckOutPreview] = useState<string | null>(null);
 
   const checkInInputRef = useRef<HTMLInputElement>(null);
   const checkOutInputRef = useRef<HTMLInputElement>(null);
@@ -71,8 +70,35 @@ export const UploadAttendanceDialog = ({
     resolver: zodResolver(attendanceSchema),
   });
 
+  useEffect(() => {
+    if (!isOpen) {
+      // Reset form and clear photo selections when dialog closes
+      reset();
+      setValue("check_in_photo", undefined);
+      setValue("check_out_photo", undefined);
+
+      // Reset previews to attendance record photos (if any)
+      setCheckInPreview(attendanceRecord?.check_in_photo_url ?? null);
+      setCheckOutPreview(attendanceRecord?.check_out_photo_url ?? null);
+
+      // Clear file input values
+      if (checkInInputRef.current) {
+        checkInInputRef.current.value = "";
+      }
+      if (checkOutInputRef.current) {
+        checkOutInputRef.current.value = "";
+      }
+    }
+  }, [isOpen, reset, setValue, attendanceRecord]);
+
   const checkInPhoto = watch("check_in_photo");
   const checkOutPhoto = watch("check_out_photo");
+
+  // Update preview states when attendanceRecord changes
+  useEffect(() => {
+    setCheckInPreview(attendanceRecord?.check_in_photo_url ?? null);
+    setCheckOutPreview(attendanceRecord?.check_out_photo_url ?? null);
+  }, [attendanceRecord]);
 
   // Handle check-in photo change
   const handleCheckInChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -95,7 +121,7 @@ export const UploadAttendanceDialog = ({
   // Clear check-in photo
   const clearCheckInPhoto = () => {
     setValue("check_in_photo", undefined);
-    setCheckInPreview(null);
+    setCheckInPreview(attendanceRecord?.check_in_photo_url ?? null);
     if (checkInInputRef.current) {
       checkInInputRef.current.value = "";
     }
@@ -104,7 +130,7 @@ export const UploadAttendanceDialog = ({
   // Clear check-out photo
   const clearCheckOutPhoto = () => {
     setValue("check_out_photo", undefined);
-    setCheckOutPreview(null);
+    setCheckOutPreview(attendanceRecord?.check_out_photo_url ?? null);
     if (checkOutInputRef.current) {
       checkOutInputRef.current.value = "";
     }
@@ -135,31 +161,61 @@ export const UploadAttendanceDialog = ({
   // Submit form
   const onSubmit = async (data: AttendanceFormData) => {
     try {
-      let checkInPhotoUrl = attendanceRecord?.check_in_photo_url;
-      let checkOutPhotoUrl = attendanceRecord?.check_out_photo_url;
+      const updates: Array<{
+        imageUrl: string;
+        recordType: "check_in" | "check_out";
+        imageCaptureDate: Date;
+        updateCode: number;
+      }> = [];
 
       // Upload check-in photo if new one is provided
       if (data.check_in_photo) {
-        checkInPhotoUrl = await uploadImage(data.check_in_photo, "check_in");
+        const checkInPhotoUrl = await uploadImage(
+          data.check_in_photo,
+          "check_in"
+        );
+        updates.push({
+          imageUrl: checkInPhotoUrl,
+          recordType: "check_in",
+          imageCaptureDate: new Date(data.check_in_photo.lastModified),
+          updateCode: 0,
+        });
       }
 
       // Upload check-out photo if new one is provided
       if (data.check_out_photo) {
-        checkOutPhotoUrl = await uploadImage(data.check_out_photo, "check_out");
+        const checkOutPhotoUrl = await uploadImage(
+          data.check_out_photo,
+          "check_out"
+        );
+        updates.push({
+          imageUrl: checkOutPhotoUrl,
+          recordType: "check_out",
+          imageCaptureDate: new Date(data.check_out_photo.lastModified),
+          updateCode: 2,
+        });
       }
 
-      // Prepare payload
-      const payload = {
-        date: format(selectedDate, "yyyy-MM-dd"),
-        check_in_photo_url: checkInPhotoUrl,
-        check_out_photo_url: checkOutPhotoUrl,
-      };
+      // Submit all updates to API
+      const responses = await Promise.all(
+        updates.map((update) =>
+          API.post("/api/attendance/create-attendance-record", {
+            username: user.username,
+            image_url: update.imageUrl,
+            selected_date: new Date(selectedDate),
+            image_capture_date: update.imageCaptureDate,
+            record_type: update.recordType,
+            update_code: update.updateCode,
+          })
+        )
+      );
 
-      // Submit to API
-      // TODO: Replace with your actual API endpoint
-      const response = await API.post("/api/attendance/upload", payload);
+      // Check if all requests succeeded
+      const allSucceeded = responses.every(
+        (response) => response.status === 200 || response.status === 201
+      );
 
-      if (response.status === 200 || response.status === 201) {
+      if (allSucceeded) {
         toast.success("Attendance uploaded successfully", {
           description: format(new Date(), "MMM dd, yyyy 'at' h:mm a"),
         });
@@ -178,9 +234,8 @@ export const UploadAttendanceDialog = ({
 
   // Determine if check-out can be uploaded
   const canUploadCheckOut =
-    attendanceRecord?.check_in_time !== null ||
-    checkInPhoto !== undefined ||
-    checkInPreview !== null;
+    attendanceRecord !== null &&
+    (attendanceRecord.check_in_time !== null || checkInPhoto !== undefined);
 
   // Determine submit button text
   const getSubmitButtonText = () => {
@@ -261,11 +316,21 @@ export const UploadAttendanceDialog = ({
                 onChange={handleCheckInChange}
                 className="hidden"
                 id="check_in_photo"
-                disabled={isSubmitting}
+                disabled={
+                  isSubmitting || !!attendanceRecord?.check_in_photo_url
+                }
               />
               <label
-                htmlFor="check_in_photo"
-                className="flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                htmlFor={
+                  attendanceRecord?.check_in_photo_url
+                    ? undefined
+                    : "check_in_photo"
+                }
+                className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg transition-colors ${
+                  attendanceRecord?.check_in_photo_url
+                    ? "cursor-default"
+                    : "cursor-pointer hover:bg-gray-50"
+                }`}
               >
                 {checkInPreview ? (
                   <div className="relative w-full h-full">
@@ -274,7 +339,7 @@ export const UploadAttendanceDialog = ({
                       alt="Check In"
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    {checkInPhoto && (
+                    {checkInPhoto && !attendanceRecord?.check_in_photo_url && (
                       <Button
                         type="button"
                         variant="destructive"
@@ -329,12 +394,22 @@ export const UploadAttendanceDialog = ({
                 onChange={handleCheckOutChange}
                 className="hidden"
                 id="check_out_photo"
-                disabled={isSubmitting || !canUploadCheckOut}
+                disabled={
+                  isSubmitting ||
+                  !canUploadCheckOut ||
+                  !!attendanceRecord?.check_out_photo_url
+                }
               />
               <label
-                htmlFor="check_out_photo"
+                htmlFor={
+                  !canUploadCheckOut || attendanceRecord?.check_out_photo_url
+                    ? undefined
+                    : "check_out_photo"
+                }
                 className={`flex flex-col items-center justify-center w-full h-48 border-2 border-dashed rounded-lg transition-colors ${
-                  canUploadCheckOut
+                  attendanceRecord?.check_out_photo_url
+                    ? "cursor-default"
+                    : canUploadCheckOut
                     ? "cursor-pointer hover:bg-gray-50"
                     : "cursor-not-allowed bg-gray-50 opacity-60"
                 }`}
@@ -346,20 +421,21 @@ export const UploadAttendanceDialog = ({
                       alt="Check Out"
                       className="w-full h-full object-cover rounded-lg"
                     />
-                    {checkOutPhoto && (
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="icon"
-                        className="absolute top-2 right-2 h-8 w-8 rounded-full"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          clearCheckOutPhoto();
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
+                    {checkOutPhoto &&
+                      !attendanceRecord?.check_out_photo_url && (
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 h-8 w-8 rounded-full"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            clearCheckOutPhoto();
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -383,23 +459,28 @@ export const UploadAttendanceDialog = ({
           </div>
 
           {/* Submit Button */}
-          <div className="flex justify-end gap-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setIsOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || isSubmitDisabled}
-              className="min-w-[120px]"
-            >
-              {isSubmitting ? "Submitting..." : getSubmitButtonText()}
-            </Button>
-          </div>
+          {!(
+            attendanceRecord?.check_in_photo_url &&
+            attendanceRecord?.check_out_photo_url
+          ) && (
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsOpen(false)}
+                disabled={isSubmitting}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || isSubmitDisabled}
+                className="min-w-[120px]"
+              >
+                {isSubmitting ? "Submitting..." : getSubmitButtonText()}
+              </Button>
+            </div>
+          )}
         </form>
       </DialogContent>
     </Dialog>

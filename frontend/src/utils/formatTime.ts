@@ -63,7 +63,23 @@ export function formatDateToYYYYMMDD(date: Date): string {
   // Get the day of the month (1-31) and pad to 2 digits
   const day = ("0" + date.getDate()).slice(-2);
 
-  console.log(`${year}-${month}-${day}`);
-
   return `${year}-${month}-${day}`; // result sample "2025-10-09"
+}
+
+export function formatUtcStringToHHmmss(utcString: string): string {
+  // 1. Create a Date object from the string.
+  const date = new Date(utcString);
+
+  // 2. Helper function to ensure single-digit numbers are padded with a leading zero.
+  // We use .padStart(2, '0') for this.
+  const pad = (num: number): string => num.toString().padStart(2, "0");
+
+  // 3. Get the UTC hours, minutes, and seconds.
+  // Using UTC methods ensures the output is always 12:34:33 for the sample input.
+  const hours = date.getUTCHours();
+  const minutes = date.getUTCMinutes();
+  const seconds = date.getUTCSeconds();
+
+  // 4. Format and concatenate the parts.
+  return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }

@@ -160,8 +160,8 @@ export class Attendance {
       let attendanceRecord;
 
       // Derive the attendance_date (DATE) from image_capture_date if provided, else use current date
-      const attendanceDateObj = data.image_capture_date
-        ? new Date(data.image_capture_date)
+      const attendanceDateObj = data.selected_date
+        ? new Date(data.selected_date)
         : new Date();
       const attendance_date = attendanceDateObj.toLocaleString().split("T")[0];
 

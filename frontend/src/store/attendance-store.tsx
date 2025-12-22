@@ -23,6 +23,10 @@ export interface AttendanceRecords {
   check_out_image_url: string | null;
 }
 
+export interface FetchRecordResponse {
+  attendance_record: AttendanceRecords[];
+}
+
 interface AttendanceState {
   // State
   Attendance: AttendanceRecords[];
@@ -37,9 +41,9 @@ interface AttendanceState {
   // User CRUD operations
   fetchRecord: (user_id: number) => Promise<void>;
   fetchRecordByID: (
-    user_id: number,
+    user_id: number | string,
     selected_date: string
-  ) => AttendanceRecords | undefined;
+  ) => Promise<FetchRecordResponse | undefined>
   //   addUser: (user: Omit<Users, "user_account_id">) => Promise<void>;
   //   updateUser: (updatedUser: Users) => Promise<void>;
   //   deleteUser: (username: string) => Promise<void>;

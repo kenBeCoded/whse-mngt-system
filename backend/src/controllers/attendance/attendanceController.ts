@@ -9,6 +9,8 @@ export const createAttendanceRec = async (
   try {
     const { body } = req;
 
+    console.log(body)
+
     const result = await Attendance.create_attendance_records(body);
 
     res

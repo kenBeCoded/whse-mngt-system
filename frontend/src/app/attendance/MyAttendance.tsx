@@ -11,8 +11,19 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { UploadAttendanceDialog } from "./UploadAttendanceDialog";
-import { formatDateToYYYYMMDD } from "@/utils/formatTime";
-import { useAttendanceStore } from "@/store/attendance-store";
+import {
+  formatDateToYYYYMMDD,
+  formatUtcStringToHHmmss,
+} from "@/utils/formatTime";
+import {
+  useAttendanceStore,
+  type AttendanceRecords,
+  type FetchRecordResponse,
+} from "@/store/attendance-store";
+import { useAuth } from "@/hooks/useAuth";
+
+// Audit status type
+type AuditStatus = "pending" | "approved" | "rejected" | null;
 
 // Mock attendance record type - replace with your actual type
 interface AttendanceRecord {
@@ -21,10 +32,14 @@ interface AttendanceRecord {
   check_out_time: string | null;
   check_in_photo_url: string | null;
   check_out_photo_url: string | null;
-  audit_status: "pending" | "approved" | "rejected" | null;
+  check_in_image_url: string | null;
+  check_out_image_url: string | null;
+  status: string | null;
+  audit_status: AuditStatus;
 }
 
 export default function MyAttendance() {
+  const { user } = useAuth();
   const { fetchRecordByID } = useAttendanceStore();
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [attendanceRecord, setAttendanceRecord] =
@@ -35,29 +50,60 @@ export default function MyAttendance() {
     selectedDate
   );
 
+  // Helper function to validate and cast status
+  const validateAuditStatus = (status: string | null): AuditStatus => {
+    if (
+      status === "pending" ||
+      status === "approved" ||
+      status === "rejected"
+    ) {
+      return status;
+    }
+    return null;
+  };
+
   const fetchAttendanceRecord = useCallback(
     async (date: Date) => {
       setIsLoading(true);
       const formattedDate = formatDateToYYYYMMDD(date);
-      console.log(formattedDate);
       try {
-        // TODO: Replace with actual API call
-        // const response = await API.get(`/api/attendance/get-by-date`, {
-        //   params: { date: formattedDate }
-        // });
-        // setAttendanceRecord(response.data);
-        const test = await fetchRecordByID(2, formattedDate);
-        console.log(test);
+        if (!user || !user.id) {
+          return;
+        }
+        const response: FetchRecordResponse | undefined = await fetchRecordByID(
+          user?.id,
+          formattedDate
+        );
 
-        // Mock data for demonstration
-        setAttendanceRecord({
-          date: formattedDate,
-          check_in_time: "08:00:00",
-          check_out_time: "20:00:00",
-          check_in_photo_url: null,
-          check_out_photo_url: null,
-          audit_status: "pending",
-        });
+        if (response && response.attendance_record.length > 0) {
+          // Step 2: Extract the first record and explicitly type it as AttendanceRecord
+          const Users: AttendanceRecords = response.attendance_record[0];
+
+          console.log(Users);
+
+          // Mock data for demonstration and setting the record
+          setAttendanceRecord({
+            date: formattedDate,
+
+            // These properties now exist on 'Users'
+            check_in_time: Users.check_in_time
+              ? formatUtcStringToHHmmss(Users.check_in_time)
+              : null,
+
+            check_out_time: Users.check_out_time
+              ? formatUtcStringToHHmmss(Users.check_out_time)
+              : null,
+
+            check_in_photo_url: Users.check_in_image_url ?? null,
+            check_out_photo_url: Users.check_out_image_url ?? null,
+            check_in_image_url: Users.check_in_image_url ?? null,
+            check_out_image_url: Users.check_out_image_url ?? null,
+            status: Users.status ?? null,
+            audit_status: validateAuditStatus(Users.status),
+          });
+        } else {
+          setAttendanceRecord(null);
+        }
       } catch (error) {
         console.error("Error fetching attendance record:", error);
         setAttendanceRecord(null);
@@ -65,7 +111,7 @@ export default function MyAttendance() {
         setIsLoading(false);
       }
     },
-    [fetchRecordByID] // Dependencies for useCallback
+    [fetchRecordByID, user] // Dependencies for useCallback
   );
 
   // Fetch attendance record based on selected date
@@ -186,6 +232,7 @@ export default function MyAttendance() {
           )}
 
           <UploadAttendanceDialog
+            user={user}
             selectedDate={selectedDate}
             attendanceRecord={attendanceRecord}
             onSuccess={() => fetchAttendanceRecord(selectedDate)}

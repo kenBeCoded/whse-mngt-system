@@ -1,17 +1,17 @@
 import { createContext } from "react";
 
-interface User {
-  id: number;
+export interface User {
+  id: string;
   username: string;
   role: string;
-  updatedAt: string;
   createdAt: string;
+  updatedAt: string;
   user_profile_image_url: string;
-  email?: string;
+  email: string;
 }
 
 export interface AuthContextType {
-  user: User | null;
+  user: User;
   accessToken: string | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
