@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NDA3NTM5MCwiZXhwIjoxNzY0MDc2MjkwfQ.AUunYVpLqPAB-ca_zhmio2FEzl9G6DbdonaVACaFlIQ
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NjY2MjcyNiwiZXhwIjoxNzY2NjYzNjI2fQ.Jjd0dMvHj6j1NI5lkh7CxaN9fiOAl8G2TR-kW59Ylwk
 
 
 # update code(create_attendance_records):
@@ -43,15 +43,16 @@ Authorization: Bearer {{AT}}
 #   0 - update status to pass
 #   1 - update status to fail
 #   2 - revert status to pending
+#   3 - update schedule attendance records 
 
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "id": 38,
-    "attendance_date": "2025-10-12",
-    "update_code": 2
+    "id": "54",
+    "attendance_date": "2025-12-25",
+    "update_code": 1
 }
 
 ###

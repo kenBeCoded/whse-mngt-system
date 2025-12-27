@@ -35,8 +35,9 @@ export const auditAttendanceUpdate = async (
     // }
 
     const result = await Attendance.audit_attendance_update(body);
+    
 
-    if (!result.success) {
+    if (!result) {
       res.status(400).json({ message: result.message });
     }
 

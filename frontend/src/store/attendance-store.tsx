@@ -19,6 +19,7 @@ export interface AttendanceRecords {
   gender: string;
   user_profile_image_url: string | null;
   role: string;
+  ot_id?: string | null;
   check_in_image_url: string | null;
   check_out_image_url: string | null;
 }
@@ -43,14 +44,8 @@ interface AttendanceState {
   fetchRecordByID: (
     user_id: number | string,
     selected_date: string
-  ) => Promise<FetchRecordResponse | undefined>
-  //   addUser: (user: Omit<Users, "user_account_id">) => Promise<void>;
-  //   updateUser: (updatedUser: Users) => Promise<void>;
-  //   deleteUser: (username: string) => Promise<void>;
-  //   deleteMultipleUsers: (userIds: string[]) => Promise<void>;
+  ) => Promise<FetchRecordResponse | undefined>;
 
-  // Utility functions
-  //   getUserById: (userId: string) => Users | undefined;
   clearError: () => void;
   reset: () => void;
 }

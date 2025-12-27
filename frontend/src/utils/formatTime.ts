@@ -1,4 +1,3 @@
-// formatTime.ts
 export function formatTimeFromTimestamp(timestamp: string | null): string {
   if (!timestamp) return "--:--";
 
@@ -50,7 +49,11 @@ export function formatCustomDate1(dateString: string | Date): string {
 
   // 3. Combine them with "at"
   return `${formattedDate} at ${formattedTime}`;
+
+  // sample result: "Wednesday, December 24, 2025 at 4:14 PM"
 }
+
+// formatCustomDate1
 
 export function formatDateToYYYYMMDD(date: Date): string {
   // Get the year, padded to 4 digits

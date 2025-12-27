@@ -69,7 +69,9 @@ export class Attendance {
           attendance_records ar
           LEFT JOIN users u ON ar.user_id = u.id
           LEFT JOIN attendance_images ci ON ar.check_in_image_id = ci.id
-          LEFT JOIN attendance_images co ON ar.check_out_image_id = co.id;
+          LEFT JOIN attendance_images co ON ar.check_out_image_id = co.id
+      ORDER BY 
+          ar.attendance_date DESC;
       `;
 
       const result = await pool.query(insertQuery);
@@ -346,10 +348,10 @@ export class Attendance {
     update_code: number;
     attendance_date: string;
     id: number;
-    u_sched_in: string;
-    u_sched_out: string;
-    idArr: number[];
-    ot_hours: number;
+    u_sched_in?: string;
+    u_sched_out?: string;
+    idArr?: number[];
+    ot_hours?: number;
   }): Promise<any> {
     /**
      * update code:

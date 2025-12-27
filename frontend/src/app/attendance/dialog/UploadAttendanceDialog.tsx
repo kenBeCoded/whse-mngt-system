@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, Upload, Clock } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/supabase";
-import axios from "../../api/axios";
+import axios from "../../../api/axios";
 import type { User } from "@/context/AuthContext";
 
 const API = axios;
@@ -29,7 +29,7 @@ interface AttendanceRecord {
   check_out_time: string | null;
   check_in_photo_url: string | null;
   check_out_photo_url: string | null;
-  audit_status: "pending" | "approved" | "rejected" | null;
+  status: "pending" | "pass" | "fail" | null;
 }
 
 // Schema for form validation
@@ -251,9 +251,9 @@ export const UploadAttendanceDialog = ({
   // Get audit status color
   const getAuditStatusColor = (status: string | null) => {
     switch (status) {
-      case "approved":
+      case "pass":
         return "bg-green-100 text-green-700 border-green-300";
-      case "rejected":
+      case "fail":
         return "bg-red-100 text-red-700 border-red-300";
       case "pending":
         return "bg-yellow-100 text-yellow-700 border-yellow-300";
@@ -275,16 +275,17 @@ export const UploadAttendanceDialog = ({
           <DialogDescription>
             Upload your attendance photos for verification
           </DialogDescription>
-          <div className="space-y-2 pt-2">
+          <div className="flex items-center justify-between pt-2">
             <div className="font-medium text-base text-foreground">
               {format(selectedDate, "EEEE, MMMM dd, yyyy")}
             </div>
-            {attendanceRecord?.audit_status && (
+
+            {attendanceRecord?.status && (
               <Badge
                 variant="outline"
-                className={getAuditStatusColor(attendanceRecord.audit_status)}
+                className={getAuditStatusColor(attendanceRecord.status)}
               >
-                Status: {attendanceRecord.audit_status.toUpperCase()}
+                Status: {attendanceRecord.status.toUpperCase()}
               </Badge>
             )}
           </div>

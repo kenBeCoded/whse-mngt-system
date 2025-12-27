@@ -10,7 +10,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { UploadAttendanceDialog } from "./UploadAttendanceDialog";
+import { UploadAttendanceDialog } from "./dialog/UploadAttendanceDialog";
 import {
   formatDateToYYYYMMDD,
   formatUtcStringToHHmmss,
@@ -78,8 +78,6 @@ export default function MyAttendance() {
         if (response && response.attendance_record.length > 0) {
           // Step 2: Extract the first record and explicitly type it as AttendanceRecord
           const Users: AttendanceRecords = response.attendance_record[0];
-
-          console.log(Users);
 
           // Mock data for demonstration and setting the record
           setAttendanceRecord({

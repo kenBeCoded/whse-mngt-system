@@ -2,6 +2,7 @@
 import type { ColumnDef } from "@tanstack/react-table";
 import type { AttendanceRecords } from "@/store/attendance-store";
 import { Badge } from "@/components/ui/badge";
+import AuditAttendanceDialog from "../dialog/AuditAttendanceDialog";
 
 // Remove the duplicate type definition and use the one from the store
 
@@ -86,4 +87,25 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
       );
     },
   },
+
+  {
+    id: "actions",
+        header: "Actions",
+        cell: ({ row }) => {
+          const user = row.original;
+          // const onSave =
+          //   (table.options.meta as TableMeta)?.onSave ??
+          //   ((u: Users) => {
+          //     void u;
+          //   });
+
+          // console.log(row.original)
+    
+          return (
+            <div className="flex gap-2">
+              <AuditAttendanceDialog data={user} />
+            </div>
+          );
+        },
+  }
 ];
