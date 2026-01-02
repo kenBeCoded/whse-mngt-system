@@ -9,8 +9,6 @@ export const createAttendanceRec = async (
   try {
     const { body } = req;
 
-    console.log(body)
-
     const result = await Attendance.create_attendance_records(body);
 
     res
@@ -35,7 +33,6 @@ export const auditAttendanceUpdate = async (
     // }
 
     const result = await Attendance.audit_attendance_update(body);
-    
 
     if (!result) {
       res.status(400).json({ message: result.message });

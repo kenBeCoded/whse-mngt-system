@@ -157,6 +157,13 @@ export class Attendance {
         return { message: "user not found" };
       }
 
+      if (!user.u_sched_in || !user.u_sched_out) {
+        await client.query("ROLLBACK");
+        return {
+          message: "The schedule is incomplete or has not been set properly.",
+        };
+      }
+
       // Variable to hold the newly created image row
       let imageRow: any;
       let attendanceRecord;
@@ -358,7 +365,7 @@ export class Attendance {
      * 0 - update status to pass
      * 1 - update status to fail
      * 2 - revert status to pending (delete images and reset check-in/out data)
-     * 3 - update attendance record schedule
+     * 3 - update/modify attendance record schedule
      * 4 - update overtime (multiple or single)
      */
 
@@ -490,7 +497,7 @@ export class Attendance {
 
           break;
 
-        // update attendance record schedule
+        // update/modify attendance record schedule
         case 3:
           if (
             !data.u_sched_in ||
