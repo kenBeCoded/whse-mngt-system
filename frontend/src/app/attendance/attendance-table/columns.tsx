@@ -55,6 +55,10 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     cell: ({ row }) => {
       const status = row.original.status;
 
+      if (!status) {
+        return <Badge variant="outline">N/A</Badge>;
+      }
+
       // Define variants or classes for your badges
       let variant: "default" | "secondary" | "destructive" | "outline" =
         "default";
@@ -90,22 +94,22 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
 
   {
     id: "actions",
-        header: "Actions",
-        cell: ({ row }) => {
-          const user = row.original;
-          // const onSave =
-          //   (table.options.meta as TableMeta)?.onSave ??
-          //   ((u: Users) => {
-          //     void u;
-          //   });
+    header: "Actions",
+    cell: ({ row }) => {
+      const user = row.original;
+      // const onSave =
+      //   (table.options.meta as TableMeta)?.onSave ??
+      //   ((u: Users) => {
+      //     void u;
+      //   });
 
-          // console.log(row.original)
-    
-          return (
-            <div className="flex gap-2">
-              <AuditAttendanceDialog data={user} />
-            </div>
-          );
-        },
-  }
+      // console.log(row.original)
+
+      return (
+        <div className="flex gap-2">
+          <AuditAttendanceDialog data={user} />
+        </div>
+      );
+    },
+  },
 ];

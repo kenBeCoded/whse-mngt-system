@@ -34,7 +34,7 @@ interface AttendanceRecord {
   check_out_photo_url: string | null;
   check_in_image_url: string | null;
   check_out_image_url: string | null;
-  status: string | null;
+  status: "pending" | "pass" | "fail" | null;
   audit_status: AuditStatus;
 }
 
@@ -229,12 +229,14 @@ export default function MyAttendance() {
             </div>
           )}
 
-          <UploadAttendanceDialog
-            user={user}
-            selectedDate={selectedDate}
-            attendanceRecord={attendanceRecord}
-            onSuccess={() => fetchAttendanceRecord(selectedDate)}
-          />
+          {user && (
+            <UploadAttendanceDialog
+              user={user}
+              selectedDate={selectedDate}
+              attendanceRecord={attendanceRecord}
+              onSuccess={() => fetchAttendanceRecord(selectedDate)}
+            />
+          )}
         </div>
 
         {/* Navigation */}

@@ -23,25 +23,6 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="App">
-            {/* <Routes>
-              <Route
-                path="/"
-                element={
-                  <ProtectedRoute>
-                    <HomePage />
-                  </ProtectedRoute>
-                }
-              >
-                <Route index element={<Navigate to={"/admin/dashboard"} />} />
-                <Route path="admin" element={<AppPage />}>
-                  <Route path="dashboard" element={<DashboardPage />}></Route>
-                </Route>
-              </Route> */}
-            {/* <Route path="/login" element={<LoginPage />} /> */}
-            {/* <Route path="/login" element={<Page />} /> */}
-            {/* <Route path="/register" element={<RegisterPage />} /> */}
-            {/* </Routes> */}
-
             <Routes>
               <Route
                 path="/"
