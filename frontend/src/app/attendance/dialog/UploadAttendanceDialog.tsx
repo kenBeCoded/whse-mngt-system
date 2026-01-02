@@ -161,6 +161,16 @@ export const UploadAttendanceDialog = ({
   // Submit form
   const onSubmit = async (data: AttendanceFormData) => {
     try {
+      const checkUserSched = await API.post("/api/users/get-user-by-username", {
+        username: user.username,
+      });
+
+      if (!checkUserSched.data.u_sched_in || !checkUserSched.data.u_sched_out) {
+        toast.error("Failed to upload attendance", {
+          description: "Schedules are incomplete or not set properly.",
+        });
+      }
+
       const updates: Array<{
         imageUrl: string;
         recordType: "check_in" | "check_out";
@@ -224,7 +234,7 @@ export const UploadAttendanceDialog = ({
         onSuccess();
       }
     } catch (error) {
-      console.error("Failed to upload attendance:", error);
+      // console.error("Failed to upload attendance:", error);
       toast.error("Failed to upload attendance", {
         description:
           error instanceof Error ? error.message : "Please try again",
