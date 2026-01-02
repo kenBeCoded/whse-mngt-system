@@ -178,6 +178,8 @@ export class UserModel {
       const query = `
       SELECT user_account_id,
           username,
+          id,
+          password_hash,
           email,
           first_name,
           middle_name,
@@ -185,7 +187,10 @@ export class UserModel {
           gender,
           user_profile_image_url,
           created_at,
-          updated_at
+          updated_at,
+          role,
+          u_sched_in,
+          u_sched_out
       FROM users
       WHERE id = $1
       `;
