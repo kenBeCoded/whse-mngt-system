@@ -16,9 +16,11 @@ import {
   AlertTriangle,
   CheckCircle,
 } from "lucide-react";
-import { useState } from "react";
-import type { AttendanceRecords } from "@/store/attendance-store";
-import axios from "../../../api/axios";
+import { useState, useEffect } from "react";
+import {
+  useAttendanceStore,
+  type AttendanceRecords,
+} from "@/store/attendance-store";
 import { formatDateToYYYYMMDD } from "@/utils/formatTime";
 import { toast } from "sonner";
 
@@ -26,18 +28,28 @@ interface AttendanceDialogProps {
   data: AttendanceRecords;
 }
 
-// type AttendanceAuditUpdate = {
-//   id: string;
-//   attendance_date: string;
-//   update_code: number;
-// };
-
-const API = axios;
-
 const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFailConfirmOpen, setIsFailConfirmOpen] = useState(false);
   const [isPassConfirmOpen, setIsPassConfirmOpen] = useState(false);
+
+  console.log("data",data)
+
+  const {
+    failAttendnaceRecord,
+    passAttendnaceRecord,
+    error,
+    isLoading,
+    clearError,
+  } = useAttendanceStore();
+
+  // Handle errors from store
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
+      clearError();
+    }
+  }, [error, clearError]);
 
   // Function to open image in new tab
   const openImageInNewTab = (imageUrl: string | null) => {
@@ -47,44 +59,49 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
   };
 
   const handleFailed = async () => {
-  try {
-    console.log(
-      "Attendance marked as FAILED for",
-      formatDateToYYYYMMDD(new Date(data.attendance_date))
-    );
+    if (!data.id || !data.attendance_date) {
+      toast.error("Invalid attendance record data.");
+      return;
+    }
+    try {
+      await failAttendnaceRecord(
+        data.id,
+        formatDateToYYYYMMDD(new Date(data.attendance_date))
+      );
 
-    const response = await API.patch("/api/attendance/audit-attendance-update", {
-      id: data.id,
-      attendance_date: formatDateToYYYYMMDD(new Date(data.attendance_date)),
-      update_code: 2,
-    });
+      // Success notification
+      toast.success("Attendance successfully marked as failed.");
 
-    console.log("response", response);
-
-    // Success notification
-    toast.success("Attendance successfully marked as failed.");
-    
-    // Close dialogs on success
-    setIsFailConfirmOpen(false);
-    setIsOpen(false); 
-
-  } catch (error) {
-    console.error("Error updating attendance status:", error);
-    
-    // Error notification
-    toast.error(
-      error instanceof Error 
-        ? error.message 
-        : "Failed to update attendance status. Please try again."
-    );
-  }
-};
+      // Close dialogs on success
+      setIsFailConfirmOpen(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error marking attendance as failed:", error);
+      // Error is handled by the useEffect above
+    }
+  };
 
   const handlePassed = async () => {
-    console.log("Attendance marked as PASSED for", data.attendance_date);
-    // TODO: Call your API to update status to passed
-    setIsPassConfirmOpen(false);
-    setIsOpen(false); // Close main dialog after action
+    if (!data.id || !data.attendance_date) {
+      toast.error("Invalid attendance record data.");
+      return;
+    }
+    try {
+      await passAttendnaceRecord(
+        data.id,
+        formatDateToYYYYMMDD(new Date(data.attendance_date))
+      );
+
+      // Success notification
+      toast.success("Attendance successfully marked as passed.");
+
+      // Close dialogs on success
+      setIsPassConfirmOpen(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error marking attendance as passed:", error);
+      // Error is handled by the useEffect above
+    }
   };
 
   return (
@@ -140,7 +157,6 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
             {/* Check In Column */}
             <div className="flex flex-col items-center gap-4">
               <h3 className="font-bold text-lg tracking-tight">CHECK IN</h3>
-              {/* ... rest of your Check In code */}
               <Card
                 className="w-full aspect-[4/3] flex items-center justify-center bg-muted overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => openImageInNewTab(data.check_in_image_url)}
@@ -170,7 +186,6 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
             {/* Check Out Column */}
             <div className="flex flex-col items-center gap-4">
               <h3 className="font-bold text-lg tracking-tight">CHECK OUT</h3>
-              {/* ... rest of your Check Out code */}
               <Card
                 className="w-full aspect-[4/3] flex items-center justify-center bg-muted overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                 onClick={() => openImageInNewTab(data.check_out_image_url)}
@@ -199,25 +214,49 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
           </div>
 
           {/* FOOTER SECTION: ACTION BUTTONS */}
-          <div className="flex justify-center gap-6 pt-4 border-t">
-            <Button
-              variant="destructive"
-              className="w-32 font-bold uppercase tracking-widest"
-              onClick={() => setIsFailConfirmOpen(true)}
-            >
-              Failed
-            </Button>
-            <Button
-              variant="default"
-              className="w-32 font-bold uppercase tracking-widest bg-green-500 hover:bg-green-600 text-white"
-              onClick={() => setIsPassConfirmOpen(true)}
-            >
-              Passed
-            </Button>
-          </div>
+          {!data.is_audited ? (
+            <div className="flex justify-center gap-6 pt-4 border-t">
+              <Button
+                variant="destructive"
+                className="w-32 font-bold uppercase tracking-widest"
+                onClick={() => setIsFailConfirmOpen(true)}
+                disabled={isLoading}
+              >
+                Failed
+              </Button>
+              <Button
+                variant="default"
+                className="w-32 font-bold uppercase tracking-widest bg-green-500 hover:bg-green-600 text-white"
+                onClick={() => setIsPassConfirmOpen(true)}
+                disabled={isLoading}
+              >
+                Passed
+              </Button>
+            </div>
+          ) : (
+            <div className="flex justify-center gap-6 pt-4 border-t">
+              <Button
+                variant="secondary"
+                className="w-32 font-bold uppercase tracking-widest"
+                // onClick={() => setIsFailConfirmOpen(true)}
+                disabled={isLoading}
+              >
+                Resubmit
+              </Button>
+              <Button
+                variant="default"
+                className="w-32 font-bold uppercase tracking-widest "
+                // onClick={() => setIsPassConfirmOpen(true)}
+                disabled={isLoading}
+              >
+                Update
+              </Button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
+      {/* Confirmation Dialog for FAILED */}
       <Dialog open={isFailConfirmOpen} onOpenChange={setIsFailConfirmOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
@@ -244,11 +283,16 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
             <Button
               variant="outline"
               onClick={() => setIsFailConfirmOpen(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleFailed}>
-              Confirm Failed
+            <Button
+              variant="destructive"
+              onClick={handleFailed}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Confirm Failed"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -281,6 +325,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
             <Button
               variant="outline"
               onClick={() => setIsPassConfirmOpen(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
@@ -288,8 +333,9 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               variant="default"
               className="bg-green-500 hover:bg-green-600 text-white"
               onClick={handlePassed}
+              disabled={isLoading}
             >
-              Confirm Passed
+              {isLoading ? "Processing..." : "Confirm Passed"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -299,6 +345,3 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
 };
 
 export default AuditAttendanceDialog;
-
-// create a dialog here for fail and pass button
-// const
