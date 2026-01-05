@@ -160,6 +160,8 @@ export const UploadAttendanceDialog = ({
 
   // Submit form
   const onSubmit = async (data: AttendanceFormData) => {
+    const uploadedImages: string[] = []; // Track uploaded images for cleanup
+
     try {
       const checkUserSched = await API.post("/api/users/get-user-by-username", {
         username: user.username,
@@ -169,6 +171,7 @@ export const UploadAttendanceDialog = ({
         toast.error("Failed to upload attendance", {
           description: "Schedules are incomplete or not set properly.",
         });
+        return; // Exit early if schedules are not set
       }
 
       const updates: Array<{
@@ -184,6 +187,7 @@ export const UploadAttendanceDialog = ({
           data.check_in_photo,
           "check_in"
         );
+        uploadedImages.push(checkInPhotoUrl);
         updates.push({
           imageUrl: checkInPhotoUrl,
           recordType: "check_in",
@@ -198,6 +202,7 @@ export const UploadAttendanceDialog = ({
           data.check_out_photo,
           "check_out"
         );
+        uploadedImages.push(checkOutPhotoUrl);
         updates.push({
           imageUrl: checkOutPhotoUrl,
           recordType: "check_out",
@@ -207,7 +212,7 @@ export const UploadAttendanceDialog = ({
       }
 
       // Submit all updates to API
-      const responses = await Promise.all(
+      const responses = await Promise.allSettled(
         updates.map((update) =>
           API.post("/api/attendance/create-attendance-record", {
             username: user.username,
@@ -220,25 +225,94 @@ export const UploadAttendanceDialog = ({
         )
       );
 
-      // Check if all requests succeeded
-      const allSucceeded = responses.every(
-        (response) => response.status === 200 || response.status === 201
-      );
+      // Check responses and collect errors
+      const errors: string[] = [];
+      const successfulIndices: number[] = [];
 
-      if (allSucceeded) {
-        toast.success("Attendance uploaded successfully", {
-          description: format(new Date(), "MMM dd, yyyy 'at' h:mm a"),
-        });
-        setIsOpen(false);
-        reset();
-        onSuccess();
-      }
-    } catch (error) {
-      // console.error("Failed to upload attendance:", error);
-      toast.error("Failed to upload attendance", {
-        description:
-          error instanceof Error ? error.message : "Please try again",
+      responses.forEach((response, index) => {
+        if (response.status === "fulfilled") {
+          const apiResponse = response.value;
+          if (apiResponse.status === 200 || apiResponse.status === 201) {
+            successfulIndices.push(index);
+          } else {
+            const errorMsg =
+              apiResponse.data?.message ||
+              apiResponse.data?.error ||
+              "Unknown error occurred";
+            errors.push(`${updates[index].recordType}: ${errorMsg}`);
+          }
+        } else {
+          // Promise rejected
+          const errorMsg =
+            response.reason?.response?.data?.message ||
+            response.reason?.response?.data?.error ||
+            response.reason?.message ||
+            "Request failed";
+          errors.push(`${updates[index].recordType}: ${errorMsg}`);
+        }
       });
+
+      // If any request failed, cleanup uploaded images and show errors
+      if (errors.length > 0) {
+        // Cleanup: Delete uploaded images from Supabase
+        await cleanupUploadedImages(uploadedImages);
+
+        toast.error("Failed to upload attendance", {
+          description: errors.join("; "),
+        });
+        return;
+      }
+
+      // All succeeded
+      toast.success("Attendance uploaded successfully", {
+        description: format(new Date(), "MMM dd, yyyy 'at' h:mm a"),
+      });
+      setIsOpen(false);
+      reset();
+      onSuccess();
+    } catch (error) {
+      // Cleanup uploaded images on error
+      if (uploadedImages.length > 0) {
+        await cleanupUploadedImages(uploadedImages);
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Please try again";
+      toast.error("Failed to upload attendance", {
+        description: errorMessage,
+      });
+    }
+  };
+
+  // Helper function to cleanup uploaded images
+  const cleanupUploadedImages = async (imageUrls: string[]) => {
+    try {
+      // Extract file paths from URLs and delete from Supabase
+      const deletionPromises = imageUrls.map(async (url) => {
+        try {
+          // Extract the file path from the URL
+          // Assuming URL format: https://[project].supabase.co/storage/v1/object/public/[bucket]/[path]
+          const urlParts = url.split("/storage/v1/object/public/");
+          if (urlParts.length < 2) return;
+
+          const [bucket, ...pathParts] = urlParts[1].split("/");
+          const filePath = pathParts.join("/");
+
+          const { error } = await supabase.storage
+            .from(bucket)
+            .remove([filePath]);
+
+          if (error) {
+            console.error(`Failed to delete image: ${filePath}`, error);
+          }
+        } catch (err) {
+          console.error("Error deleting individual image:", err);
+        }
+      });
+
+      await Promise.all(deletionPromises);
+    } catch (error) {
+      console.error("Failed to cleanup uploaded images:", error);
     }
   };
 
