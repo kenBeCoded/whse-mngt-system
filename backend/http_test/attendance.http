@@ -1,6 +1,14 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NjY2MjcyNiwiZXhwIjoxNzY2NjYzNjI2fQ.Jjd0dMvHj6j1NI5lkh7CxaN9fiOAl8G2TR-kW59Ylwk
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NzYxODM0MCwiZXhwIjoxNzY3NjE5MjQwfQ.F28jjthBJ5G2cPQLMpv52aBR16ESPevxecHethwri1w
 
+post http://localhost:8000/api/auth/login
+Content-Type: application/json
 
+{
+    "username":"test1",
+    "password":"test1"
+}
+
+###
 # update code(create_attendance_records):
 # 0 - Create a new attendance record
 # 1 - Update check-in fields on existing record
@@ -40,38 +48,52 @@ Authorization: Bearer {{AT}}
 #? update check out details on attendance_record
 
 # update code:
-#   0 - update status to pass
-#   1 - update status to fail
-#   2 - revert status to pending
-#   3 - update schedule attendance records 
+# 0 - update status to pass
+# 1 - update status to fail
+# 2 - revert status to pending (delete images and reset check-in/out data)
+# 3 - update/modify attendance record schedule
+# 4 - update overtime (multiple or single)
+# 5 - update/modify attendance record check in & out and overtime
 
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "id": "54",
-    "attendance_date": "2025-12-25",
+    "id": "35",
+    "attendance_date": "2025-10-10",
     "update_code": 1
 }
 
 ###
-#? update schedule attendance records
 
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "id": 40,
-    "attendance_date": "2025-10-13",
+    "id": "58",
+    "attendance_date": "2025-12-29",
+    "update_code": 2
+}
+
+###
+#? update schedule attendance records (CODE 3)
+
+patch http://localhost:8000/api/attendance/audit-attendance-update
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{
+    "id": 35,
+    "attendance_date": "2025-10-10",
     "update_code": 3,
     "u_sched_in": "08:00",
     "u_sched_out": "16:00"
 }
 
 ###
-#? update single/multiple ot hours
+#? update single/multiple ot hours (CODE 4)
 
 patch http://localhost:8000/api/attendance/audit-attendance-update
 Content-Type: application/json
@@ -81,6 +103,23 @@ Authorization: Bearer {{AT}}
     "idArr": [1, 2],
     "ot_hours": 3,
     "update_code": 4
+}
+
+###
+#? update/modify attendance record check in & out and overtime (CODE 5)
+
+patch http://localhost:8000/api/attendance/audit-attendance-update
+Content-Type: application/json
+Authorization: Bearer {{AT}}
+
+{    
+    "update_code": 5,
+    "attendance_date": "2025-12-16",
+    "user_id": 2,
+    "id": 53,
+    "check_in_time": "2025-12-16T12:34:33.205Z",
+    "check_out_time": "2025-12-16T12:54:33.205Z",
+    "ot_hours": 7f
 }
 
 ###
@@ -96,15 +135,15 @@ Authorization: Bearer {{AT}}
 
 
 ###
-#? reset attendance records
+#? reset/revert attendance records
 
-patch http://localhost:8000/api/attendance/reset-attendance-record
-Content-Type: application/json
-Authorization: Bearer {{AT}}
+# patch http://localhost:8000/api/attendance/reset-attendance-record
+# Content-Type: application/json
+# Authorization: Bearer {{AT}}
 
-{
-    "id": 32
-}
+# {
+#     "id": 32
+# }
 
 ###
 #? get attendance records by id
