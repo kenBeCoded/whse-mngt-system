@@ -1,6 +1,7 @@
 import axios from "../api/axios";
 import { devtools } from "zustand/middleware";
 import { create } from "zustand/react";
+import { supabase } from "../supabase";
 
 const API = axios; // use shared configured axios instance (withCredentials + auth header)
 
@@ -40,29 +41,65 @@ interface AttendanceState {
   setError: (error: string | null) => void;
 
   // User CRUD operations
-  fetchRecord: (user_id: number| string) => Promise<void>;
+  fetchRecord: (user_id: number | string) => Promise<void>;
+
   fetchRecordByID: (
     user_id: number | string,
     selected_date: string
   ) => Promise<FetchRecordResponse | undefined>;
+
   failAttendnaceRecord: (
     id: string | number,
     attendance_date: string
   ) => Promise<void>;
+
   passAttendnaceRecord: (
     id: string | number,
     attendance_date: string
   ) => Promise<void>;
+
   updateAttendanceRecord: (
     id: string | number,
+    user_id: string | number,
     attendance_date: string,
-    u_sched_in: string, // "hh:mm" format
-    u_sched_out: string //"hh:mm" format
+    check_in_time: string,
+    check_out_time: string,
+    ot_hours: number
+  ) => Promise<void>;
+
+  resetAttendanceRecord: (
+    id: string | number,
+    attendance_date: string,
+    check_in_image_url: string | null,
+    check_out_image_url: string | null
   ) => Promise<void>;
 
   clearError: () => void;
   reset: () => void;
 }
+
+// Helper function to delete image from Supabase
+const deleteImageFromSupabase = async (imageUrl: string | null) => {
+  if (!imageUrl) return;
+
+  try {
+    // Extract file path from URL
+    // Format: https://<project>.supabase.co/storage/v1/object/public/<bucket>/<path>
+    const urlParts = imageUrl.split("/storage/v1/object/public/");
+    if (urlParts.length < 2) return;
+
+    const [bucket, ...pathParts] = urlParts[1].split("/");
+    const filePath = pathParts.join("/");
+
+    const { error } = await supabase.storage.from(bucket).remove([filePath]);
+
+    if (error) {
+      console.error("Error deleting image from Supabase:", error);
+    }
+  } catch (error) {
+    console.error("Error processing image deletion:", error);
+  }
+};
 
 export const useAttendanceStore = create<AttendanceState>()(
   devtools(
@@ -79,7 +116,6 @@ export const useAttendanceStore = create<AttendanceState>()(
 
       fetchRecord: async (user_id) => {
         if (!user_id) {
-          // Handle case where user is not logged in or ID is missing
           set({ isLoading: false, error: "User is not authenticated." });
           return;
         }
@@ -90,15 +126,14 @@ export const useAttendanceStore = create<AttendanceState>()(
             "/api/attendance/get-attendance-record",
             { request_code: 0, user_id: user_id }
           );
-          set({ Attendance: response.data.data });
+          set({ Attendance: response.data.data, isLoading: false });
         } catch (error) {
           const errorMessage =
             error instanceof Error
               ? error.message
               : "Failed to fetch attendance records";
-          set({ error: errorMessage });
-        } finally {
-          set({ isLoading: false });
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error fetching attendance records:", error);
         }
       },
 
@@ -108,7 +143,6 @@ export const useAttendanceStore = create<AttendanceState>()(
           return;
         }
         if (!user_id) {
-          // Handle case where user is not logged in or ID is missing
           set({ isLoading: false, error: "User is not authenticated!" });
           return;
         }
@@ -120,16 +154,15 @@ export const useAttendanceStore = create<AttendanceState>()(
             "/api/attendance/get-attendance-record",
             { request_code: 1, user_id, selected_date }
           );
+          set({ isLoading: false });
           return { attendance_record: response.data.data };
-          // set({ Attendance: response.data.data });
         } catch (error) {
           const errorMessage =
             error instanceof Error
               ? error.message
               : "Failed to fetch attendance records";
-          set({ error: errorMessage });
-        } finally {
-          set({ isLoading: false });
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error fetching attendance record by ID:", error);
         }
       },
 
@@ -145,13 +178,14 @@ export const useAttendanceStore = create<AttendanceState>()(
             }
           );
 
-          // Optionally update the local state to reflect the change
+          // Update local state to reflect the change
           set((state) => ({
             Attendance: state.Attendance.map((record) =>
               record.id === id
                 ? { ...record, is_audited: true, status: "fail" }
                 : record
             ),
+            isLoading: false,
           }));
 
           return response.data;
@@ -160,10 +194,9 @@ export const useAttendanceStore = create<AttendanceState>()(
             error instanceof Error
               ? error.message
               : "Failed to fail attendance record";
-          set({ error: errorMessage });
-          throw error; // Re-throw so calling code can handle it
-        } finally {
-          set({ isLoading: false });
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error failing attendance record:", error);
+          throw error;
         }
       },
 
@@ -179,13 +212,14 @@ export const useAttendanceStore = create<AttendanceState>()(
             }
           );
 
-          // Optionally update the local state to reflect the change
+          // Update local state to reflect the change
           set((state) => ({
             Attendance: state.Attendance.map((record) =>
               record.id === id
                 ? { ...record, is_audited: true, status: "pass" }
                 : record
             ),
+            isLoading: false,
           }));
 
           return response.data;
@@ -194,49 +228,115 @@ export const useAttendanceStore = create<AttendanceState>()(
             error instanceof Error
               ? error.message
               : "Failed to pass attendance record";
-          set({ error: errorMessage });
-          throw error; // Re-throw so calling code can handle it
-        } finally {
-          set({ isLoading: false });
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error passing attendance record:", error);
+          throw error;
         }
       },
 
-      //? update atendance record
-      
-      // updateAttendanceRecord: async (
-      //   id,
-      //   attendance_date,
-      //   u_sched_in,
-      //   u_sched_out
-      // ) => {
-      //   set({ isLoading: true, error: null });
-      //   try {
-      //     const response = await API.patch(
-      //       "/api/attendance/audit-attendance-update",
-      //       {
-      //         id: id,
-      //         attendance_date: attendance_date,
-      //         u_sched_in: u_sched_in,
-      //         u_sched_out: u_sched_out,
-      //         update_code: 3, // 3 for update
-      //       }
-      //     );
+      updateAttendanceRecord: async (
+        id,
+        user_id,
+        attendance_date,
+        check_in_time,
+        check_out_time,
+        ot_hours
+      ) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await API.patch(
+            "/api/attendance/audit-attendance-update",
+            {
+              id: id,
+              user_id: user_id,
+              attendance_date: attendance_date,
+              check_in_time: check_in_time,
+              check_out_time: check_out_time,
+              ot_hours: ot_hours,
+              update_code: 5, // 5 for update
+            }
+          );
 
-          
-      //   } catch (error) {
-      //     const errorMessage =
-      //       error instanceof Error
-      //         ? error.message
-      //         : "Failed to update attendance record";
-      //     set({ error: errorMessage });
-      //     throw error; // Re-throw so calling code can handle it
-      //   } finally {
-      //     set({ isLoading: false });
-      //   }
-      // },
+          // Update local state to reflect the changes
+          set((state) => ({
+            Attendance: state.Attendance.map((record) =>
+              record.id === id
+                ? {
+                    ...record,
+                    check_in_time: check_in_time,
+                    check_out_time: check_out_time,
+                    is_audited: true,
+                  }
+                : record
+            ),
+            isLoading: false,
+          }));
 
-      //? reset attendance record
-      // resetAttendanceRecord
+          return response.data;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to update attendance record";
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error updating attendance record:", error);
+          throw error;
+        }
+      },
+
+      resetAttendanceRecord: async (
+        id,
+        attendance_date,
+        check_in_image_url,
+        check_out_image_url
+      ) => {
+        set({ isLoading: true, error: null });
+        try {
+          // Call backend first
+          const response = await API.patch(
+            "/api/attendance/audit-attendance-update",
+            {
+              id: id,
+              attendance_date: attendance_date,
+              update_code: 2, // 2 for reset
+            }
+          );
+
+          // If backend call succeeds, delete images from Supabase
+          await Promise.all([
+            deleteImageFromSupabase(check_in_image_url),
+            deleteImageFromSupabase(check_out_image_url),
+          ]);
+
+          // Update local state to reset the record
+          set((state) => ({
+            Attendance: state.Attendance.map((record) =>
+              record.id === id
+                ? {
+                    ...record,
+                    is_audited: false,
+                    status: "pending",
+                    check_in_time: null,
+                    check_out_time: null,
+                    check_in_image_url: null,
+                    check_out_image_url: null,
+                  }
+                : record
+            ),
+            isLoading: false,
+          }));
+
+          return response.data;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to reset attendance record";
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error resetting attendance record:", error);
+          throw error;
+        }
+      },
 
       clearError: () => set({ error: null }),
       reset: () => set({ Attendance: [], isLoading: false, error: null }),

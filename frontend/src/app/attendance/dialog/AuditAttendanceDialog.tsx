@@ -10,11 +10,15 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Image as ImageIcon,
   Clock,
   AlertTriangle,
   CheckCircle,
+  Edit,
+  RotateCcw,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import {
@@ -32,16 +36,41 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFailConfirmOpen, setIsFailConfirmOpen] = useState(false);
   const [isPassConfirmOpen, setIsPassConfirmOpen] = useState(false);
+  const [isUpdateDialogOpen, setIsUpdateDialogOpen] = useState(false);
+  const [isResubmitDialogOpen, setIsResubmitDialogOpen] = useState(false);
 
-  console.log("data",data)
+  // Update form state
+  const [checkInTime, setCheckInTime] = useState("");
+  const [checkOutTime, setCheckOutTime] = useState("");
+  const [overtimeHours, setOvertimeHours] = useState("");
+
+  console.log("data", data);
 
   const {
     failAttendnaceRecord,
     passAttendnaceRecord,
+    updateAttendanceRecord,
+    resetAttendanceRecord,
     error,
     isLoading,
     clearError,
   } = useAttendanceStore();
+
+  // Initialize form values when dialog opens
+  useEffect(() => {
+    if (isUpdateDialogOpen) {
+      // Convert existing times to datetime-local format if they exist
+      if (data.check_in_time) {
+        setCheckInTime(new Date(data.check_in_time).toISOString().slice(0, 16));
+      }
+      if (data.check_out_time) {
+        setCheckOutTime(
+          new Date(data.check_out_time).toISOString().slice(0, 16)
+        );
+      }
+      setOvertimeHours("");
+    }
+  }, [isUpdateDialogOpen, data]);
 
   // Handle errors from store
   useEffect(() => {
@@ -69,15 +98,11 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
         formatDateToYYYYMMDD(new Date(data.attendance_date))
       );
 
-      // Success notification
       toast.success("Attendance successfully marked as failed.");
-
-      // Close dialogs on success
       setIsFailConfirmOpen(false);
       setIsOpen(false);
     } catch (error) {
       console.error("Error marking attendance as failed:", error);
-      // Error is handled by the useEffect above
     }
   };
 
@@ -92,17 +117,81 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
         formatDateToYYYYMMDD(new Date(data.attendance_date))
       );
 
-      // Success notification
       toast.success("Attendance successfully marked as passed.");
-
-      // Close dialogs on success
       setIsPassConfirmOpen(false);
       setIsOpen(false);
     } catch (error) {
       console.error("Error marking attendance as passed:", error);
-      // Error is handled by the useEffect above
     }
   };
+
+  const handleUpdate = async () => {
+    if (!data.id || !data.attendance_date || !data.user_account_id) {
+      toast.error("Invalid attendance record data.");
+      return;
+    }
+
+    // Validate inputs
+    if (!checkInTime || !checkOutTime) {
+      toast.error("Please provide both check-in and check-out times.");
+      return;
+    }
+
+    const otHours = parseFloat(overtimeHours);
+    if (otHours <= 0) {
+      toast.error("Overtime hours must be greater than zero.");
+      return;
+    }
+
+    try {
+      // Convert datetime-local to ISO string format
+      const checkInISO = new Date(checkInTime).toISOString();
+      const checkOutISO = new Date(checkOutTime).toISOString();
+
+      await updateAttendanceRecord(
+        data.id,
+        data.user_account_id,
+        formatDateToYYYYMMDD(new Date(data.attendance_date)),
+        checkInISO,
+        checkOutISO,
+        otHours
+      );
+
+      toast.success("Attendance record updated successfully.");
+      setIsUpdateDialogOpen(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error updating attendance record:", error);
+    }
+  };
+
+  const handleResubmit = async () => {
+    if (!data.id || !data.attendance_date) {
+      toast.error("Invalid attendance record data.");
+      return;
+    }
+
+    try {
+      // Call resetAttendanceRecord which now handles both backend call and image deletion
+      await resetAttendanceRecord(
+        data.id,
+        formatDateToYYYYMMDD(new Date(data.attendance_date)),
+        data.check_in_image_url,
+        data.check_out_image_url
+      );
+
+      toast.success("Attendance record reset for resubmission.");
+      setIsResubmitDialogOpen(false);
+      setIsOpen(false);
+    } catch (error) {
+      console.error("Error resetting attendance record:", error);
+    }
+  };
+
+  console.log(
+    "data.check_in_time",
+    new Date(data.check_in_time).toLocaleDateString()
+  );
 
   return (
     <>
@@ -173,11 +262,15 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               </Card>
               <div className="w-full flex border rounded-sm overflow-hidden text-sm border-border">
                 <span className="bg-muted px-3 py-2 border-r font-medium text-xs uppercase text-muted-foreground border-border">
-                  Check In Time
+                  Check In<br/> Time
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_in_time
-                    ? new Date(data.check_in_time).toLocaleTimeString()
+                    ? `${new Date(
+                        data.check_in_time
+                      ).toLocaleTimeString()}\n${new Date(
+                        data.check_in_time
+                      ).toLocaleDateString()}`
                     : "N/A"}
                 </span>
               </div>
@@ -202,11 +295,15 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               </Card>
               <div className="w-full flex border rounded-sm overflow-hidden text-sm border-border">
                 <span className="bg-muted px-3 py-2 border-r font-medium text-xs uppercase text-muted-foreground border-border">
-                  Check Out Time
+                  Check Out<br/> Time
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_out_time
-                    ? new Date(data.check_out_time).toLocaleTimeString()
+                    ? `${new Date(
+                        data.check_out_time
+                      ).toLocaleTimeString()}\n${new Date(
+                        data.check_out_time
+                      ).toLocaleDateString()}`
                     : "N/A"}
                 </span>
               </div>
@@ -238,15 +335,15 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               <Button
                 variant="secondary"
                 className="w-32 font-bold uppercase tracking-widest"
-                // onClick={() => setIsFailConfirmOpen(true)}
+                onClick={() => setIsResubmitDialogOpen(true)}
                 disabled={isLoading}
               >
                 Resubmit
               </Button>
               <Button
                 variant="default"
-                className="w-32 font-bold uppercase tracking-widest "
-                // onClick={() => setIsPassConfirmOpen(true)}
+                className="w-32 font-bold uppercase tracking-widest"
+                onClick={() => setIsUpdateDialogOpen(true)}
                 disabled={isLoading}
               >
                 Update
@@ -336,6 +433,129 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               disabled={isLoading}
             >
               {isLoading ? "Processing..." : "Confirm Passed"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Update Dialog */}
+      <Dialog open={isUpdateDialogOpen} onOpenChange={setIsUpdateDialogOpen}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <Edit className="h-6 w-6" />
+              Update Attendance Record
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Update the attendance details for{" "}
+              <span className="font-semibold">
+                {new Date(data.attendance_date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="check-in-time">Check-In Time</Label>
+              <Input
+                id="check-in-time"
+                type="datetime-local"
+                value={checkInTime}
+                onChange={(e) => setCheckInTime(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="check-out-time">Check-Out Time</Label>
+              <Input
+                id="check-out-time"
+                type="datetime-local"
+                value={checkOutTime}
+                onChange={(e) => setCheckOutTime(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="overtime-hours">Overtime Hours</Label>
+              <Input
+                id="overtime-hours"
+                type="number"
+                min="0.01"
+                step="0.5"
+                placeholder="Enter overtime hours"
+                value={overtimeHours}
+                onChange={(e) => setOvertimeHours(e.target.value)}
+                required
+              />
+              <p className="text-xs text-muted-foreground">
+                Must be greater than zero
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-3">
+            <Button
+              variant="outline"
+              onClick={() => setIsUpdateDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleUpdate} disabled={isLoading}>
+              {isLoading ? "Updating..." : "Update"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Resubmit Dialog */}
+      <Dialog
+        open={isResubmitDialogOpen}
+        onOpenChange={setIsResubmitDialogOpen}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3 text-orange-600">
+              <RotateCcw className="h-6 w-6" />
+              Reset for Resubmission
+            </DialogTitle>
+            <DialogDescription className="pt-2">
+              Are you sure you want to reset this attendance record for{" "}
+              <span className="font-semibold">
+                {new Date(data.attendance_date).toLocaleDateString("en-US", {
+                  month: "long",
+                  day: "numeric",
+                  year: "numeric",
+                })}
+              </span>
+              ?
+              <br />
+              <br />
+              This will clear the audit status and allow the employee to
+              resubmit their attendance.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="gap-3 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsResubmitDialogOpen(false)}
+              disabled={isLoading}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="default"
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+              onClick={handleResubmit}
+              disabled={isLoading}
+            >
+              {isLoading ? "Processing..." : "Resubmit"}
             </Button>
           </DialogFooter>
         </DialogContent>

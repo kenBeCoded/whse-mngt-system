@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2NzYxODM0MCwiZXhwIjoxNzY3NjE5MjQwfQ.F28jjthBJ5G2cPQLMpv52aBR16ESPevxecHethwri1w
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2ODIxOTAzNiwiZXhwIjoxNzY4MjE5OTM2fQ.LxK4UFsW9dXu33ojeO5Trt6jNmyk10SI-nuvJa254xI
 
 post http://localhost:8000/api/auth/login
 Content-Type: application/json
@@ -85,9 +85,10 @@ Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "id": 35,
-    "attendance_date": "2025-10-10",
     "update_code": 3,
+    "usersIds": [2, 3],
+    "dateFrom": "2025-12-15",
+    "dateTo": "2025-12-29",
     "u_sched_in": "08:00",
     "u_sched_out": "16:00"
 }
@@ -100,8 +101,8 @@ Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "idArr": [1, 2],
-    "ot_hours": 3,
+    "idArr": [4,5,6,7],
+    "ot_hours": 2,
     "update_code": 4
 }
 
@@ -114,12 +115,12 @@ Authorization: Bearer {{AT}}
 
 {    
     "update_code": 5,
-    "attendance_date": "2025-12-16",
+    "attendance_date": "2025-11-05",
     "user_id": 2,
-    "id": 53,
+    "id": 47,
     "check_in_time": "2025-12-16T12:34:33.205Z",
     "check_out_time": "2025-12-16T12:54:33.205Z",
-    "ot_hours": 7f
+    "ot_hours": 3
 }
 
 ###
