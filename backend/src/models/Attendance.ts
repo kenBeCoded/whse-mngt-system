@@ -340,14 +340,17 @@ export class Attendance {
   }
 
   static async audit_attendance_update(data: {
+    id?: number; // attendance_records id
     update_code: number;
-    attendance_date: string;
-    id: number; // attendance_records id
+    attendance_date?: string;
+    dateFrom?: string;
+    dateTo?: string;
     u_sched_in?: string;
     u_sched_out?: string;
-    idArr?: number[];
+    ot_idArr?: number[];
     ot_hours?: number;
     user_id?: string;
+    usersIds?: number[];
     check_in_time?: string;
     check_out_time?: string;
   }): Promise<any> {
@@ -361,18 +364,54 @@ export class Attendance {
      * 5 - update/modify attendance record check in & out and overtime
      */
 
-    const disallowedCodes = [0, 1, 2, 3, 4, 5];
+    const allowedCodes = [0, 1, 2, 3, 4, 5];
 
-    if (!disallowedCodes.includes(data.update_code)) {
+    if (!allowedCodes.includes(data.update_code)) {
       throw new Error(
         `Missing or unsupported update code: ${data.update_code}`
       );
     }
-    if (!data.id || !data.attendance_date) {
-      return {
-        success: false,
-        message: "attendance date and id are required",
-      };
+
+    // Validate required fields based on update_code
+    switch (data.update_code) {
+      case 0:
+      case 1:
+      case 2:
+        if (!data.id || !data.attendance_date) {
+          throw new Error("attendance_date and id are required");
+        }
+        break;
+      case 3:
+        if (
+          !data.u_sched_in ||
+          !data.u_sched_out ||
+          !data.usersIds ||
+          !data.dateFrom ||
+          !data.dateTo
+        ) {
+          throw new Error(
+            "u_sched_in, u_sched_out, usersIds, dateFrom, and dateTo are required for bulk schedule updates"
+          );
+        }
+        break;
+      case 4:
+        if (!data.ot_hours || !data.ot_idArr || data.ot_idArr.length === 0) {
+          throw new Error("ot_hours and ot_idArr are required");
+        }
+        break;
+      case 5:
+        if (
+          !data.check_in_time ||
+          !data.check_out_time ||
+          !data.user_id ||
+          !data.id ||
+          !data.attendance_date
+        ) {
+          throw new Error(
+            "check_in_time, check_out_time, user_id, id, and attendance_date are required"
+          );
+        }
+        break;
     }
 
     const client = await pool.connect();
@@ -385,7 +424,6 @@ export class Attendance {
       switch (data.update_code) {
         // update status to pass
         case 0:
-          // Update status to 'pass' and set is_audited to true
           const updateQuery0 = `
           UPDATE attendance_records
           SET is_audited = $1,
@@ -403,7 +441,6 @@ export class Attendance {
 
         // update status to fail
         case 1:
-          // Update status to 'fail' and set is_audited to true
           const updateQuery1 = `
           UPDATE attendance_records
           SET is_audited = $1,
@@ -421,7 +458,6 @@ export class Attendance {
 
         // revert status to pending (delete images and reset check-in/out data)
         case 2:
-          // First, get the image IDs to delete
           const getImagesQuery = `
           SELECT check_in_image_id, check_out_image_id
           FROM attendance_records
@@ -439,7 +475,6 @@ export class Attendance {
           const { check_in_image_id, check_out_image_id } =
             recordResult.rows[0];
 
-          // Update attendance record: revert to pending and null out check-in/out fields
           const updateQuery2 = `
           UPDATE attendance_records
           SET is_audited = $1,
@@ -459,7 +494,6 @@ export class Attendance {
             data.attendance_date,
           ]);
 
-          // Delete images from attendance_images table if they exist
           if (check_in_image_id) {
             await client.query(
               `UPDATE attendance_images SET is_deleted = true WHERE id = $1`,
@@ -478,89 +512,57 @@ export class Attendance {
 
         // update/modify attendance record schedule
         case 3:
-          if (
-            !data.u_sched_in ||
-            !data.u_sched_out ||
-            !data.id ||
-            !data.attendance_date
-          ) {
-            return {
-              success: false,
-              message:
-                "schedule in & out, attendance date, and id are required",
-            };
-          }
-
           const updateSchedQuery = `
-          UPDATE attendance_records
-          SET u_sched_in = $1,
-              u_sched_out = $2
-          WHERE id = $3 AND attendance_date = $4
-          RETURNING *;
-        `;
+            UPDATE attendance_records
+            SET 
+                u_sched_in = $1,
+                u_sched_out = $2
+            WHERE 
+                user_id = ANY($3)
+                AND attendance_date::DATE BETWEEN $4::DATE AND $5::DATE
+            RETURNING *;
+          `;
 
           result = await client.query(updateSchedQuery, [
             data.u_sched_in,
             data.u_sched_out,
-            data.id,
-            data.attendance_date,
+            data.usersIds, // Passed as an array of IDs
+            data.dateFrom,
+            data.dateTo,
           ]);
-
           break;
 
         // update overtime single or multiple dates selected
         case 4:
-          if (!data.ot_hours || !data.idArr) {
-            return {
-              success: false,
-              message: "overtime hours and id are required",
-            };
-          }
-
           const updateOtQuery = `
           UPDATE ot_sched
           SET ot_hours = $1
           WHERE id = ANY($2::int[])
-          `;
+          RETURNING *;
+        `;
 
           result = await client.query(updateOtQuery, [
             data.ot_hours,
-            data.idArr,
+            data.ot_idArr,
           ]);
 
           break;
 
+        // update/modify attendance record check in & out and overtime
         case 5:
-          if (
-            !data.check_in_time ||
-            !data.check_out_time ||
-            !data.ot_hours ||
-            !data.user_id
-          ) {
-            return {
-              success: false,
-              message: "details are not complete.",
-            };
-          }
-
-          // Find the user
-          const user_id = parseInt(data.user_id);
+          const user_id = parseInt(data.user_id!);
           const user = await UserModel.findById(user_id);
           if (!user) {
-            return {
-              success: false,
-              message: "User not found.",
-            };
+            throw new Error("User not found");
           }
 
-          // First, update the attendance record times
           const updateAttendanceQuery = `
             UPDATE attendance_records
             SET check_in_time = $1,
                 check_out_time = $2,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id = $3 AND attendance_date = $4
-            RETURNING ot_id;
+            RETURNING *;
           `;
           const attendanceResult = await client.query(updateAttendanceQuery, [
             data.check_in_time,
@@ -573,53 +575,58 @@ export class Attendance {
             throw new Error(`No attendance record found for id: ${data.id}`);
           }
 
-          const ot_id = attendanceResult.rows[0].ot_id;
+          // Set result to attendance update
+          result = attendanceResult;
 
-          // Update or create OT record
-          if (ot_id) {
-            // Update existing OT record
-            const updateOtQuery = `
-              UPDATE ot_sched
-              SET ot_hours = $1,
-                  updated_at = CURRENT_TIMESTAMP
-              WHERE id = $2
-              RETURNING *;
-            `;
-            result = await client.query(updateOtQuery, [data.ot_hours, ot_id]);
-          } else {
-            // Create new OT record
-            const insertOtQuery = `
-              INSERT INTO ot_sched (added_by, ot_hours)
-              VALUES ($1, $2)
-              RETURNING *;
-            `;
-            const otResult = await client.query(insertOtQuery, [
-              user_id,
-              data.ot_hours,
-            ]);
+          if (data.ot_hours) {
+            const ot_id = attendanceResult.rows[0].ot_id;
 
-            // Link the new OT record to the attendance record
-            const linkOtQuery = `
-              UPDATE attendance_records
-              SET ot_id = $1
-              WHERE id = $2
-              RETURNING *;
-            `;
-            result = await client.query(linkOtQuery, [
-              otResult.rows[0].id,
-              data.id,
-            ]);
+            if (ot_id) {
+              const updateOtQuery = `
+                UPDATE ot_sched
+                SET ot_hours = $1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $2
+                RETURNING *;
+              `;
+              await client.query(updateOtQuery, [data.ot_hours, ot_id]);
+            } else {
+              const insertOtQuery = `
+                INSERT INTO ot_sched (added_by, ot_hours)
+                VALUES ($1, $2)
+                RETURNING *;
+              `;
+              const otResult = await client.query(insertOtQuery, [
+                user_id,
+                data.ot_hours,
+              ]);
+
+              const linkOtQuery = `
+                UPDATE attendance_records
+                SET ot_id = $1,
+                    updated_at = CURRENT_TIMESTAMP
+                WHERE id = $2
+                RETURNING *;
+              `;
+              await client.query(linkOtQuery, [otResult.rows[0].id, data.id]);
+            }
           }
-
           break;
 
         default:
-          await client.query("ROLLBACK");
           throw new Error(`Unsupported update_code: ${data.update_code}`);
       }
 
       await client.query("COMMIT");
-      return result?.rows[0] || null;
+      // Note: result.rows will return the array of all updated records for bulk operations
+
+      if (result?.rows && result.rows.length > 0) {
+        if (data.update_code === 3 || result.rows.length > 1) {
+          return result.rows;
+        }
+        return result.rows[0];
+      }
+      return null;
     } catch (error) {
       await client.query("ROLLBACK");
       console.error("audit_attendance_update failed:", error);
