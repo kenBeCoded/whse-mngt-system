@@ -17,7 +17,12 @@ export const navigationData = {
         // { title: "Dashboard", url: "/admin/dashboard" },
         // { title: "Accounts", url: "/admin/users" },
         { title: "Attendance Records", url: "/admin/attendance-records" },
+        { title: "Scheduler", url: "/admin/user-schedule" },
       ],
     },
+    // {
+    //   title: "test",
+    //   url: "/admin",
+    // },
   ],
 };

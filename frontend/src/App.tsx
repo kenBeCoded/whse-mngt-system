@@ -16,6 +16,7 @@ import { ThemeProvider } from "./components/theme-provider";
 import { UsersPage } from "./app/user-table/page";
 import { Toaster } from "@/components/ui/sonner";
 import { AttendanceRecordsPage } from "./app/attendance/attendance-table/page";
+import { SchedulerPage } from "./app/scheduler/page";
 
 function App() {
   return (
@@ -39,6 +40,10 @@ function App() {
                   <Route
                     path="attendance-records"
                     element={<AttendanceRecordsPage />}
+                  />
+                  <Route
+                  path="user-schedule"
+                    element={<SchedulerPage />}
                   />
                 </Route>
 

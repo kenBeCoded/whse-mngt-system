@@ -2,15 +2,7 @@ import MyAttendance from "@/app/attendance/MyAttendance";
 import { useAuth } from "../hooks/useAuth";
 
 function DashboardPage() {
-  const { user, logout, loading } = useAuth();
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-    } catch (error) {
-      console.error("Logout failed:", error);
-    }
-  };
+  const { loading } = useAuth();
 
   if (loading) {
     return <div>Loading dashboard...</div>;
@@ -19,19 +11,6 @@ function DashboardPage() {
   return (
     <div className="dashboard">
       <MyAttendance />
-      <h2>Dashboard</h2>
-      <div className="user-info">
-        <h3>Welcome, {user?.username}!</h3>
-        <p>User ID: {user?.id}</p>
-        {user && (
-          <div>
-            <h4>Profile Information:</h4>
-            <p>Username: {user?.username}</p>
-            <p>ID: {user?.id || "Not provided"}</p>
-          </div>
-        )}
-      </div>
-      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 }
