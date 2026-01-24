@@ -11,7 +11,7 @@ export class Attendance {
       user_id: number;
       image_capture_date?: string; // from metadata of image
     },
-    clientParam?: PoolClient
+    clientParam?: PoolClient,
   ) {
     const insertQuery = `
       INSERT INTO attendance_images (image_url, record_type, image_capture_date, user_id)
@@ -160,7 +160,7 @@ export class Attendance {
       if (!user.u_sched_in || !user.u_sched_out) {
         await client.query("ROLLBACK");
         throw new Error(
-          "The schedule is incomplete or has not been set properly."
+          "The schedule is incomplete or has not been set properly.",
         );
       }
 
@@ -202,7 +202,7 @@ export class Attendance {
               user_id: user.id,
               image_capture_date: data.image_capture_date,
             },
-            client
+            client,
           );
 
           if (existingRecord) {
@@ -255,7 +255,7 @@ export class Attendance {
           if (!existingRecord) {
             await client.query("ROLLBACK");
             throw new Error(
-              `No attendance record found for user ${user.id} on ${targetDate}. Cannot update check-in.`
+              `No attendance record found for user ${user.id} on ${targetDate}. Cannot update check-in.`,
             );
           }
 
@@ -266,7 +266,7 @@ export class Attendance {
               user_id: user.id,
               image_capture_date: data.image_capture_date,
             },
-            client
+            client,
           );
 
           const updateQ1 = `
@@ -291,7 +291,7 @@ export class Attendance {
           if (!existingRecord) {
             await client.query("ROLLBACK");
             throw new Error(
-              `No attendance record found for user ${user.id} on ${targetDate}. Cannot check out without checking in first.`
+              `No attendance record found for user ${user.id} on ${targetDate}. Cannot check out without checking in first.`,
             );
           }
 
@@ -303,7 +303,7 @@ export class Attendance {
               user_id: user.id,
               image_capture_date: data.image_capture_date,
             },
-            client
+            client,
           );
 
           const updateQ2 = `
@@ -368,7 +368,7 @@ export class Attendance {
 
     if (!allowedCodes.includes(data.update_code)) {
       throw new Error(
-        `Missing or unsupported update code: ${data.update_code}`
+        `Missing or unsupported update code: ${data.update_code}`,
       );
     }
 
@@ -386,11 +386,12 @@ export class Attendance {
           !data.u_sched_in ||
           !data.u_sched_out ||
           !data.usersIds ||
+          data.usersIds.length === 0 ||
           !data.dateFrom ||
           !data.dateTo
         ) {
           throw new Error(
-            "u_sched_in, u_sched_out, usersIds, dateFrom, and dateTo are required for bulk schedule updates"
+            "u_sched_in, u_sched_out, usersIds, dateFrom, and dateTo are required for bulk schedule updates",
           );
         }
         break;
@@ -408,7 +409,7 @@ export class Attendance {
           !data.attendance_date
         ) {
           throw new Error(
-            "check_in_time, check_out_time, user_id, id, and attendance_date are required"
+            "check_in_time, check_out_time, user_id, id, and attendance_date are required",
           );
         }
         break;
@@ -497,14 +498,14 @@ export class Attendance {
           if (check_in_image_id) {
             await client.query(
               `UPDATE attendance_images SET is_deleted = true WHERE id = $1`,
-              [check_in_image_id]
+              [check_in_image_id],
             );
           }
 
           if (check_out_image_id) {
             await client.query(
               `UPDATE attendance_images SET is_deleted = true WHERE id = $1`,
-              [check_out_image_id]
+              [check_out_image_id],
             );
           }
 

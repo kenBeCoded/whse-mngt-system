@@ -4,7 +4,7 @@ import { Attendance } from "../../models/Attendance.js";
 export const createAttendanceRec = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { body } = req;
@@ -22,7 +22,7 @@ export const createAttendanceRec = async (
 export const auditAttendanceUpdate = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const { body } = req;
@@ -49,7 +49,7 @@ export const auditAttendanceUpdate = async (
 export const getAttendanceRecord = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const {
@@ -69,7 +69,7 @@ export const getAttendanceRecord = async (
       case 1:
         result = await Attendance.get_attendance_records_byID(
           parseInt(user_id),
-          selected_date
+          selected_date,
         );
         break;
 
