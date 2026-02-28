@@ -65,7 +65,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
       }
       if (data.check_out_time) {
         setCheckOutTime(
-          new Date(data.check_out_time).toISOString().slice(0, 16)
+          new Date(data.check_out_time).toISOString().slice(0, 16),
         );
       }
       setOvertimeHours("");
@@ -95,7 +95,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
     try {
       await failAttendnaceRecord(
         data.id,
-        formatDateToYYYYMMDD(new Date(data.attendance_date))
+        formatDateToYYYYMMDD(new Date(data.attendance_date)),
       );
 
       toast.success("Attendance successfully marked as failed.");
@@ -114,7 +114,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
     try {
       await passAttendnaceRecord(
         data.id,
-        formatDateToYYYYMMDD(new Date(data.attendance_date))
+        formatDateToYYYYMMDD(new Date(data.attendance_date)),
       );
 
       toast.success("Attendance successfully marked as passed.");
@@ -154,7 +154,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
         formatDateToYYYYMMDD(new Date(data.attendance_date)),
         checkInISO,
         checkOutISO,
-        otHours
+        otHours,
       );
 
       toast.success("Attendance record updated successfully.");
@@ -177,7 +177,7 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
         data.id,
         formatDateToYYYYMMDD(new Date(data.attendance_date)),
         data.check_in_image_url,
-        data.check_out_image_url
+        data.check_out_image_url,
       );
 
       toast.success("Attendance record reset for resubmission.");
@@ -187,11 +187,6 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
       console.error("Error resetting attendance record:", error);
     }
   };
-
-  console.log(
-    "data.check_in_time",
-    new Date(data.check_in_time).toLocaleDateString()
-  );
 
   return (
     <>
@@ -262,14 +257,15 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               </Card>
               <div className="w-full flex border rounded-sm overflow-hidden text-sm border-border">
                 <span className="bg-muted px-3 py-2 border-r font-medium text-xs uppercase text-muted-foreground border-border">
-                  Check In<br/> Time
+                  Check In
+                  <br /> Time
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_in_time
                     ? `${new Date(
-                        data.check_in_time
+                        data.check_in_time,
                       ).toLocaleTimeString()}\n${new Date(
-                        data.check_in_time
+                        data.check_in_time,
                       ).toLocaleDateString()}`
                     : "N/A"}
                 </span>
@@ -295,14 +291,15 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               </Card>
               <div className="w-full flex border rounded-sm overflow-hidden text-sm border-border">
                 <span className="bg-muted px-3 py-2 border-r font-medium text-xs uppercase text-muted-foreground border-border">
-                  Check Out<br/> Time
+                  Check Out
+                  <br /> Time
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_out_time
                     ? `${new Date(
-                        data.check_out_time
+                        data.check_out_time,
                       ).toLocaleTimeString()}\n${new Date(
-                        data.check_out_time
+                        data.check_out_time,
                       ).toLocaleDateString()}`
                     : "N/A"}
                 </span>
