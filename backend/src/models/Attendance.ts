@@ -3,6 +3,94 @@ import pool from "../config/database.js";
 import { UserModel } from "./User.js";
 import { formatDateToYYYYMMDD } from "../utils/formatDate.js";
 
+interface AttendanceQueryOptions {
+  userId?: number;
+  selectedDate?: string;
+  includeOT?: boolean;
+  includeUserDetails?: boolean;
+}
+
+const buildAttendanceQuery = (options: AttendanceQueryOptions) => {
+  const params: any[] = [];
+  let idx = 1;
+
+  let query = `
+    SELECT 
+      ar.id,
+      ar.attendance_date,
+      ar.check_in_time,
+      ar.check_out_time,
+      ar.is_audited,
+      ar.status,
+      ar.user_id,
+      ar.u_sched_in,
+      ar.u_sched_out,
+      ar.ot_id,
+      ar.created_at,
+      ar.updated_at
+      ${
+        options.includeOT
+          ? `,
+        os.ot_hours,
+        os.added_by AS ot_added_by,
+        os.created_at AS ot_created_at`
+          : ""
+      }
+      ${
+        options.includeUserDetails
+          ? `,
+        u.username,
+        u.user_account_id,
+        u.first_name,
+        u.middle_name,
+        u.last_name,
+        u.gender,
+        u.user_profile_image_url,
+        u.role,
+        ci.image_url AS check_in_image_url,
+        co.image_url AS check_out_image_url`
+          : ""
+      }
+    FROM attendance_records ar
+  `;
+
+  if (options.includeOT) {
+    query += `
+      RIGHT JOIN ot_sched os ON ar.ot_id = os.id
+    `;
+  }
+
+  if (options.includeUserDetails) {
+    query += `
+      LEFT JOIN users u ON ar.user_id = u.id
+      LEFT JOIN attendance_images ci ON ar.check_in_image_id = ci.id
+      LEFT JOIN attendance_images co ON ar.check_out_image_id = co.id
+    `;
+  }
+
+  const whereClauses: string[] = [];
+
+  if (options.userId) {
+    whereClauses.push(`ar.user_id = $${idx}`);
+    params.push(options.userId);
+    idx++;
+  }
+
+  if (options.selectedDate) {
+    whereClauses.push(`ar.attendance_date = $${idx}`);
+    params.push(options.selectedDate);
+    idx++;
+  }
+
+  if (whereClauses.length > 0) {
+    query += ` WHERE ${whereClauses.join(" AND ")}`;
+  }
+
+  query += ` ORDER BY ar.attendance_date DESC`;
+
+  return { query, params };
+};
+
 export class Attendance {
   private static async create_attendance_img(
     data: {
@@ -47,88 +135,46 @@ export class Attendance {
 
   static async get_attendance_records() {
     try {
-      const insertQuery = `
-      SELECT
-          ar.id,
-          ar.attendance_date,
-          ar.check_in_time,
-          ar.check_out_time,
-          ar.is_audited,
-          ar.status,
-          u.username,
-          u.user_account_id,
-          u.first_name,
-          u.middle_name,
-          u.last_name,
-          u.gender,
-          u.user_profile_image_url,
-          u.role,
-          ci.image_url AS check_in_image_url,
-          co.image_url AS check_out_image_url
-      FROM
-          attendance_records ar
-          LEFT JOIN users u ON ar.user_id = u.id
-          LEFT JOIN attendance_images ci ON ar.check_in_image_id = ci.id
-          LEFT JOIN attendance_images co ON ar.check_out_image_id = co.id
-      ORDER BY 
-          ar.attendance_date DESC;
-      `;
+      const { query, params } = buildAttendanceQuery({
+        includeUserDetails: true,
+      });
 
-      const result = await pool.query(insertQuery);
-
+      const result = await pool.query(query, params);
       return result.rows || [];
     } catch (error: any) {
       throw new Error(`Failed to fetch attendance records: ${error.message}`);
     }
   }
 
-  static async get_attendance_records_byID(id: number, selected_date?: string) {
+  static async get_attendance_records_byID(userId: number, selectedDate?: string) {
+  try {
+    const { query, params } = buildAttendanceQuery({ 
+      userId,
+      selectedDate,
+      includeUserDetails: true 
+    });
+    
+    const result = await pool.query(query, params);
+    return result.rows || [];
+  } catch (error: any) {
+    throw new Error(`Failed to fetch attendance records: ${error.message}`);
+  }
+}
+
+  static async get_attendance_records_with_ot(userId: number) {
     try {
-      // Base SQL query - everything before the WHERE clause
-      const baseQuery = `
-            SELECT ar.id,
-                   ar.attendance_date,
-                   ar.check_in_time,
-                   ar.check_out_time,
-                   ar.is_audited,
-                   ar.status,
-                   u.username,
-                   u.user_account_id,
-                   u.first_name,
-                   u.middle_name,
-                   u.last_name,
-                   u.gender,
-                   u.user_profile_image_url,
-                   u.role,
-                   ci.image_url AS check_in_image_url,
-                   co.image_url AS check_out_image_url
-            FROM attendance_records ar
-            LEFT JOIN users u ON ar.user_id = u.id
-            LEFT JOIN attendance_images ci ON ar.check_in_image_id = ci.id
-            LEFT JOIN attendance_images co ON ar.check_out_image_id = co.id
-            WHERE ar.user_id = $1
-        `;
+      const { query, params } = buildAttendanceQuery({
+        userId,
+        includeOT: true,
+        includeUserDetails: true,
+      });
 
-      let insertQuery = baseQuery;
-      const queryParams: (number | string)[] = [id]; // Start with the user ID
-      // If selected_date is provided, add the date filter to the WHERE clause
-      if (selected_date) {
-        // Check if the date parameter is already in the queryParams array.
-        // If it is, use the next available placeholder ($2).
-        // If not, add it and use $2.
-        const datePlaceholder = `$${queryParams.length + 1}`;
-        insertQuery += ` AND ar.attendance_date = ${datePlaceholder}`;
-        queryParams.push(selected_date);
-      }
-
-      insertQuery += ";"; // Terminate the final query
-
-      const result = await pool.query(insertQuery, queryParams);
+      const result = await pool.query(query, params);
       return result.rows || [];
     } catch (error: any) {
-      // Using a type guard for 'error' is good practice, but since 'error: any'
-      // is used in the catch block, we'll access the message property directly.
-      throw new Error(`Failed to fetch attendance records: ${error.message}`);
+      throw new Error(
+        `Failed to fetch attendance records with overtime: ${error.message}`,
+      );
     }
   }
 

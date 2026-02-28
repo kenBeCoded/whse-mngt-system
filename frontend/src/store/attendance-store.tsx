@@ -45,17 +45,21 @@ interface AttendanceState {
 
   fetchRecordByID: (
     user_id: number | string,
-    selected_date: string
+    selected_date: string,
+  ) => Promise<FetchRecordResponse | undefined>;
+
+  fetchRecordWithOT: (
+    user_id: number | string,
   ) => Promise<FetchRecordResponse | undefined>;
 
   failAttendnaceRecord: (
     id: string | number,
-    attendance_date: string
+    attendance_date: string,
   ) => Promise<void>;
 
   passAttendnaceRecord: (
     id: string | number,
-    attendance_date: string
+    attendance_date: string,
   ) => Promise<void>;
 
   updateAttendanceRecord: (
@@ -64,14 +68,14 @@ interface AttendanceState {
     attendance_date: string,
     check_in_time: string,
     check_out_time: string,
-    ot_hours: number
+    ot_hours: number,
   ) => Promise<void>;
 
   resetAttendanceRecord: (
     id: string | number,
     attendance_date: string,
     check_in_image_url: string | null,
-    check_out_image_url: string | null
+    check_out_image_url: string | null,
   ) => Promise<void>;
 
   clearError: () => void;
@@ -124,7 +128,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         try {
           const response = await API.post(
             "/api/attendance/get-attendance-record",
-            { request_code: 0, user_id: user_id }
+            { request_code: 0, user_id: user_id },
           );
           set({ Attendance: response.data.data, isLoading: false });
         } catch (error) {
@@ -152,7 +156,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         try {
           const response = await API.post(
             "/api/attendance/get-attendance-record",
-            { request_code: 1, user_id, selected_date }
+            { request_code: 1, user_id, selected_date },
           );
           set({ isLoading: false });
           return { attendance_record: response.data.data };
@@ -166,6 +170,31 @@ export const useAttendanceStore = create<AttendanceState>()(
         }
       },
 
+      fetchRecordWithOT: async (user_id) => {
+        if (!user_id) {
+          set({ isLoading: false, error: "User is not authenticated!" });
+          return;
+        }
+
+        set({ isLoading: true, error: null });
+
+        try {
+          const response = await API.post(
+            "/api/attendance/get-attendance-record",
+            { request_code: 2, user_id },
+          );
+          set({ isLoading: false });
+          return { attendance_record: response.data.data };
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to fetch attendance records with overtime";
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error fetching attendance record with OT:", error);
+        }
+      },
+
       failAttendnaceRecord: async (id, attendance_date) => {
         set({ isLoading: true, error: null });
         try {
@@ -175,7 +204,7 @@ export const useAttendanceStore = create<AttendanceState>()(
               id: id,
               attendance_date: attendance_date,
               update_code: 1, // 1 for fail
-            }
+            },
           );
 
           // Update local state to reflect the change
@@ -183,7 +212,7 @@ export const useAttendanceStore = create<AttendanceState>()(
             Attendance: state.Attendance.map((record) =>
               record.id === id
                 ? { ...record, is_audited: true, status: "fail" }
-                : record
+                : record,
             ),
             isLoading: false,
           }));
@@ -209,7 +238,7 @@ export const useAttendanceStore = create<AttendanceState>()(
               id: id,
               attendance_date: attendance_date,
               update_code: 0, // 0 for pass
-            }
+            },
           );
 
           // Update local state to reflect the change
@@ -217,7 +246,7 @@ export const useAttendanceStore = create<AttendanceState>()(
             Attendance: state.Attendance.map((record) =>
               record.id === id
                 ? { ...record, is_audited: true, status: "pass" }
-                : record
+                : record,
             ),
             isLoading: false,
           }));
@@ -240,7 +269,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         attendance_date,
         check_in_time,
         check_out_time,
-        ot_hours
+        ot_hours,
       ) => {
         set({ isLoading: true, error: null });
         try {
@@ -254,7 +283,7 @@ export const useAttendanceStore = create<AttendanceState>()(
               check_out_time: check_out_time,
               ot_hours: ot_hours,
               update_code: 5, // 5 for update
-            }
+            },
           );
 
           // Update local state to reflect the changes
@@ -267,7 +296,7 @@ export const useAttendanceStore = create<AttendanceState>()(
                     check_out_time: check_out_time,
                     is_audited: true,
                   }
-                : record
+                : record,
             ),
             isLoading: false,
           }));
@@ -288,7 +317,7 @@ export const useAttendanceStore = create<AttendanceState>()(
         id,
         attendance_date,
         check_in_image_url,
-        check_out_image_url
+        check_out_image_url,
       ) => {
         set({ isLoading: true, error: null });
         try {
@@ -299,7 +328,7 @@ export const useAttendanceStore = create<AttendanceState>()(
               id: id,
               attendance_date: attendance_date,
               update_code: 2, // 2 for reset
-            }
+            },
           );
 
           // If backend call succeeds, delete images from Supabase
@@ -321,7 +350,7 @@ export const useAttendanceStore = create<AttendanceState>()(
                     check_in_image_url: null,
                     check_out_image_url: null,
                   }
-                : record
+                : record,
             ),
             isLoading: false,
           }));
@@ -341,6 +370,6 @@ export const useAttendanceStore = create<AttendanceState>()(
       clearError: () => set({ error: null }),
       reset: () => set({ Attendance: [], isLoading: false, error: null }),
     }),
-    { name: "attendance-store" }
-  )
+    { name: "attendance-store" },
+  ),
 );

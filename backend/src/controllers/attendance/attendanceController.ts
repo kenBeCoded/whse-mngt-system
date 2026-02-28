@@ -57,13 +57,13 @@ export const getAttendanceRecord = async (
     } = req;
 
     // 0: get all (use for audit access account)
-    // 1: get by user id (use for viewwing payroll)
+    // 1: get by user id (use for viewing attendance records)
+    // 2: get by user id with overtime details
     let result;
 
     switch (parseInt(request_code)) {
       case 0:
         result = await Attendance.get_attendance_records();
-
         break;
 
       case 1:
@@ -73,13 +73,20 @@ export const getAttendanceRecord = async (
         );
         break;
 
+      case 2:
+        result = await Attendance.get_attendance_records_with_ot(
+          parseInt(user_id),
+        );
+        break;
+
       default:
         throw new Error(`Unsupported request_code: ${request_code}`);
     }
 
-    res
-      .status(200)
-      .json({ message: "Attendance fetch successfully", data: result });
+    res.status(200).json({
+      message: "Attendance fetch successfully",
+      data: result,
+    });
   } catch (error) {
     next(error);
   }
