@@ -36,7 +36,7 @@ interface DataTableProps {
     dateFrom: string,
     dateTo: string,
     schedIn: string,
-    schedOut: string
+    schedOut: string,
   ) => Promise<void>;
 }
 
@@ -78,7 +78,11 @@ export function SchedulerDataTable({
   const selectedUserIds = selectedRows
     .map((row) => {
       const id = row.original.id;
-      return typeof id === 'number' ? id : typeof id === 'string' ? parseInt(id) : null;
+      return typeof id === "number"
+        ? id
+        : typeof id === "string"
+          ? parseInt(id)
+          : null;
     })
     .filter((id): id is number => id !== null);
   const selectedCount = selectedUserIds.length;
@@ -86,30 +90,30 @@ export function SchedulerDataTable({
   return (
     <div>
       <div className="flex items-center justify-between py-4">
-  {/* Left Group: Search and Dialog */}
-  <div className="flex items-center gap-3">
-    <Input
-      placeholder="Search all columns..."
-      value={globalFilter ?? ""}
-      onChange={(event) => setGlobalFilter(event.target.value)}
-      className="max-w-sm"
-      disabled={isLoading}
-    />
+        {/* Left Group: Search and Dialog */}
+        <div className="flex items-center gap-3">
+          <Input
+            placeholder="Search all columns..."
+            value={globalFilter ?? ""}
+            onChange={(event) => setGlobalFilter(event.target.value)}
+            className="max-w-sm"
+            disabled={isLoading}
+          />
 
-    {/* This will now appear immediately next to the input */}
-    {selectedCount > 0 && (
-      <ChangeScheduleDialog
-        selectedCount={selectedCount}
-        selectedUserIds={selectedUserIds}
-        onScheduleChange={onScheduleChange}
-        isLoading={isLoading}
-      />
-    )}
-  </div>
+          {/* This will now appear immediately next to the input */}
+          {selectedCount > 0 && (
+            <ChangeScheduleDialog
+              selectedCount={selectedCount}
+              selectedUserIds={selectedUserIds}
+              onScheduleChange={onScheduleChange}
+              isLoading={isLoading}
+            />
+          )}
+        </div>
 
-  {/* Right Group: View Options */}
-  <DataTableViewOptions table={table} />
-</div>
+        {/* Right Group: View Options */}
+        <DataTableViewOptions table={table} />
+      </div>
 
       <div className="rounded-md border">
         <Table>
@@ -122,7 +126,7 @@ export function SchedulerDataTable({
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 ))}
@@ -152,7 +156,7 @@ export function SchedulerDataTable({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext()
+                        cell.getContext(),
                       )}
                     </TableCell>
                   ))}

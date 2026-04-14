@@ -22,7 +22,7 @@ interface ChangeScheduleDialogProps {
     dateFrom: string,
     dateTo: string,
     schedIn: string,
-    schedOut: string
+    schedOut: string,
   ) => Promise<void>;
   isLoading?: boolean;
 }
@@ -61,9 +61,15 @@ export function ChangeScheduleDialog({
     }
 
     try {
-      await onScheduleChange(selectedUserIds, dateFrom, dateTo, schedIn, schedOut);
+      await onScheduleChange(
+        selectedUserIds,
+        dateFrom,
+        dateTo,
+        schedIn,
+        schedOut,
+      );
       toast.success(
-        `Schedule updated successfully for ${selectedCount} user(s).`
+        `Schedule updated successfully for ${selectedCount} user(s).`,
       );
       // Reset form
       setDateFrom("");
@@ -84,8 +90,7 @@ export function ChangeScheduleDialog({
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="default" className="ml-auto">
-          <Calendar className="mr-2 h-4 w-4" />
-          ({selectedCount}) CHANGE SCHEDULE
+          <Calendar className="mr-2 h-4 w-4" />({selectedCount}) CHANGE SCHEDULE
         </Button>
       </DialogTrigger>
 
@@ -93,8 +98,8 @@ export function ChangeScheduleDialog({
         <DialogHeader>
           <DialogTitle>CHANGE ATTENDANCE SCHEDULE</DialogTitle>
           <DialogDescription className="pt-2">
-            The selected users' schedules will be changed to the new schedule
-            within the date range.
+            Schedules for the selected user will be updated within this date
+            range.
           </DialogDescription>
         </DialogHeader>
 
@@ -148,7 +153,8 @@ export function ChangeScheduleDialog({
           </div>
 
           <div className="text-sm text-muted-foreground">
-            Selected users: <span className="font-semibold">{selectedCount}</span>
+            Selected users:{" "}
+            <span className="font-semibold">{selectedCount}</span>
           </div>
         </div>
 
@@ -160,7 +166,10 @@ export function ChangeScheduleDialog({
           >
             CANCEL
           </Button>
-          <Button onClick={handleContinue} disabled={isLoading || !isFormComplete}>
+          <Button
+            onClick={handleContinue}
+            disabled={isLoading || !isFormComplete}
+          >
             {isLoading ? "Processing..." : "CONTINUE"}
           </Button>
         </DialogFooter>

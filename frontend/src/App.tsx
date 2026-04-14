@@ -41,10 +41,7 @@ function App() {
                     path="attendance-records"
                     element={<AttendanceRecordsPage />}
                   />
-                  <Route
-                  path="user-schedule"
-                    element={<SchedulerPage />}
-                  />
+                  <Route path="user-schedule" element={<SchedulerPage />} />
                 </Route>
 
                 {/* Example nested routes - extend with your full nav structure */}
