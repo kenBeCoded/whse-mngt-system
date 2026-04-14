@@ -1,0 +1,26 @@
+info:
+  name: Update a location
+  type: http
+  seq: 3
+http:
+  method: PUT
+  url: http://localhost:8000/api/warehouses/1/locations/1
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "zone": "A",
+          "row": "01",
+          "aisle": "L",
+          "bay": "02",
+          "updated_by": 1
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

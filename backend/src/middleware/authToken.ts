@@ -1,39 +1,82 @@
 import { Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { AuthenticatedRequest, JWTPayload } from "../types/index.js";
+import { UserModel } from "../models/User.js";
+import { sendError, ErrorCodes } from "../utils/apiResponse.js";
+import { getAllowedRoles } from "../config/roleAccess.js";
 
-export const authenticateToken = (
+// Routes that skip authentication entirely
+const PUBLIC_ROUTES = [
+  "/api/auth/login",
+  "/api/auth/refresh",
+  "/api/auth/register",
+  "/health",
+];
+
+export const authenticateToken = async (
   req: AuthenticatedRequest,
   res: Response,
-  next: NextFunction
-): void => {
-  // Public routes that don't require authentication
-  const publicRoutes = [
-    "/api/auth/login",
-    "/api/auth/refresh",
-    "/api/auth/register",
-    "/health",
-  ];
-
-  if (publicRoutes.some((route) => req.path.startsWith(route))) {
+  next: NextFunction,
+): Promise<void> => {
+  // Skip public routes
+  if (PUBLIC_ROUTES.some((route) => req.path.startsWith(route))) {
     return next();
   }
 
+  // ── 1. Verify token ─────────────────────────────────────────────────────
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    res.status(401).json({ message: "Access token required" });
+    sendError(res, 401, ErrorCodes.TOKEN_REQUIRED, "Access token required");
     return;
   }
 
-  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!, (err, decoded) => {
-    if (err) {
-      res.status(403).json({ message: "Invalid or expired token" });
-      return;
-    }
+  let decoded: JWTPayload;
+  try {
+    decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
+  } catch {
+    sendError(res, 403, ErrorCodes.TOKEN_INVALID, "Invalid or expired token");
+    return;
+  }
 
-    req.user = decoded as JWTPayload;
-    next();
-  });
+  // ── 2. Verify user exists ───────────────────────────────────────────────
+  const user = await UserModel.findById(decoded.userId);
+  if (!user || user.is_deleted) {
+    sendError(res, 401, ErrorCodes.UNAUTHORIZED, "Not authorized");
+    return;
+  }
+
+  // Attach user info (including role) to request
+  req.user = {
+    userId: decoded.userId,
+    username: decoded.username,
+    role: user.role,
+  };
+
+  // ── 3. Role-based authorization ─────────────────────────────────────────
+  const allowedRoles = getAllowedRoles(req.method, req.path);
+
+  if (allowedRoles === null) {
+    // Route not listed in config → deny by default
+    sendError(
+      res,
+      403,
+      ErrorCodes.FORBIDDEN,
+      "Access denied: route not configured",
+    );
+    return;
+  }
+
+  if (!allowedRoles.includes(user.role as any)) {
+    sendError(
+      res,
+      403,
+      ErrorCodes.FORBIDDEN,
+      "You do not have permission to access this resource",
+    );
+    return;
+  }
+
+  next();
 };

@@ -1,0 +1,13 @@
+info:
+  name: Reactivate a supplier
+  type: http
+  seq: 6
+http:
+  method: PATCH
+  url: http://localhost:8000/api/suppliers/1/reactivate
+  auth: inherit
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,22 @@
+info:
+  name: update/modify attendance record check in & out and overtime (CODE 5)
+  type: http
+  seq: 7
+http:
+  method: PATCH
+  url: http://localhost:8000/api/attendance/audit-attendance-update
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: "{    \n    \"update_code\": 5,\n    \"attendance_date\": \"2025-11-05\"\
+      ,\n    \"user_id\": 2,\n    \"id\": 47,\n    \"check_in_time\": \"2025-12-16T12:34:33.205Z\"\
+      ,\n    \"check_out_time\": \"2025-12-16T12:54:33.205Z\",\n    \"ot_hours\":\
+      \ 3\n}"
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,27 @@
+info:
+  name: update schedule attendance records (CODE 3)
+  type: http
+  seq: 5
+http:
+  method: PATCH
+  url: http://localhost:8000/api/attendance/audit-attendance-update
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "update_code": 3,
+          "usersIds": [2, 3],
+          "dateFrom": "2025-12-15",
+          "dateTo": "2025-12-29",
+          "u_sched_in": "08:00",
+          "u_sched_out": "16:00"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

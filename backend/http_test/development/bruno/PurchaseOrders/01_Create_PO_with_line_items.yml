@@ -1,0 +1,29 @@
+info:
+  name: Create PO with line items
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: http://localhost:8000/api/purchase-orders
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "supplier_id": 1,
+          "warehouse_id": 1,
+          "total_amount": 2000.0,
+          "created_by": 1,
+          "line_items": [
+              { "item_id": 1, "quantity_ordered": 100, "unit_price": 10.0 },
+              { "item_id": 2, "quantity_ordered": 50, "unit_price": 20.0 }
+          ]
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

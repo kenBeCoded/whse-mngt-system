@@ -1,0 +1,22 @@
+info:
+  name: Update a warehouse
+  type: http
+  seq: 4
+http:
+  method: PUT
+  url: http://localhost:8000/api/warehouses/3
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: "{\n    \"name\": \"East Valley Depot\",\n    \"address\": \"1234 Logistics\
+      \ Blvd, Han City, Pasig City, PH\",\n    \"longitude\": 121.086277,\n    \"\
+      latitude\": 14.592105, \n    \"total_capacity\": 10000,\n    \"updated_by\"\
+      : 1\n}"
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

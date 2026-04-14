@@ -1,0 +1,31 @@
+info:
+  name: POST_http:__localhost:8000_api_users_create_user
+  type: http
+  seq: 4
+http:
+  method: POST
+  url: http://localhost:8000/api/users/create-user
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username":"test8",
+          "password":"test8",
+          "email":"test8@gmail.com",
+          "first_name":"test8",
+          "middle_name":"test8",
+          "last_name":"test8",
+          "gender":"male",
+          "user_profile_image_url":"test8 profile image url",
+          "u_sched_in": "08:18",
+          "u_sched_out": "20:18"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

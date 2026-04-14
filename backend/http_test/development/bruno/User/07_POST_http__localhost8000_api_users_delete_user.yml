@@ -1,0 +1,22 @@
+info:
+  name: POST_http:__localhost:8000_api_users_delete_user
+  type: http
+  seq: 7
+http:
+  method: POST
+  url: http://localhost:8000/api/users/delete-user
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username":"test3"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,62 @@
+### Warehouse CRUD API Tests
+
+@baseUrl = http://localhost:8000/api
+@authToken = {{login.response.body.data.accessToken}}
+
+### 1. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+### 2. Create a warehouse
+POST {{baseUrl}}/warehouses
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "name": "East Valley Depot",
+    "address": "123 Logistics Blvd, Han City, Pasig City, PH",
+    "longitude": 121.086277,
+    "latitude": 14.592105, 
+    "total_capacity": 10000,
+    "created_by": 1
+}
+
+### 3. List all active warehouses
+GET {{baseUrl}}/warehouses
+Authorization: Bearer {{authToken}}
+
+### 4. Get a single warehouse by ID
+GET {{baseUrl}}/warehouses/1
+Authorization: Bearer {{authToken}}
+
+### 5. Update a warehouse
+PUT {{baseUrl}}/warehouses/3
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "name": "East Valley Depot",
+    "address": "1234 Logistics Blvd, Han City, Pasig City, PH",
+    "longitude": 121.086277,
+    "latitude": 14.592105, 
+    "total_capacity": 10000,
+    "updated_by": 1
+}
+
+### 6. Deactivate a warehouse
+PATCH {{baseUrl}}/warehouses/1/deactivate
+Authorization: Bearer {{authToken}}
+
+### 7. Reactivate a warehouse
+PATCH {{baseUrl}}/warehouses/1/reactivate
+Authorization: Bearer {{authToken}}
+
+### 8. Get all unallocated assets by warehouse
+GET {{baseUrl}}/warehouses/1/unallocated
+Authorization: Bearer {{authToken}}

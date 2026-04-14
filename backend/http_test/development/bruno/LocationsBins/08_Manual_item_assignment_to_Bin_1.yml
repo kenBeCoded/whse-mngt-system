@@ -1,0 +1,24 @@
+info:
+  name: Manual item assignment to Bin 1
+  type: http
+  seq: 8
+http:
+  method: POST
+  url: http://localhost:8000/api/warehouses/bins/1/assign
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "item_id": 1,
+          "quantity": 45,
+          "assigned_by": 1
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

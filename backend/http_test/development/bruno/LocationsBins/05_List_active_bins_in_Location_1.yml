@@ -1,0 +1,13 @@
+info:
+  name: List active bins in Location 1
+  type: http
+  seq: 5
+http:
+  method: GET
+  url: http://localhost:8000/api/locations/1/bins
+  auth: inherit
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

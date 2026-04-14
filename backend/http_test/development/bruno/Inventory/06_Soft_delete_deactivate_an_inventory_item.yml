@@ -1,0 +1,13 @@
+info:
+  name: Soft delete (deactivate) an inventory item
+  type: http
+  seq: 6
+http:
+  method: PATCH
+  url: http://localhost:8000/api/inventory/items/1/deactivate
+  auth: inherit
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import Joi from "joi";
+import { sendError, ErrorCodes } from "../../utils/apiResponse.js";
 
 // const registerSchema = Joi.object({
 //   username: Joi.string().alphanum().min(3).max(30).required(),
@@ -18,7 +19,7 @@ const loginSchema = Joi.object({
 // ) => {
 //   const { error } = registerSchema.validate(req.body);
 //   if (error) {
-//     res.status(400).json({ message: error.details[0].message });
+//     sendError(res, 400, ErrorCodes.VALIDATION_ERROR, error.details[0].message);
 //     return;
 //   }
 //   next();
@@ -31,7 +32,7 @@ export const validateLogin = (
 ) => {
   const { error } = loginSchema.validate(req.body);
   if (error) {
-    res.status(400).json({ message: error.details[0].message });
+    sendError(res, 400, ErrorCodes.VALIDATION_ERROR, error.details[0].message);
     return;
   }
   next();

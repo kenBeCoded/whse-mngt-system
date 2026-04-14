@@ -1,0 +1,13 @@
+info:
+  name: List active locations in Warehouse 1
+  type: http
+  seq: 2
+http:
+  method: GET
+  url: http://localhost:8000/api/warehouses/1/locations
+  auth: inherit
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

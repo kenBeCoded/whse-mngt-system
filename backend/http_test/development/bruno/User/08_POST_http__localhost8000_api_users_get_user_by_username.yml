@@ -1,0 +1,22 @@
+info:
+  name: POST_http:__localhost:8000_api_users_get_user_by_username
+  type: http
+  seq: 8
+http:
+  method: POST
+  url: http://localhost:8000/api/users/get-user-by-username
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username":"test1"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

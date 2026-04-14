@@ -1,0 +1,26 @@
+info:
+  name: Create a location in Warehouse 1
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: http://localhost:8000/api/warehouses/1/locations
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "zone": "A",
+          "row": "01",
+          "aisle": "L",
+          "bay": "01",
+          "created_by": 1
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

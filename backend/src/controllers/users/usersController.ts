@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../../models/User.js";
 import { User } from "../../types/index.js";
+import { sendSuccess, sendError, ErrorCodes } from "../../utils/apiResponse.js";
 
 // signup/create local account
 export const createUser = async (
@@ -16,9 +17,7 @@ export const createUser = async (
 
     const result = await UserModel.create(data);
 
-    res
-      .status(201)
-      .json({ message: "User created successfully", data: result });
+    sendSuccess(res, 201, result, "User created successfully");
   } catch (error) {
     next(error);
   }
@@ -32,7 +31,7 @@ export const getAllUsers = async (
 ): Promise<void> => {
   try {
     const users = await UserModel.findAllUsernames();
-    res.status(200).json(users);
+    sendSuccess(res, 200, users);
   } catch (error) {
     next(error);
   }
@@ -48,11 +47,11 @@ export const getUserByUsername = async (
     const { username } = req.body;
     const user = await UserModel.findByUsername(username);
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
       return;
     }
 
-    res.status(200).json(user);
+    sendSuccess(res, 200, user);
   } catch (error) {
     next(error);
   }
@@ -68,17 +67,17 @@ export const updateUser = async (
     const { username } = req.body;
     const userId = await UserModel.getIdByUsername(username);
     if (!userId) {
-      res.status(404).json({ message: "User not found" });
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
       return;
     }
 
     const user = await UserModel.updateById(userId, req.body);
     if (!user) {
-      res.status(404).json({ message: "User not found" });
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
       return;
     }
 
-    res.status(200).json(user);
+    sendSuccess(res, 200, user, "User updated successfully");
   } catch (error) {
     next(error);
   }
@@ -94,13 +93,13 @@ export const deleteUser = async (
     const { username } = req.body;
     const userId = await UserModel.getIdByUsername(username);
     if (!userId) {
-      res.status(404).json({ message: "User not found" });
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
       return;
     }
 
-    const user = await UserModel.deleteById(userId);
+    await UserModel.deleteById(userId);
 
-    res.status(200).json(user);
+    sendSuccess(res, 200, null, "User deleted successfully");
   } catch (error) {
     next(error);
   }

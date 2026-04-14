@@ -146,20 +146,23 @@ export class Attendance {
     }
   }
 
-  static async get_attendance_records_byID(userId: number, selectedDate?: string) {
-  try {
-    const { query, params } = buildAttendanceQuery({ 
-      userId,
-      selectedDate,
-      includeUserDetails: true 
-    });
-    
-    const result = await pool.query(query, params);
-    return result.rows || [];
-  } catch (error: any) {
-    throw new Error(`Failed to fetch attendance records: ${error.message}`);
+  static async get_attendance_records_byID(
+    userId: number,
+    selectedDate?: string,
+  ) {
+    try {
+      const { query, params } = buildAttendanceQuery({
+        userId,
+        selectedDate,
+        includeUserDetails: true,
+      });
+
+      const result = await pool.query(query, params);
+      return result.rows || [];
+    } catch (error: any) {
+      throw new Error(`Failed to fetch attendance records: ${error.message}`);
+    }
   }
-}
 
   static async get_attendance_records_with_ot(userId: number) {
     try {

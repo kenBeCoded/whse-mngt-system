@@ -1,0 +1,84 @@
+### Purchase Order Workflow API Tests
+
+@baseUrl = http://localhost:8000/api
+@authToken = {{login.response.body.data.accessToken}}
+
+### 1. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+### 2. Create PO with line items
+POST {{baseUrl}}/purchase-orders
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "supplier_id": 1,
+    "warehouse_id": 1,
+    "total_amount": 2000.0,
+    "created_by": 1,
+    "line_items": [
+        { "item_id": 1, "quantity_ordered": 100, "unit_price": 10.0 },
+        { "item_id": 2, "quantity_ordered": 50, "unit_price": 20.0 }
+    ]
+}
+
+### 3. List all POs
+GET {{baseUrl}}/purchase-orders
+Authorization: Bearer {{authToken}}
+
+### 4. Get single PO with lines
+GET {{baseUrl}}/purchase-orders/1
+Authorization: Bearer {{authToken}}
+
+### 5. Transition PO status (to pending)
+PATCH {{baseUrl}}/purchase-orders/1/status
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "to_status": "pending",
+    "changed_by": 1,
+    "remarks": "Submitted for approval"
+}
+
+### 6. Full status audit trail
+GET {{baseUrl}}/purchase-orders/1/status-history
+Authorization: Bearer {{authToken}}
+
+### 7. Receive items against a PO
+# Note: In a real scenario, status must be 'shipped' first. 
+# This test might fail if transitions aren't followed.
+POST {{baseUrl}}/purchase-orders/1/receive
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "received_by": 1,
+    "items": [
+        {
+            "po_line_id": 1,
+            "item_id": 1,
+            "quantity_expected": 100,
+            "quantity_received": 100
+        }
+    ]
+}
+
+### 8. Put-away: allocate received items to bins
+POST {{baseUrl}}/purchase-orders/1/allocate
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "allocated_by": 1,
+    "allocations": [
+        { "receipt_line_id": 1, "bin_id": 1, "item_id": 1, "quantity": 100 }
+    ]
+}

@@ -1,0 +1,24 @@
+info:
+  name: PATCH_http:__localhost:8000_api_attendance_audit_attendance_update
+  type: http
+  seq: 4
+http:
+  method: PATCH
+  url: http://localhost:8000/api/attendance/audit-attendance-update
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "id": "58",
+          "attendance_date": "2025-12-29",
+          "update_code": 2
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -13,7 +13,7 @@ export class UserModel {
     > & {
       password: string;
       role?: string;
-    }
+    },
   ): Promise<User> {
     const client = await pool.connect();
     try {
@@ -33,7 +33,7 @@ export class UserModel {
             ) + 1,
             false
         )
-        `
+        `,
       );
 
       await client.query(
@@ -49,12 +49,12 @@ export class UserModel {
             ) + 1,
             false
         )
-        `
+        `,
       );
 
       const hashedPassword = await bcrypt.hash(
         userData.password ? userData.password : "12345",
-        12
+        12,
       );
       const query = `
       INSERT INTO users (
@@ -213,7 +213,7 @@ export class UserModel {
 
   static async updateById(
     id: number,
-    updates: Partial<User>
+    updates: Partial<User>,
   ): Promise<Pick<
     User,
     "id" | "username" | "created_at" | "updated_at"
@@ -229,7 +229,7 @@ export class UserModel {
         .join(", ");
       const query = `
       UPDATE users
-      SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+      SET ${setClause}
       WHERE id = $1
       RETURNING id, username, created_at, updated_at
       `;
@@ -257,7 +257,7 @@ export class UserModel {
 
   static async validatePassword(
     user: User,
-    password: string
+    password: string,
   ): Promise<boolean> {
     try {
       return await bcrypt.compare(password, user.password_hash);

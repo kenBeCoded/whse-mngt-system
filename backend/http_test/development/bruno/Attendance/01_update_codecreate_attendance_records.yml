@@ -1,0 +1,27 @@
+info:
+  name: 'update code(create_attendance_records):'
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: http://localhost:8000/api/attendance/create-attendance-record
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username": "test1",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
+          "record_type": "check_in",
+          "image_capture_date": "2025-10-17T12:34:33.205Z",
+          "selected_date": "2025-10-17T12:34:33.205Z",
+          "update_code": 0
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

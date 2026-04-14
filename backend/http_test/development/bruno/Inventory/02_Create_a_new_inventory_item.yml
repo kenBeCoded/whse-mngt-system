@@ -1,0 +1,29 @@
+info:
+  name: Create a new inventory item
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: http://localhost:8000/api/inventory/items
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "item_number": "ITM-000003",
+          "sku": "SKU-ABC321",
+          "name": "Keyboard",
+          "description": "Mechanical keyboard",
+          "category": "Accessories",
+          "unit_of_measure": "pcs",
+          "default_unit_price": 1000,
+          "created_by": 2
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

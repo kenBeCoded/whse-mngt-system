@@ -1,0 +1,30 @@
+info:
+  name: Receive items against a PO
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: http://localhost:8000/api/purchase-orders/1/receive
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "received_by": 1,
+          "items": [
+              {
+                  "po_line_id": 1,
+                  "item_id": 1,
+                  "quantity_expected": 100,
+                  "quantity_received": 100
+              }
+          ]
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

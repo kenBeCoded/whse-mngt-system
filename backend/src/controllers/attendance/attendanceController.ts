@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { Attendance } from "../../models/Attendance.js";
+import { sendSuccess, sendError, ErrorCodes } from "../../utils/apiResponse.js";
 
 export const createAttendanceRec = async (
   req: Request,
@@ -11,9 +12,7 @@ export const createAttendanceRec = async (
 
     const result = await Attendance.create_attendance_records(body);
 
-    res
-      .status(201)
-      .json({ message: "Attendance created successfully", data: result });
+    sendSuccess(res, 201, result, "Attendance created successfully");
   } catch (error) {
     next(error);
   }
@@ -27,20 +26,19 @@ export const auditAttendanceUpdate = async (
   try {
     const { body } = req;
 
-    // if (!body.attendance_date || !body.id || body.id <= 0) {
-    //   res.status(400).json({ message: "attendance_date and id are required" });
-    //   return;
-    // }
-
     const result = await Attendance.audit_attendance_update(body);
 
     if (!result) {
-      res.status(400).json({ message: result.message });
+      sendError(
+        res,
+        400,
+        ErrorCodes.BAD_REQUEST,
+        "Failed to update attendance"
+      );
+      return;
     }
 
-    res
-      .status(200)
-      .json({ message: "Attendance updated successfully", data: result });
+    sendSuccess(res, 200, result, "Attendance updated successfully");
   } catch (error) {
     next(error);
   }
@@ -80,13 +78,16 @@ export const getAttendanceRecord = async (
         break;
 
       default:
-        throw new Error(`Unsupported request_code: ${request_code}`);
+        sendError(
+          res,
+          400,
+          ErrorCodes.BAD_REQUEST,
+          `Unsupported request_code: ${request_code}`
+        );
+        return;
     }
 
-    res.status(200).json({
-      message: "Attendance fetch successfully",
-      data: result,
-    });
+    sendSuccess(res, 200, result, "Attendance fetched successfully");
   } catch (error) {
     next(error);
   }

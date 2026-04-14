@@ -1,0 +1,22 @@
+info:
+  name: Create a warehouse
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: http://localhost:8000/api/warehouses
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: "{\n    \"name\": \"East Valley Depot\",\n    \"address\": \"123 Logistics\
+      \ Blvd, Han City, Pasig City, PH\",\n    \"longitude\": 121.086277,\n    \"\
+      latitude\": 14.592105, \n    \"total_capacity\": 10000,\n    \"created_by\"\
+      : 1\n}"
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

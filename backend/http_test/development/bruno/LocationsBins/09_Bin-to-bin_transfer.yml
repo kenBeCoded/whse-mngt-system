@@ -1,0 +1,27 @@
+info:
+  name: Bin-to-bin transfer
+  type: http
+  seq: 9
+http:
+  method: POST
+  url: http://localhost:8000/api/warehouses/bins/transfer
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "item_id": 1,
+          "from_bin_id": 1,
+          "to_bin_id": 2,
+          "quantity": 10,
+          "transferred_by": 1,
+          "reason": "Stock rebalancing"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

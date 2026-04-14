@@ -1,0 +1,107 @@
+### Locations & Bins API Tests
+
+@baseUrl = http://localhost:8000/api
+@authToken = {{login.response.body.data.accessToken}}
+
+### 1. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "password123"
+}
+
+### ── Locations (Nested under Warehouse) ──
+
+### 2. Create a location in Warehouse 1
+POST {{baseUrl}}/warehouses/1/locations
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "zone": "A",
+    "row": "01",
+    "aisle": "L",
+    "bay": "01",
+    "created_by": 1
+}
+
+### 3. List active locations in Warehouse 1
+GET {{baseUrl}}/warehouses/1/locations
+Authorization: Bearer {{authToken}}
+
+### 4. Update a location
+PUT {{baseUrl}}/warehouses/1/locations/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "zone": "A",
+    "row": "01",
+    "aisle": "L",
+    "bay": "02",
+    "updated_by": 1
+}
+
+
+### ── Bins (Nested under Location) ──
+
+### 5. Create a bin in Location 1
+POST {{baseUrl}}/locations/1/bins
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "bin_code": "A-01-L-01-BIN01",
+    "capacity": 100,
+    "created_by": 1
+}
+
+### 6. List active bins in Location 1
+GET {{baseUrl}}/locations/1/bins
+Authorization: Bearer {{authToken}}
+
+### 7. List all bins under Warehouse 1 (with location info)
+GET {{baseUrl}}/locations/bins/warehouse/1
+Authorization: Bearer {{authToken}}
+
+### 8. Update a bin
+PUT {{baseUrl}}/locations/1/bins/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "bin_code": "A-01-L-01-BIN01-X",
+    "capacity": 200,
+    "updated_by": 1
+}
+
+
+### ── Inventory Operations ──
+
+### 9. Manual item assignment to Bin 1
+POST {{baseUrl}}/warehouses/bins/1/assign
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "item_id": 1,
+    "quantity": 45,
+    "assigned_by": 1
+}
+
+### 10. Bin-to-bin transfer
+POST {{baseUrl}}/warehouses/bins/transfer
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "item_id": 1,
+    "from_bin_id": 1,
+    "to_bin_id": 2,
+    "quantity": 10,
+    "transferred_by": 1,
+    "reason": "Stock rebalancing"
+}

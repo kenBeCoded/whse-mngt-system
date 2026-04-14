@@ -1,0 +1,27 @@
+info:
+  name: POST_http:__localhost:8000_api_attendance_create_attendance_record
+  type: http
+  seq: 2
+http:
+  method: POST
+  url: http://localhost:8000/api/attendance/create-attendance-record
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username": "test9",
+          "image_url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR0n2dUPE7rmcyiWIArIrInNjSuHw5Wk9gJEw&s",
+          "record_type": "check_out",
+          "image_capture_date": "2025-11-17T08:34:33.205Z",
+          "selected_date": "2025-11-16T08:03:55.618Z",
+          "update_code": 2
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

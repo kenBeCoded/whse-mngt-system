@@ -1,0 +1,24 @@
+info:
+  name: Transition PO status (to pending)
+  type: http
+  seq: 4
+http:
+  method: PATCH
+  url: http://localhost:8000/api/purchase-orders/1/status
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "to_status": "pending",
+          "changed_by": 1,
+          "remarks": "Submitted for approval"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

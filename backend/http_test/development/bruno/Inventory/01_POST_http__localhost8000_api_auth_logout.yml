@@ -1,0 +1,13 @@
+info:
+  name: POST_http:__localhost:8000_api_auth_logout
+  type: http
+  seq: 1
+http:
+  method: POST
+  url: http://localhost:8000/api/auth/logout
+  auth: inherit
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

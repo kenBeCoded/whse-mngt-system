@@ -6,8 +6,8 @@ import {
   generateRefreshToken,
   verifyRefreshToken,
 } from "../utils/tokens.js";
-import { authenticateToken } from "../middleware/authToken.js";
 import { AuthenticatedRequest } from "../types/index.js";
+import { sendSuccess, sendError, ErrorCodes } from "../utils/apiResponse.js";
 
 const router = Router();
 
@@ -16,13 +16,23 @@ router.post("/refresh", (req: Request, res: Response): void => {
   try {
     const refreshToken = req.cookies.refreshToken;
     if (!refreshToken) {
-      res.status(401).json({ message: "Refresh token required" });
+      sendError(
+        res,
+        401,
+        ErrorCodes.REFRESH_TOKEN_REQUIRED,
+        "Refresh token required"
+      );
       return;
     }
 
     const decoded = verifyRefreshToken(refreshToken);
     if (!decoded) {
-      res.status(403).json({ message: "Invalid refresh token" });
+      sendError(
+        res,
+        403,
+        ErrorCodes.REFRESH_TOKEN_INVALID,
+        "Invalid refresh token"
+      );
       return;
     }
 
@@ -30,10 +40,10 @@ router.post("/refresh", (req: Request, res: Response): void => {
     const tokenPayload = { userId: decoded.userId, username: decoded.username };
     const accessToken = generateAccessToken(tokenPayload);
 
-    res.json({ accessToken });
+    sendSuccess(res, 200, { accessToken });
   } catch (error) {
-    console.error("Login error:", error);
-    res.status(500).json({ message: "Internal server error" });
+    console.error("Refresh error:", error);
+    sendError(res, 500, ErrorCodes.INTERNAL_ERROR, "Internal server error");
   }
 });
 
@@ -48,14 +58,24 @@ router.post(
       // find user
       const user = await UserModel.findByUsername(username);
       if (!user) {
-        res.status(401).json({ message: "Invalid credentials" });
+        sendError(
+          res,
+          401,
+          ErrorCodes.INVALID_CREDENTIALS,
+          "Invalid credentials"
+        );
         return;
       }
 
       // validate password
       const isValidPassword = await UserModel.validatePassword(user, password);
       if (!isValidPassword) {
-        res.status(401).json({ message: "Invalid credentials" });
+        sendError(
+          res,
+          401,
+          ErrorCodes.INVALID_CREDENTIALS,
+          "Invalid credentials"
+        );
         return;
       }
 
@@ -68,23 +88,28 @@ router.post(
       res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
-        sameSite: "none",
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
       });
 
-      res.json({
-        message: "Login successful",
-        accessToken,
-        user: {
-          id: user.id,
-          username: user.username,
+      sendSuccess(
+        res,
+        200,
+        {
+          accessToken,
+          user: {
+            id: user.id,
+            username: user.username,
+            role: user.role,
+          },
         },
-      });
+        "Login successful"
+      );
     } catch (error) {
       console.error("Login error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      sendError(res, 500, ErrorCodes.INTERNAL_ERROR, "Internal server error");
     }
-  }
+  },
 );
 
 // logout account
@@ -92,7 +117,7 @@ router.post("/logout", (req: Request, res: Response) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
   });
 
   res.status(204).json();
@@ -101,16 +126,15 @@ router.post("/logout", (req: Request, res: Response) => {
 // Get current user profile
 router.get(
   "/profile",
-  authenticateToken,
   async (req: AuthenticatedRequest, res: Response) => {
     try {
       const user = await UserModel.findByUsername(req.user!.username);
       if (!user) {
-        res.status(404).json({ message: "User not found" });
+        sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
         return;
       }
 
-      res.json({
+      sendSuccess(res, 200, {
         id: user.id,
         username: user.username,
         role: user.role,
@@ -121,9 +145,9 @@ router.get(
       });
     } catch (error) {
       console.error("Profile error:", error);
-      res.status(500).json({ message: "Internal server error" });
+      sendError(res, 500, ErrorCodes.INTERNAL_ERROR, "Internal server error");
     }
-  }
+  },
 );
 
 export default router;

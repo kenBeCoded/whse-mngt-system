@@ -1,0 +1,68 @@
+### Suppliers API Tests
+
+@baseUrl = http://localhost:8000/api
+@authToken = {{login.response.body.data.accessToken}}
+
+### 1. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "test1",
+    "password": "test1"
+}
+
+### 2. Create a new supplier
+POST {{baseUrl}}/suppliers
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+# {
+#     "name": "Supplier Co.",
+#     "email": "contact@supplier.com",
+#     "address": "123 Main St, Industrial City",
+#     "created_by": 1
+# }
+
+{
+    "name": "Swift Parts Inc.",
+    "email": "contact@swiftparts.com",
+    "address": "123 Supply Chain Ave, Singapore",
+    "created_by": 2
+}
+
+### 3. List all active suppliers
+GET {{baseUrl}}/suppliers
+Authorization: Bearer {{authToken}}
+
+### 4. Get a single supplier by ID
+GET {{baseUrl}}/suppliers/1
+Authorization: Bearer {{authToken}}
+
+### 5. Update a supplier
+PUT {{baseUrl}}/suppliers/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+# {
+#     "name": "Supplier Co. International",
+#     "email": "contact@supplier-intl.com",
+#     "address": "456 Global Way",
+#     "updated_by": 1
+# }
+
+{
+    "name": "Supplier Co.",
+    "email": "contact@supplier.com",
+    "address": "1234 Main St, Industrial City",
+    "updated_by": 4
+}
+
+### 6. Deactivate a supplier
+PATCH {{baseUrl}}/suppliers/1/deactivate
+Authorization: Bearer {{authToken}}
+
+### 7. Reactivate a supplier
+PATCH {{baseUrl}}/suppliers/1/reactivate
+Authorization: Bearer {{authToken}}

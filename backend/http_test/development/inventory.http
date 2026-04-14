@@ -1,0 +1,78 @@
+### Inventory Items API Tests
+
+@baseUrl = http://localhost:8000/api
+@authToken = {{login.response.body.data.accessToken}}
+
+### 1. Login to get token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+    "username": "admin",
+    "password": "admin"
+}
+
+###
+
+post http://localhost:8000/api/auth/logout
+Content-Type: application/json
+
+### 2. Create a new inventory item
+POST {{baseUrl}}/inventory/items
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+# {
+#     "item_number": "ITM-000001",
+#     "sku": "SKU-ABC123",
+#     "name": "Widget A",
+#     "description": "High quality widget",
+#     "category": "Parts",
+#     "unit_of_measure": "pcs",
+#     "default_unit_price": 10,
+#     "created_by": 2
+# }
+
+{
+    "item_number": "ITM-000003",
+    "sku": "SKU-ABC321",
+    "name": "Keyboard",
+    "description": "Mechanical keyboard",
+    "category": "Accessories",
+    "unit_of_measure": "pcs",
+    "default_unit_price": 1000,
+    "created_by": 2
+}
+
+### 3. List all active inventory items
+GET {{baseUrl}}/inventory/items
+Authorization: Bearer {{authToken}}
+
+### 4. Get a single inventory item by ID
+# Assuming ID 1 exists
+GET {{baseUrl}}/inventory/items/2
+Authorization: Bearer {{authToken}}
+
+### 5. Update an inventory item
+PUT {{baseUrl}}/inventory/items/1
+Content-Type: application/json
+Authorization: Bearer {{authToken}}
+
+{
+    "item_number": "ITM-000001",
+    "sku": "SKU-ABC123",
+    "name": "Widget A",
+    "description": "High quality widget",
+    "category": "Parts",
+    "unit_of_measure": "pcs",
+    "default_unit_price": 10
+}
+
+# {
+#     "default_unit_price": 12.5
+# }
+
+### 6. Soft delete (deactivate) an inventory item
+PATCH {{baseUrl}}/inventory/items/1/deactivate
+Authorization: Bearer {{authToken}}

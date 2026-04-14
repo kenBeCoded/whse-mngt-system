@@ -1,0 +1,23 @@
+info:
+  name: POST_http:__localhost:8000_api_users_update_user
+  type: http
+  seq: 6
+http:
+  method: POST
+  url: http://localhost:8000/api/users/update-user
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "username":"test1",
+          "first_name":"test1 first name"
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

@@ -1,0 +1,28 @@
+info:
+  name: Update an inventory item
+  type: http
+  seq: 5
+http:
+  method: PUT
+  url: http://localhost:8000/api/inventory/items/1
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "item_number": "ITM-000001",
+          "sku": "SKU-ABC123",
+          "name": "Widget A",
+          "description": "High quality widget",
+          "category": "Parts",
+          "unit_of_measure": "pcs",
+          "default_unit_price": 10
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

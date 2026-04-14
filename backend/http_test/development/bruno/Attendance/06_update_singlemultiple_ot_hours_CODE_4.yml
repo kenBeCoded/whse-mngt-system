@@ -1,0 +1,24 @@
+info:
+  name: update single/multiple ot hours (CODE 4)
+  type: http
+  seq: 6
+http:
+  method: PATCH
+  url: http://localhost:8000/api/attendance/audit-attendance-update
+  auth: inherit
+  headers:
+  - name: Content-Type
+    value: application/json
+  body:
+    type: json
+    data: |-
+      {
+          "idArr": [4,5,6,7],
+          "ot_hours": 2,
+          "update_code": 4
+      }
+settings:
+  encodeUrl: true
+  timeout: 0
+  followRedirects: true
+  maxRedirects: 5

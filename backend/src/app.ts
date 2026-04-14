@@ -44,9 +44,12 @@ app.use("/api", limiter, routes);
 // Health check
 app.get("/health", (req, res) => {
   res.status(200).json({
-    status: "OK",
-    timestamp: new Date().toISOString(),
-    uptime: process.uptime(),
+    success: true,
+    data: {
+      status: "OK",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+    },
   });
 });
 
