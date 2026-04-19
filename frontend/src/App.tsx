@@ -17,6 +17,8 @@ import { UsersPage } from "./app/user-table/page";
 import { Toaster } from "@/components/ui/sonner";
 import { AttendanceRecordsPage } from "./app/attendance/attendance-table/page";
 import { SchedulerPage } from "./app/scheduler/page";
+import { SuppliersPage } from "./app/supplier-table/page";
+import { InventoryPage } from "./app/inventory-table/page";
 
 function App() {
   return (
@@ -42,6 +44,8 @@ function App() {
                     element={<AttendanceRecordsPage />}
                   />
                   <Route path="user-schedule" element={<SchedulerPage />} />
+                  <Route path="suppliers" element={<SuppliersPage />} />
+                  <Route path="inventory" element={<InventoryPage />} />
                 </Route>
 
                 {/* Example nested routes - extend with your full nav structure */}

@@ -20,6 +20,14 @@ export const navigationData = {
         { title: "Scheduler", url: "/admin/user-schedule" },
       ],
     },
+    {
+      title: "Warehouse Management",
+      url: "/admin",
+      items: [
+        { title: "Inventory Items", url: "/admin/inventory" },
+        { title: "Suppliers", url: "/admin/suppliers" },
+      ],
+    },
     // {
     //   title: "test",
     //   url: "/admin",

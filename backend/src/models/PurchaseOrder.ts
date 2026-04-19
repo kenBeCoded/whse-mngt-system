@@ -20,6 +20,7 @@ export class PurchaseOrderModel {
     total_amount: number;
     created_by: number;
     line_items: POLineItem[];
+    attachment_url?: string; // optional — PDF, image, etc.
   }): Promise<PurchaseOrder> {
     // ── 0. Validate total_amount against line_items subtotals ─────────────────
     const calculatedTotal = data.line_items.reduce(
@@ -80,6 +81,15 @@ export class PurchaseOrderModel {
             line.unit_price,
             line.quantity_ordered * line.unit_price,
           ],
+        );
+      }
+
+      // 5. Insert attachment record (only when a URL is provided)
+      if (data.attachment_url && data.attachment_url.trim() !== "") {
+        await client.query(
+          `INSERT INTO po_attachment (po_id, url, uploaded_by)
+           VALUES ($1, $2, $3)`,
+          [poId, data.attachment_url.trim(), data.created_by],
         );
       }
 
@@ -167,7 +177,13 @@ export class PurchaseOrderModel {
       const currentStatus: POStatus = current.rows[0].status;
       const allowed = STATUS_TRANSITIONS[currentStatus] ?? [];
 
-      // console.log("allowed", allowed);
+      if (data.to_status === "received") {
+        const err: any = new Error(
+          "Cannot manually transition to 'received' status. PO must be received through the receiving process.",
+        );
+        err.statusCode = 400;
+        throw err;
+      }
 
       if (!allowed.includes(data.to_status)) {
         const err: any = new Error(
@@ -249,7 +265,7 @@ export class PurchaseOrderModel {
       const fullyReceived = data.items.every(
         (i) => i.quantity_received === i.quantity_expected,
       );
-      const receiptStatus = fullyReceived ? "complete" : "partial";
+      const receiptStatus = fullyReceived ? "completed" : "partial";
 
       // 1. Update PO status to received
       await client.query(
@@ -287,6 +303,18 @@ export class PurchaseOrderModel {
         ) {
           const err: any = new Error(
             `quantity_received must be > 0 and <= quantity_expected for item ${item.item_id}`,
+          );
+          err.statusCode = 400;
+          throw err;
+        }
+
+        const lineCheck = await client.query(
+          `SELECT id FROM po_line_orders WHERE id = $1 AND item_id = $2 AND po_id = $3`,
+          [item.po_line_id, item.item_id, poId],
+        );
+        if (!lineCheck.rows[0]) {
+          const err: any = new Error(
+            `Line item validation failed: po_line_id ${item.po_line_id} with item_id ${item.item_id} does not belong to PO ${poId}`,
           );
           err.statusCode = 400;
           throw err;
@@ -349,7 +377,7 @@ export class PurchaseOrderModel {
 
   // ── POST /api/purchase-orders/:id/allocate ────────────────────────────────
   static async allocate(
-    _poId: number,
+    poId: number,
     data: {
       allocated_by: number;
       allocations: Array<{
@@ -365,15 +393,32 @@ export class PurchaseOrderModel {
       await client.query("BEGIN");
 
       for (const alloc of data.allocations) {
-        // Confirm unallocated row exists
+        // Confirm unallocated row exists for this PO, receipt line, and item
         const existing = await client.query(
-          `SELECT id FROM item_locations
-           WHERE receipt_line_id = $1 AND allocation_status = 'unallocated'`,
-          [alloc.receipt_line_id],
+          `SELECT il.id, il.quantity
+           FROM item_locations il
+           JOIN po_receipt_lines prl ON prl.id = il.receipt_line_id
+           JOIN po_receipts pr ON pr.id = prl.receipt_id
+           WHERE il.receipt_line_id = $1
+             AND il.item_id = $2
+             AND pr.po_id = $3
+             AND il.allocation_status = 'unallocated'`,
+          [alloc.receipt_line_id, alloc.item_id, poId],
         );
         if (!existing.rows[0]) {
           const err: any = new Error(
-            `No unallocated item_locations row found for receipt_line_id ${alloc.receipt_line_id}`,
+            `No unallocated item_locations row found for receipt_line_id ${alloc.receipt_line_id} and item_id ${alloc.item_id} on PO ${poId}`,
+          );
+          err.statusCode = 400;
+          throw err;
+        }
+
+        const unallocatedQty: number = Number(existing.rows[0].quantity);
+
+        // Validate allocation quantity against available unallocated quantity
+        if (alloc.quantity <= 0 || alloc.quantity > unallocatedQty) {
+          const err: any = new Error(
+            `Invalid allocation quantity (${alloc.quantity}). Available unallocated: ${unallocatedQty}`,
           );
           err.statusCode = 400;
           throw err;
@@ -401,12 +446,40 @@ export class PurchaseOrderModel {
           throw err;
         }
 
+        if (alloc.quantity === unallocatedQty) {
+          // Full allocation — delete the unallocated row, then upsert below
+          await client.query(`DELETE FROM item_locations WHERE id = $1`, [
+            existing.rows[0].id,
+          ]);
+        } else {
+          // Partial allocation — decrement the unallocated row's quantity
+          await client.query(
+            `UPDATE item_locations
+             SET quantity = quantity - $1, updated_at = NOW()
+             WHERE id = $2`,
+            [alloc.quantity, existing.rows[0].id],
+          );
+        }
+
+        // Upsert the allocated row — handles first-time allocation and
+        // re-allocation to a bin that already holds qty for this item.
         await client.query(
-          `UPDATE item_locations
-           SET bin_id = $1, allocation_status = 'allocated',
-               allocated_by = $2, allocated_at = NOW(), updated_at = NOW()
-           WHERE receipt_line_id = $3 AND allocation_status = 'unallocated'`,
-          [alloc.bin_id, data.allocated_by, alloc.receipt_line_id],
+          `INSERT INTO item_locations
+             (item_id, bin_id, quantity, allocation_status, receipt_line_id, allocated_by, allocated_at, created_by)
+           VALUES ($1, $2, $3, 'allocated', $4, $5, NOW(), $5)
+           ON CONFLICT (item_id, bin_id)
+           DO UPDATE SET
+             quantity      = item_locations.quantity + EXCLUDED.quantity,
+             allocated_by  = EXCLUDED.allocated_by,
+             allocated_at  = EXCLUDED.allocated_at,
+             updated_at    = NOW()`,
+          [
+            alloc.item_id,
+            alloc.bin_id,
+            alloc.quantity,
+            alloc.receipt_line_id,
+            data.allocated_by,
+          ],
         );
 
         await client.query(

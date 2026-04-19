@@ -28,6 +28,7 @@ const ADMIN_MANAGER: Role[] = ["admin", "manager"];
 export const roleAccessConfig: RoutePermission[] = [
   // ── Auth (profile requires authentication but all roles can access) ──────
   { method: "GET", path: "/auth/profile", roles: ALL_ROLES },
+  { method: "POST", path: "/auth/logout", roles: ALL_ROLES },
 
   // ── Users ────────────────────────────────────────────────────────────────
   { method: "POST", path: "/users/create-user", roles: ADMIN_ONLY },

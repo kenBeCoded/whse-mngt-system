@@ -14,19 +14,49 @@ export class BinModel {
       // Uniqueness check
       const dup = await client.query(
         `SELECT id FROM bins WHERE bin_code = $1`,
-        [data.bin_code]
+        [data.bin_code],
       );
       if (dup.rowCount && dup.rowCount > 0) {
-        const err: any = new Error(`bin_code '${data.bin_code}' already exists`);
+        const err: any = new Error(
+          `bin_code '${data.bin_code}' already exists`,
+        );
         err.statusCode = 409;
         throw err;
+      }
+
+      // Warehouse capacity check — sum of active bin capacities must not exceed warehouse total_capacity
+      const capacityCheck = await client.query(
+        `SELECT w.total_capacity,
+                COALESCE((
+                  SELECT SUM(b.capacity)
+                  FROM bins b
+                  JOIN locations l2 ON l2.id = b.location_id
+                  WHERE l2.warehouse_id = w.id AND b.is_active = true
+                ), 0) AS used_capacity
+         FROM locations l
+         JOIN warehouse w ON w.id = l.warehouse_id
+         WHERE l.id = $1`,
+        [data.location_id],
+      );
+
+      if (capacityCheck.rows.length > 0) {
+        const totalCapacity = Number(capacityCheck.rows[0].total_capacity);
+        const usedCapacity = Number(capacityCheck.rows[0].used_capacity);
+
+        if (usedCapacity + data.capacity > totalCapacity) {
+          const err: any = new Error(
+            `Cannot accommodate more bins, warehouse has reached maximum capacity (used: ${usedCapacity}, new bin: ${data.capacity}, total: ${totalCapacity})`,
+          );
+          err.statusCode = 400;
+          throw err;
+        }
       }
 
       const result = await client.query(
         `INSERT INTO bins (location_id, bin_code, capacity, current_occupancy, is_active, created_by)
          VALUES ($1, $2, $3, 0, true, $4)
          RETURNING *`,
-        [data.location_id, data.bin_code, data.capacity, data.created_by]
+        [data.location_id, data.bin_code, data.capacity, data.created_by],
       );
       return result.rows[0];
     } finally {
@@ -38,7 +68,7 @@ export class BinModel {
   static async findAllByLocation(locationId: number): Promise<Bin[]> {
     const result = await pool.query(
       `SELECT * FROM bins WHERE location_id = $1 AND is_active = true ORDER BY bin_code`,
-      [locationId]
+      [locationId],
     );
     return result.rows;
   }
@@ -51,7 +81,7 @@ export class BinModel {
        JOIN locations l ON l.id = b.location_id
        WHERE l.warehouse_id = $1 AND b.is_active = true
        ORDER BY b.bin_code`,
-      [warehouseId]
+      [warehouseId],
     );
     return result.rows;
   }
@@ -59,14 +89,14 @@ export class BinModel {
   // ── PUT /api/locations/:locationId/bins/:id ───────────────────────────────
   static async updateById(
     id: number,
-    data: { bin_code: string; capacity: number; updated_by: number }
+    data: { bin_code: string; capacity: number; updated_by: number },
   ): Promise<Bin | null> {
     const result = await pool.query(
       `UPDATE bins
        SET bin_code = $1, capacity = $2, updated_by = $3, updated_at = NOW()
        WHERE id = $4
        RETURNING *`,
-      [data.bin_code, data.capacity, data.updated_by, id]
+      [data.bin_code, data.capacity, data.updated_by, id],
     );
     return result.rows[0] ?? null;
   }
@@ -77,7 +107,7 @@ export class BinModel {
       `SELECT COALESCE(SUM(quantity), 0) AS stock
        FROM item_locations
        WHERE bin_id = $1 AND allocation_status = 'allocated'`,
-      [id]
+      [id],
     );
     if (Number(stockCheck.rows[0].stock) > 0) {
       const err: any = new Error("Cannot deactivate bin with active stock.");
@@ -87,7 +117,7 @@ export class BinModel {
 
     await pool.query(
       `UPDATE bins SET is_active = false, updated_by = $1, updated_at = NOW() WHERE id = $2`,
-      [updatedBy, id]
+      [updatedBy, id],
     );
   }
 
@@ -95,14 +125,14 @@ export class BinModel {
   static async reactivate(id: number, updatedBy: number): Promise<void> {
     await pool.query(
       `UPDATE bins SET is_active = true, updated_by = $1, updated_at = NOW() WHERE id = $2`,
-      [updatedBy, id]
+      [updatedBy, id],
     );
   }
 
   // ── POST /api/warehouses/bins/:binId/assign (manual assignment) ───────────
   static async assignItem(
     binId: number,
-    data: { item_id: number; quantity: number; assigned_by: number }
+    data: { item_id: number; quantity: number; assigned_by: number },
   ): Promise<void> {
     const client = await pool.connect();
     try {
@@ -111,7 +141,7 @@ export class BinModel {
       // Pre-flight: item active?
       const itemCheck = await client.query(
         `SELECT id FROM inventory_items WHERE id = $1 AND is_active = true`,
-        [data.item_id]
+        [data.item_id],
       );
       if (!itemCheck.rows[0]) {
         const err: any = new Error("Item not found or inactive");
@@ -123,7 +153,7 @@ export class BinModel {
       const binCheck = await client.query(
         `SELECT (capacity - current_occupancy) AS available_space
          FROM bins WHERE id = $1 AND is_active = true`,
-        [binId]
+        [binId],
       );
       if (!binCheck.rows[0]) {
         const err: any = new Error("Bin not found or inactive");
@@ -132,7 +162,7 @@ export class BinModel {
       }
       if (Number(binCheck.rows[0].available_space) < data.quantity) {
         const err: any = new Error(
-          `Bin has insufficient space (available: ${binCheck.rows[0].available_space})`
+          `Bin has insufficient space (available: ${binCheck.rows[0].available_space})`,
         );
         err.statusCode = 400;
         throw err;
@@ -141,12 +171,12 @@ export class BinModel {
       await client.query(
         `INSERT INTO item_locations (item_id, bin_id, quantity, allocation_status, source, receipt_line_id, allocated_by, allocated_at, created_by)
          VALUES ($1, $2, $3, 'allocated', 'manual', NULL, $4, NOW(), $4)`,
-        [data.item_id, binId, data.quantity, data.assigned_by]
+        [data.item_id, binId, data.quantity, data.assigned_by],
       );
 
       await client.query(
         `UPDATE bins SET current_occupancy = current_occupancy + $1, updated_at = NOW() WHERE id = $2`,
-        [data.quantity, binId]
+        [data.quantity, binId],
       );
 
       await client.query(
@@ -154,18 +184,18 @@ export class BinModel {
          SELECT $1, b.location_id, $2 FROM bins b WHERE b.id = $3
          ON CONFLICT (item_id, warehouse_location_id)
          DO UPDATE SET quantity = inventory_stock.quantity + $2, updated_at = NOW()`,
-        [data.item_id, data.quantity, binId]
+        [data.item_id, data.quantity, binId],
       );
 
       const seqResult = await client.query(
-        `SELECT COALESCE(MAX(id), 0) + 1 AS next_seq FROM inventory_transactions`
+        `SELECT COALESCE(MAX(id), 0) + 1 AS next_seq FROM inventory_transactions`,
       );
       const txnNumber = `TXN-${String(seqResult.rows[0].next_seq).padStart(6, "0")}`;
 
       await client.query(
         `INSERT INTO inventory_transactions (transaction_number, item_id, type, quantity, reason, reference_id, employee_id)
          VALUES ($1, $2, 'in', $3, 'Manual assignment', NULL, $4)`,
-        [txnNumber, data.item_id, data.quantity, data.assigned_by]
+        [txnNumber, data.item_id, data.quantity, data.assigned_by],
       );
 
       await client.query("COMMIT");
@@ -195,7 +225,7 @@ export class BinModel {
         `SELECT COALESCE(SUM(quantity), 0) AS current_stock
          FROM item_locations
          WHERE item_id = $1 AND bin_id = $2 AND allocation_status = 'allocated'`,
-        [data.item_id, data.from_bin_id]
+        [data.item_id, data.from_bin_id],
       );
       if (Number(srcStock.rows[0].current_stock) < data.quantity) {
         const err: any = new Error("Insufficient stock in source bin");
@@ -207,7 +237,7 @@ export class BinModel {
       const dstBin = await client.query(
         `SELECT (capacity - current_occupancy) AS available_space
          FROM bins WHERE id = $1 AND is_active = true`,
-        [data.to_bin_id]
+        [data.to_bin_id],
       );
       if (!dstBin.rows[0]) {
         const err: any = new Error("Destination bin not found or inactive");
@@ -225,7 +255,7 @@ export class BinModel {
         `UPDATE item_locations
          SET quantity = quantity - $1, updated_at = NOW()
          WHERE item_id = $2 AND bin_id = $3 AND allocation_status = 'allocated'`,
-        [data.quantity, data.item_id, data.from_bin_id]
+        [data.quantity, data.item_id, data.from_bin_id],
       );
 
       // Add to / upsert into destination
@@ -234,17 +264,17 @@ export class BinModel {
          VALUES ($1, $2, $3, 'allocated', 'manual', NULL, $4, NOW(), $4)
          ON CONFLICT (item_id, bin_id)
          DO UPDATE SET quantity = item_locations.quantity + $3, updated_at = NOW()`,
-        [data.item_id, data.to_bin_id, data.quantity, data.transferred_by]
+        [data.item_id, data.to_bin_id, data.quantity, data.transferred_by],
       );
 
       // Update bin occupancy
       await client.query(
         `UPDATE bins SET current_occupancy = current_occupancy - $1, updated_at = NOW() WHERE id = $2`,
-        [data.quantity, data.from_bin_id]
+        [data.quantity, data.from_bin_id],
       );
       await client.query(
         `UPDATE bins SET current_occupancy = current_occupancy + $1, updated_at = NOW() WHERE id = $2`,
-        [data.quantity, data.to_bin_id]
+        [data.quantity, data.to_bin_id],
       );
 
       // Update inventory_stock for source location
@@ -253,7 +283,7 @@ export class BinModel {
          SET quantity = quantity - $1, updated_at = NOW()
          WHERE item_id = $2
            AND warehouse_location_id = (SELECT location_id FROM bins WHERE id = $3)`,
-        [data.quantity, data.item_id, data.from_bin_id]
+        [data.quantity, data.item_id, data.from_bin_id],
       );
 
       // Upsert inventory_stock for destination location
@@ -262,7 +292,7 @@ export class BinModel {
          SELECT $1, b.location_id, $2 FROM bins b WHERE b.id = $3
          ON CONFLICT (item_id, warehouse_location_id)
          DO UPDATE SET quantity = inventory_stock.quantity + $2, updated_at = NOW()`,
-        [data.item_id, data.quantity, data.to_bin_id]
+        [data.item_id, data.quantity, data.to_bin_id],
       );
 
       // Log transfer
@@ -276,18 +306,24 @@ export class BinModel {
           data.quantity,
           data.reason ?? null,
           data.transferred_by,
-        ]
+        ],
       );
 
       const seqResult = await client.query(
-        `SELECT COALESCE(MAX(id), 0) + 1 AS next_seq FROM inventory_transactions`
+        `SELECT COALESCE(MAX(id), 0) + 1 AS next_seq FROM inventory_transactions`,
       );
       const txnNumber = `TXN-${String(seqResult.rows[0].next_seq).padStart(6, "0")}`;
 
       await client.query(
         `INSERT INTO inventory_transactions (transaction_number, item_id, type, quantity, reason, reference_id, employee_id)
          VALUES ($1, $2, 'transfer', $3, $4, NULL, $5)`,
-        [txnNumber, data.item_id, data.quantity, data.reason ?? "Bin-to-bin transfer", data.transferred_by]
+        [
+          txnNumber,
+          data.item_id,
+          data.quantity,
+          data.reason ?? "Bin-to-bin transfer",
+          data.transferred_by,
+        ],
       );
 
       await client.query("COMMIT");

@@ -60,7 +60,7 @@ export const useUserStore = create<UserState>()(
         try {
           const response = await API.get("/api/users/get-all-users");
           if (response.status === 200) {
-            set({ users: response.data, isLoading: false });
+            set({ users: response.data.data, isLoading: false });
           } else {
             throw new Error(`Unexpected response status: ${response.status}`);
           }
@@ -213,7 +213,7 @@ export const useUserStore = create<UserState>()(
                       ...updatedUser,
                       user_profile_image_url: imageUrl,
                       updated_at:
-                        response.data.updated_at || new Date().toISOString(),
+                        response.data.data?.updated_at || new Date().toISOString(),
                     }
                   : user
               ),
