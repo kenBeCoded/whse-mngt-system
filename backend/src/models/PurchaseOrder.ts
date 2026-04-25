@@ -21,6 +21,7 @@ export class PurchaseOrderModel {
     created_by: number;
     line_items: POLineItem[];
     attachment_url?: string; // optional — PDF, image, etc.
+    attachment_file_type?: string; // optional — e.g. pdf, jpg, png
   }): Promise<PurchaseOrder> {
     // ── 0. Validate total_amount against line_items subtotals ─────────────────
     const calculatedTotal = data.line_items.reduce(
@@ -87,9 +88,14 @@ export class PurchaseOrderModel {
       // 5. Insert attachment record (only when a URL is provided)
       if (data.attachment_url && data.attachment_url.trim() !== "") {
         await client.query(
-          `INSERT INTO po_attachment (po_id, url, uploaded_by)
-           VALUES ($1, $2, $3)`,
-          [poId, data.attachment_url.trim(), data.created_by],
+          `INSERT INTO po_attachment (po_id, file_url, file_type, uploaded_by)
+           VALUES ($1, $2, $3, $4)`,
+          [
+            poId,
+            data.attachment_url.trim(),
+            data.attachment_file_type?.trim() || "unknown",
+            data.created_by,
+          ],
         );
       }
 
