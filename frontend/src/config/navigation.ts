@@ -26,6 +26,7 @@ export const navigationData = {
       items: [
         { title: "Inventory Items", url: "/admin/inventory" },
         { title: "Suppliers", url: "/admin/suppliers" },
+        { title: "Purchase Orders", url: "/admin/purchase-orders" },
       ],
     },
     // {

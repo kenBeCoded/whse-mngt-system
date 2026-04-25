@@ -19,6 +19,9 @@ import { AttendanceRecordsPage } from "./app/attendance/attendance-table/page";
 import { SchedulerPage } from "./app/scheduler/page";
 import { SuppliersPage } from "./app/supplier-table/page";
 import { InventoryPage } from "./app/inventory-table/page";
+import { PurchaseOrdersPage } from "./app/purchase-order/page";
+import { PurchaseOrderFormPage } from "./app/purchase-order/create/page";
+import { PurchaseOrderDetailsPage } from "./app/purchase-order/details/page";
 
 function App() {
   return (
@@ -46,6 +49,9 @@ function App() {
                   <Route path="user-schedule" element={<SchedulerPage />} />
                   <Route path="suppliers" element={<SuppliersPage />} />
                   <Route path="inventory" element={<InventoryPage />} />
+                  <Route path="purchase-orders" element={<PurchaseOrdersPage />} />
+                  <Route path="purchase-orders/new" element={<PurchaseOrderFormPage />} />
+                  <Route path="purchase-orders/:id" element={<PurchaseOrderDetailsPage />} />
                 </Route>
 
                 {/* Example nested routes - extend with your full nav structure */}
