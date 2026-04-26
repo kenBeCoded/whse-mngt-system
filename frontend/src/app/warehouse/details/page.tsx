@@ -1,14 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -21,265 +17,790 @@ import {
   warehouseService,
   type Warehouse,
   type WarehouseLocation,
+  type WarehouseBin,
 } from "@/services/warehouseService";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { AddLocationDialog } from "./AddLocationDialog";
+import { AddBinDialog } from "./AddBinDialog";
+import { AssignItemDialog } from "./AssignItemDialog";
+import { TransferItemDialog } from "./TransferItemDialog";
+import { AllocateItemDialog } from "./AllocateItemDialog";
+import {
+  MapPin,
+  Box,
+  Package,
+  Truck,
+  Database,
+  Search,
+  Edit2,
+  Trash2,
+  MoreHorizontal,
+  RefreshCw,
+  ArrowRightCircle,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  User,
+} from "lucide-react";
+
+type TabId = "locations" | "bins" | "items" | "unallocated";
+
+const TABS: { id: TabId; label: string; icon: any; desc: string }[] = [
+  {
+    id: "locations",
+    label: "1. Locations",
+    icon: MapPin,
+    desc: "Zone/Row/Aisle",
+  },
+  { id: "bins", label: "2. Bins", icon: Box, desc: "Capacity & Codes" },
+  {
+    id: "items",
+    label: "3. Assign Items",
+    icon: Package,
+    desc: "Inventory Levels",
+  },
+  {
+    id: "unallocated",
+    label: "4. Unallocated",
+    icon: Truck,
+    desc: "New Shipments",
+  },
+];
 
 export function WarehouseDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user } = useAuth();
   const warehouseId = Number(id);
 
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
   const [locations, setLocations] = useState<WarehouseLocation[]>([]);
+  const [bins, setBins] = useState<WarehouseBin[]>([]);
+  const [itemLocations, setItemLocations] = useState<any[]>([]);
   const [unallocated, setUnallocated] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const [wh, locs, unalloc] = await Promise.all([
-          warehouseService.getById(warehouseId),
-          warehouseService.getLocations(warehouseId),
-          warehouseService.getUnallocated(warehouseId),
-        ]);
-        setWarehouse(wh);
-        setLocations(locs);
-        setUnallocated(unalloc);
-      } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Failed to load warehouse details";
-        setError(errorMessage);
-        console.error("Error loading warehouse details:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const [activeTab, setActiveTab] = useState<TabId>("locations");
+  const [searchQuery, setSearchQuery] = useState("");
 
-    if (warehouseId) {
-      loadData();
+  // Transfer dialog state
+  const [transferOpen, setTransferOpen] = useState(false);
+  const [transferRow, setTransferRow] = useState<any>(null);
+
+  // Allocate dialog state
+  const [allocateOpen, setAllocateOpen] = useState(false);
+  const [allocateRow, setAllocateRow] = useState<any>(null);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const [wh, locs, binsData, unalloc] = await Promise.all([
+        warehouseService.getById(warehouseId),
+        warehouseService.getLocations(warehouseId),
+        warehouseService.getBinsByWarehouse(warehouseId),
+        warehouseService.getUnallocated(warehouseId),
+      ]);
+      setWarehouse(wh);
+      setLocations(locs);
+      setBins(binsData);
+      setUnallocated(unalloc);
+      // itemLocations will be populated from bins data or a separate endpoint
+      // For now, derive from bins with assigned items
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to load warehouse details";
+      setError(msg);
+    } finally {
+      setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    if (warehouseId) loadData();
   }, [warehouseId]);
 
+  // Computed values
+  const usedCapacity = useMemo(
+    () => bins.reduce((sum, b) => sum + b.current_occupancy, 0),
+    [bins],
+  );
+  const totalCapacity = warehouse?.total_capacity || 1;
+  const utilizationPercent = ((usedCapacity / totalCapacity) * 100).toFixed(1);
+
+  const getLocationPath = (locId: number) => {
+    const loc = locations.find((l) => l.id === locId);
+    return loc
+      ? `${loc.zone} > ${loc.row} > ${loc.aisle} > ${loc.bay}`
+      : "Unknown";
+  };
+
+  const filteredData = useMemo(() => {
+    const q = searchQuery.toLowerCase();
+    let base: any[] = [];
+    if (activeTab === "locations") base = locations;
+    else if (activeTab === "bins") base = bins;
+    else if (activeTab === "items") base = itemLocations;
+    else if (activeTab === "unallocated") base = unallocated;
+
+    if (!q) return base;
+    return base.filter((item) => {
+      const str = (
+        item.zone ||
+        item.bin_code ||
+        item.item_id ||
+        item.name ||
+        item.item_name ||
+        item.sku ||
+        item.po_reference ||
+        item.supplier ||
+        ""
+      ).toLowerCase();
+      return str.includes(q);
+    });
+  }, [activeTab, searchQuery, locations, bins, itemLocations, unallocated]);
+
+  // Handlers
+  const userId = user?.id ? Number(user.id) : 1;
+
+  const handleAddLocation = async (data: {
+    zone: string;
+    row: string;
+    aisle: string;
+    bay: string;
+  }) => {
+    await warehouseService.createLocation(warehouseId, {
+      ...data,
+      created_by: userId,
+    });
+    toast.success("Location created successfully");
+    loadData();
+  };
+
+  const handleAddBin = async (data: {
+    location_id: number;
+    bin_code: string;
+    capacity: number;
+  }) => {
+    await warehouseService.createBin(data.location_id, {
+      bin_code: data.bin_code,
+      capacity: data.capacity,
+      created_by: userId,
+    });
+    toast.success("Bin created successfully");
+    loadData();
+  };
+
+  const handleAssignItem = async (data: {
+    bin_id: number;
+    item_id: number;
+    quantity: number;
+  }) => {
+    await warehouseService.assignItem(data.bin_id, {
+      item_id: data.item_id,
+      quantity: data.quantity,
+      assigned_by: userId,
+    });
+    toast.success("Item assigned to bin");
+    loadData();
+  };
+
+  const handleTransfer = async (data: {
+    item_id: number;
+    from_bin_id: number;
+    to_bin_id: number;
+    quantity: number;
+  }) => {
+    await warehouseService.transferItem({
+      ...data,
+      transferred_by: userId,
+    });
+    toast.success("Item transferred successfully");
+    loadData();
+  };
+
+  const handleAllocate = async (data: {
+    item_id: number;
+    bin_id: number;
+    quantity: number;
+  }) => {
+    await warehouseService.assignItem(data.bin_id, {
+      item_id: data.item_id,
+      quantity: data.quantity,
+      assigned_by: userId,
+    });
+    toast.success("Item allocated to bin");
+    loadData();
+  };
+
+  const openTransfer = (row: any) => {
+    setTransferRow(row);
+    setTransferOpen(true);
+  };
+
+  const openAllocate = (row: any) => {
+    setAllocateRow(row);
+    setAllocateOpen(true);
+  };
+
+  // Loading / Not Found
   if (isLoading) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading warehouse details...</div>
+      <div className="flex items-center justify-center h-64">
+        <div className="text-lg text-muted-foreground">
+          Loading warehouse details...
         </div>
       </div>
     );
   }
-
   if (!warehouse) {
     return (
-      <div className="container mx-auto py-10">
-        <div className="text-center">
-          <p className="text-lg text-muted-foreground">Warehouse not found.</p>
-          <Button
-            variant="outline"
-            className="mt-4"
-            onClick={() => navigate("/admin/warehouses")}
-          >
-            ← Back to Warehouses
-          </Button>
-        </div>
+      <div className="text-center py-10">
+        <p className="text-lg text-muted-foreground">Warehouse not found.</p>
+        <Button
+          variant="outline"
+          className="mt-4"
+          onClick={() => navigate("/admin/warehouses")}
+        >
+          ← Back to Warehouses
+        </Button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-10 max-w-5xl space-y-6">
-      {/* Error */}
+    <div className="pb-20 space-y-6">
+      {/* Error banner */}
       {error && (
-        <div className="p-4 bg-red-50 border border-red-200 rounded-md">
-          <div className="flex justify-between items-center">
-            <p className="text-red-800">{error}</p>
-            <button
-              onClick={() => setError(null)}
-              className="text-red-600 hover:text-red-800 font-medium"
-            >
-              ✕
-            </button>
-          </div>
+        <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-lg flex justify-between items-center">
+          <p className="text-destructive text-sm">{error}</p>
+          <button
+            onClick={() => setError(null)}
+            className="text-destructive hover:text-destructive/80 font-medium"
+          >
+            ✕
+          </button>
         </div>
       )}
 
-      {/* ── Header Card ───────────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-3">
-                <span>{warehouse.name}</span>
+      {/* ─── HEADER SECTION ─── */}
+      <div className="flex flex-col md:flex-row gap-6">
+        {/* Warehouse Info Card */}
+        <Card className="flex-grow">
+          <CardContent className="p-6 md:p-8 flex items-center gap-6">
+            <div className="w-16 h-16 md:w-20 md:h-20 bg-foreground rounded-2xl flex items-center justify-center shadow-lg flex-shrink-0">
+              <Database className="text-background" size={36} />
+            </div>
+            <div className="flex-grow min-w-0">
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-2xl md:text-3xl font-extrabold text-foreground truncate">
+                  {warehouse.name}
+                </h1>
                 <Badge
                   variant={warehouse.is_active ? "default" : "destructive"}
                 >
                   {warehouse.is_active ? "Active" : "Inactive"}
                 </Badge>
-              </CardTitle>
-              <CardDescription className="mt-1 font-mono text-xs">
-                {warehouse.code}
-              </CardDescription>
+              </div>
+              <div className="flex items-center gap-2 text-primary text-sm mb-4">
+                <MapPin size={14} />
+                <span className="truncate">{warehouse.address}</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6 border-t pt-4">
+                <div>
+                  <div className="text-[10px] font-extrabold uppercase text-muted-foreground tracking-widest mb-1">
+                    Facility Code
+                  </div>
+                  <div className="text-primary font-bold font-mono">
+                    {warehouse.code}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-extrabold uppercase text-muted-foreground tracking-widest mb-1">
+                    Coordinates
+                  </div>
+                  <div className="text-foreground/70 font-bold font-mono text-sm">
+                    {warehouse.latitude && warehouse.longitude
+                      ? `${Number(warehouse.latitude).toFixed(4)}, ${Number(warehouse.longitude).toFixed(4)}`
+                      : "—"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-extrabold uppercase text-muted-foreground tracking-widest mb-1">
+                    Active Bins
+                  </div>
+                  <div className="text-foreground/70 font-bold">
+                    {warehouse.active_bins ?? bins.length}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Space Utilization Card */}
+        <Card className="w-full md:w-80 bg-primary text-primary-foreground overflow-hidden relative">
+          <CardContent className="p-6 md:p-8 flex flex-col justify-between h-full relative z-10">
+            <div>
+              <div className="text-[10px] font-extrabold uppercase tracking-[0.2em] opacity-70 mb-2">
+                Space Utilization
+              </div>
+              <div className="text-5xl font-extrabold mb-1">
+                {utilizationPercent}%
+              </div>
+              <div className="text-xs font-medium opacity-80">
+                Using {usedCapacity.toLocaleString()} of{" "}
+                {totalCapacity.toLocaleString()} units
+              </div>
+            </div>
+            <div className="mt-6">
+              <div className="h-2 w-full bg-primary-foreground/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary-foreground rounded-full transition-all duration-500"
+                  style={{ width: `${utilizationPercent}%` }}
+                />
+              </div>
+            </div>
+            <div className="absolute top-0 right-0 p-4 opacity-10">
+              <Box size={100} />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* ─── TAB NAVIGATION ─── */}
+      <div className="flex gap-3 overflow-x-auto pb-2">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                setSearchQuery("");
+              }}
+              className={`min-w-[180px] flex-1 p-4 rounded-2xl border-2 transition-all flex items-center gap-3 text-left
+                ${
+                  isActive
+                    ? "bg-card border-primary text-primary shadow-lg"
+                    : "bg-card border-transparent text-muted-foreground hover:border-border"
+                }`}
+            >
+              <div
+                className={`p-2.5 rounded-xl ${isActive ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"}`}
+              >
+                <Icon size={20} />
+              </div>
+              <div>
+                <div className="text-xs font-extrabold uppercase tracking-widest">
+                  {tab.label}
+                </div>
+                <div
+                  className={`text-[11px] font-semibold ${isActive ? "text-muted-foreground" : "text-muted-foreground/60"}`}
+                >
+                  {tab.desc}
+                </div>
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* ─── DATA TABLE CARD ─── */}
+      <Card className="overflow-hidden">
+        {/* Toolbar */}
+        <div className="px-6 py-4 flex flex-wrap items-center justify-between gap-4 border-b">
+          <div className="flex items-center gap-3">
+            <div className="flex border rounded-md overflow-hidden">
+              <Input
+                type="text"
+                placeholder={`Search ${activeTab}...`}
+                className="border-0 w-48 focus-visible:ring-0"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
             </div>
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate("/admin/warehouses")}
+              className="font-extrabold uppercase tracking-widest text-[11px]"
             >
-              ← Back
+              <Search size={14} className="mr-1" /> Search
             </Button>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Address</p>
-              <p className="font-medium">{warehouse.address}</p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Total Capacity</p>
-              <p className="font-mono font-medium">
-                {Number(warehouse.total_capacity).toLocaleString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Active Bins</p>
-              <p className="font-mono font-medium">
-                {warehouse.active_bins ?? "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-muted-foreground">Coordinates</p>
-              <p className="font-mono font-medium text-xs">
-                {warehouse.latitude && warehouse.longitude
-                  ? `${Number(warehouse.latitude).toFixed(4)}, ${Number(warehouse.longitude).toFixed(4)}`
-                  : "—"}
-              </p>
-            </div>
+
+          <div>
+            {activeTab === "locations" && (
+              <AddLocationDialog onSubmit={handleAddLocation} />
+            )}
+            {activeTab === "bins" && (
+              <AddBinDialog locations={locations} onSubmit={handleAddBin} />
+            )}
+            {activeTab === "items" && (
+              <AssignItemDialog bins={bins} onSubmit={handleAssignItem} />
+            )}
           </div>
-        </CardContent>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto min-h-[400px]">
+          <Table>
+            <TableHeader>
+              <TableRow className="bg-muted/50">
+                {activeTab === "locations" && (
+                  <>
+                    <TableHead>Zone</TableHead>
+                    <TableHead>Row</TableHead>
+                    <TableHead>Aisle</TableHead>
+                    <TableHead>Bay</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </>
+                )}
+                {activeTab === "bins" && (
+                  <>
+                    <TableHead>Bin Code</TableHead>
+                    <TableHead>Physical Path</TableHead>
+                    <TableHead>Capacity</TableHead>
+                    <TableHead>Utilization</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </>
+                )}
+                {activeTab === "items" && (
+                  <>
+                    <TableHead>SKU</TableHead>
+                    <TableHead>Item Details</TableHead>
+                    <TableHead>Category</TableHead>
+                    <TableHead>Current Bin</TableHead>
+                    <TableHead>Stock Qty</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </>
+                )}
+                {activeTab === "unallocated" && (
+                  <>
+                    <TableHead>Item / SKU</TableHead>
+                    <TableHead>Reference Details</TableHead>
+                    <TableHead>Received</TableHead>
+                    <TableHead>Quantity</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </>
+                )}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredData.length > 0 ? (
+                filteredData.map((row, idx) => (
+                  <TableRow key={row.id || idx} className="group">
+                    {/* LOCATIONS TAB */}
+                    {activeTab === "locations" && (
+                      <>
+                        <TableCell className="font-bold text-primary">
+                          {row.zone}
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          {row.row}
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          {row.aisle}
+                        </TableCell>
+                        <TableCell className="text-sm font-medium">
+                          {row.bay}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={row.is_active ? "default" : "destructive"}
+                            className="text-xs"
+                          >
+                            {row.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="relative flex items-center justify-end">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <Edit2 size={15} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                              >
+                                <Trash2 size={15} />
+                              </Button>
+                            </div>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                              <MoreHorizontal
+                                size={16}
+                                className="text-muted-foreground/40"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                    {/* BINS TAB */}
+                    {activeTab === "bins" && (
+                      <>
+                        <TableCell className="font-mono font-bold">
+                          {row.bin_code}
+                        </TableCell>
+                        <TableCell className="text-[11px] font-semibold text-muted-foreground">
+                          {row.zone
+                            ? `${row.zone} > ${row.row} > ${row.aisle} > ${row.bay}`
+                            : getLocationPath(row.location_id)}
+                        </TableCell>
+                        <TableCell className="font-bold">
+                          {row.capacity}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <Progress
+                              value={
+                                (row.current_occupancy / row.capacity) * 100
+                              }
+                              className="w-24 h-2"
+                            />
+                            <span className="text-[10px] font-bold text-muted-foreground">
+                              {row.current_occupancy} units
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={row.is_active ? "default" : "destructive"}
+                            className="text-xs"
+                          >
+                            {row.is_active ? "Active" : "Inactive"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="relative flex items-center justify-end">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <Edit2 size={15} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                              >
+                                <Trash2 size={15} />
+                              </Button>
+                            </div>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                              <MoreHorizontal
+                                size={16}
+                                className="text-muted-foreground/40"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                    {/* ITEMS TAB */}
+                    {activeTab === "items" && (
+                      <>
+                        <TableCell className="font-bold text-sm">
+                          {row.item_id || row.sku}
+                        </TableCell>
+                        <TableCell className="text-sm font-semibold">
+                          {row.name || row.item_name}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] font-extrabold"
+                          >
+                            {row.category || "—"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="text-[10px] font-mono font-extrabold text-primary"
+                          >
+                            {bins.find((b) => b.id === row.bin_id)?.bin_code ||
+                              "N/A"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="font-extrabold text-primary">
+                          {row.quantity}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              row.status === "ACTIVE"
+                                ? "default"
+                                : "destructive"
+                            }
+                            className="text-[10px]"
+                          >
+                            {row.status || "Active"}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="relative flex items-center justify-end">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 px-2 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+                                onClick={() => openTransfer(row)}
+                              >
+                                <RefreshCw size={12} className="mr-1" /> Transfer
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                              >
+                                <Edit2 size={15} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive"
+                              >
+                                <Trash2 size={15} />
+                              </Button>
+                            </div>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                              <MoreHorizontal
+                                size={16}
+                                className="text-muted-foreground/40"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                    {/* UNALLOCATED TAB */}
+                    {activeTab === "unallocated" && (
+                      <>
+                        <TableCell>
+                          <div className="text-sm font-extrabold">
+                            {row.item_name || row.name}
+                          </div>
+                          <div className="text-[10px] font-extrabold text-primary tracking-tight uppercase">
+                            {row.sku || row.item_id}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col gap-1">
+                            {row.po_reference && (
+                              <span className="text-[10px] font-extrabold bg-primary/10 text-primary px-2 py-0.5 rounded-md self-start flex items-center gap-1">
+                                <FileText size={10} /> {row.po_reference}
+                              </span>
+                            )}
+                            {row.supplier && (
+                              <span className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
+                                <User size={10} /> {row.supplier}
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs font-semibold">
+                            {row.received_at
+                              ? new Date(row.received_at).toLocaleDateString()
+                              : row.received_date || "—"}
+                          </div>
+                          {row.source && (
+                            <div className="text-[9px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                              {row.source}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-sm font-extrabold text-amber-600">
+                            {row.quantity} Units
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="relative flex items-center justify-end">
+                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                size="sm"
+                                className="h-7 px-3 text-[10px] font-extrabold uppercase tracking-widest"
+                                onClick={() => openAllocate(row)}
+                              >
+                                Allocate{" "}
+                                <ArrowRightCircle size={14} className="ml-1" />
+                              </Button>
+                            </div>
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                              <MoreHorizontal
+                                size={16}
+                                className="text-muted-foreground/40"
+                              />
+                            </div>
+                          </div>
+                        </TableCell>
+                      </>
+                    )}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center text-muted-foreground h-32"
+                  >
+                    No {activeTab} found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* Footer */}
+        <div className="px-6 py-4 border-t flex items-center justify-between">
+          <div className="px-3 py-1.5 border text-[11px] font-extrabold uppercase tracking-wider text-muted-foreground bg-muted rounded-md">
+            Total Result: {filteredData.length}
+          </div>
+          <div className="flex items-center gap-4 text-[11px] font-extrabold uppercase tracking-widest text-muted-foreground">
+            <button className="hover:text-foreground flex items-center gap-1">
+              <ChevronLeft size={16} /> Previous
+            </button>
+            <span className="w-8 h-8 flex items-center justify-center bg-primary/10 text-primary rounded">
+              1
+            </span>
+            <button className="hover:text-foreground flex items-center gap-1">
+              Next <ChevronRight size={16} />
+            </button>
+          </div>
+        </div>
       </Card>
 
-      {/* ── Locations Card ────────────────────────────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Locations</CardTitle>
-          <CardDescription>
-            Zones, rows, aisles, and bays defined under this warehouse.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Zone</TableHead>
-                  <TableHead>Row</TableHead>
-                  <TableHead>Aisle</TableHead>
-                  <TableHead>Bay</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {locations.length > 0 ? (
-                  locations.map((loc) => (
-                    <TableRow key={loc.id}>
-                      <TableCell className="font-mono text-xs">
-                        #{loc.id}
-                      </TableCell>
-                      <TableCell className="font-medium">{loc.zone}</TableCell>
-                      <TableCell>{loc.row}</TableCell>
-                      <TableCell>{loc.aisle}</TableCell>
-                      <TableCell>{loc.bay}</TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={loc.is_active ? "default" : "destructive"}
-                          className="text-xs"
-                        >
-                          {loc.is_active ? "Active" : "Inactive"}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={6}
-                      className="text-center text-muted-foreground h-16"
-                    >
-                      No locations found for this warehouse.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* ── Unallocated Assets Card ───────────────────────────────────────── */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Unallocated Assets</CardTitle>
-          <CardDescription>
-            Items received at this warehouse that have not yet been assigned to a bin.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Item Name</TableHead>
-                  <TableHead>SKU</TableHead>
-                  <TableHead className="text-right">Quantity</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Received At</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {unallocated.length > 0 ? (
-                  unallocated.map((item, idx) => (
-                    <TableRow key={idx}>
-                      <TableCell className="font-medium">
-                        {item.item_name}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-mono text-xs">{item.sku}</span>
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {item.quantity}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-xs">
-                          {item.allocation_status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
-                        {item.received_at
-                          ? new Date(item.received_at).toLocaleString()
-                          : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={5}
-                      className="text-center text-muted-foreground h-16"
-                    >
-                      No unallocated assets.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
+      {/* ─── DIALOGS ─── */}
+      <TransferItemDialog
+        open={transferOpen}
+        onOpenChange={setTransferOpen}
+        row={transferRow}
+        bins={bins}
+        onSubmit={handleTransfer}
+      />
+      <AllocateItemDialog
+        open={allocateOpen}
+        onOpenChange={setAllocateOpen}
+        row={allocateRow}
+        bins={bins}
+        onSubmit={handleAllocate}
+      />
     </div>
   );
 }

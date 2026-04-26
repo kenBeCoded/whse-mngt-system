@@ -22,21 +22,26 @@ function FitBounds({ warehouses }: { warehouses: Warehouse[] }) {
 
   useEffect(() => {
     const validWarehouses = warehouses.filter(
-      (w) => w.latitude != null && w.longitude != null
+      (w) => w.latitude != null && w.longitude != null,
     );
 
     if (validWarehouses.length === 0) return;
 
     if (validWarehouses.length === 1) {
       map.setView(
-        [Number(validWarehouses[0].latitude), Number(validWarehouses[0].longitude)],
-        13
+        [
+          Number(validWarehouses[0].latitude),
+          Number(validWarehouses[0].longitude),
+        ],
+        13,
       );
       return;
     }
 
     const bounds = L.latLngBounds(
-      validWarehouses.map((w) => [Number(w.latitude), Number(w.longitude)] as L.LatLngTuple)
+      validWarehouses.map(
+        (w) => [Number(w.latitude), Number(w.longitude)] as L.LatLngTuple,
+      ),
     );
     map.fitBounds(bounds, { padding: [50, 50] });
   }, [warehouses, map]);
@@ -53,7 +58,7 @@ export function WarehouseMapView({ warehouses }: WarehouseMapViewProps) {
 
   // Warehouses with valid coordinates
   const mappableWarehouses = warehouses.filter(
-    (w) => w.latitude != null && w.longitude != null
+    (w) => w.latitude != null && w.longitude != null,
   );
 
   // Default center (Philippines) if no warehouses have coordinates
@@ -74,7 +79,10 @@ export function WarehouseMapView({ warehouses }: WarehouseMapViewProps) {
   }
 
   return (
-    <div className="rounded-md border overflow-hidden" style={{ height: "550px" }}>
+    <div
+      className="rounded-md border overflow-hidden"
+      style={{ height: "700px" }}
+    >
       <MapContainer
         center={defaultCenter}
         zoom={defaultZoom}
@@ -100,14 +108,13 @@ export function WarehouseMapView({ warehouses }: WarehouseMapViewProps) {
                 <p className="text-xs mt-1">{warehouse.address}</p>
                 <div className="flex items-center justify-between mt-2">
                   <span className="text-xs text-gray-500">
-                    Capacity: {Number(warehouse.total_capacity).toLocaleString()}
+                    Capacity:{" "}
+                    {Number(warehouse.total_capacity).toLocaleString()}
                   </span>
                 </div>
                 <button
                   className="mt-2 text-xs text-blue-600 hover:text-blue-800 underline cursor-pointer"
-                  onClick={() =>
-                    navigate(`/admin/warehouses/${warehouse.id}`)
-                  }
+                  onClick={() => navigate(`/admin/warehouses/${warehouse.id}`)}
                 >
                   View Details →
                 </button>
