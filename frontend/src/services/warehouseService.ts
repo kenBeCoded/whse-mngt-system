@@ -216,6 +216,14 @@ export const warehouseService = {
     await API.post(`/api/warehouses/bins/transfer`, data);
   },
 
+  // ── Item Locations (assigned items) ────────────────────────────────────────
+  getItemLocations: async (warehouseId: number): Promise<any[]> => {
+    const response = await API.get(
+      `/api/warehouses/${warehouseId}/item-locations`
+    );
+    return response.data.data;
+  },
+
   // ── Unallocated ────────────────────────────────────────────────────────────
   getUnallocated: async (warehouseId: number): Promise<any[]> => {
     const response = await API.get(

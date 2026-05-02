@@ -19,6 +19,7 @@ import {
 import {
   assignItemToBin,
   transferItemBetweenBins,
+  getItemLocationsByWarehouse,
 } from "../../controllers/warehouse/binController.js";
 import {
   validateCreateWarehouse,
@@ -52,6 +53,9 @@ router.get("/:warehouseId/locations", getLocationsByWarehouse);
 router.put("/:warehouseId/locations/:id", validateUpdateLocation, updateLocation);
 router.patch("/:warehouseId/locations/:id/deactivate", deactivateLocation);
 router.patch("/:warehouseId/locations/:id/reactivate", reactivateLocation);
+
+// ── Item locations (assigned items in warehouse) ─────────────────────────────
+router.get("/:warehouseId/item-locations", getItemLocationsByWarehouse);
 
 // ── Bin manual assign & transfer ─────────────────────────────────────────────
 router.post("/bins/:binId/assign", validateAssignItem, assignItemToBin);

@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 
 const supplierSchema = z.object({
   name: z.string().min(1, "Supplier name is required"),
-  email: z.string().email("Invalid email address"),
+  email: z.email("Invalid email address"),
   address: z.string().optional(),
 });
 

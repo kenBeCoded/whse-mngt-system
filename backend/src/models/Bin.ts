@@ -129,6 +129,36 @@ export class BinModel {
     );
   }
 
+  // ── GET /api/warehouses/:warehouseId/item-locations ─────────────────────────
+  static async findItemLocationsByWarehouse(
+    warehouseId: number,
+  ): Promise<any[]> {
+    const result = await pool.query(
+      `SELECT
+         il.id,
+         il.item_id,
+         ii.sku,
+         ii.name AS item_name,
+         ii.category,
+         il.quantity,
+         il.bin_id,
+         b.bin_code,
+         il.allocation_status AS status,
+         COALESCE(b.bin_code, 'Unallocated') AS current_bin
+       FROM item_locations il
+       INNER JOIN inventory_items ii ON il.item_id = ii.id
+       LEFT JOIN bins b ON il.bin_id = b.id
+       LEFT JOIN locations l ON b.location_id = l.id
+       WHERE l.warehouse_id = $1
+         AND ii.is_active = true
+         AND il.allocation_status = 'allocated'
+         AND il.quantity > 0  
+       ORDER BY ii.sku, current_bin`,
+      [warehouseId],
+    );
+    return result.rows;
+  }
+
   // ── POST /api/warehouses/bins/:binId/assign (manual assignment) ───────────
   static async assignItem(
     binId: number,
@@ -170,7 +200,9 @@ export class BinModel {
 
       await client.query(
         `INSERT INTO item_locations (item_id, bin_id, quantity, allocation_status, source, receipt_line_id, allocated_by, allocated_at, created_by)
-         VALUES ($1, $2, $3, 'allocated', 'manual', NULL, $4, NOW(), $4)`,
+         VALUES ($1, $2, $3, 'allocated', 'manual', NULL, $4, NOW(), $4)
+         ON CONFLICT (item_id, bin_id)
+         DO UPDATE SET quantity = item_locations.quantity + EXCLUDED.quantity, updated_at = NOW()`,
         [data.item_id, binId, data.quantity, data.assigned_by],
       );
 

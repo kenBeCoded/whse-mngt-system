@@ -80,7 +80,7 @@ export function WarehouseDetailsPage() {
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
   const [locations, setLocations] = useState<WarehouseLocation[]>([]);
   const [bins, setBins] = useState<WarehouseBin[]>([]);
-  const [itemLocations, _] = useState<any[]>([]);
+  const [itemLocations, setItemLocations] = useState<any[]>([]);
   const [unallocated, setUnallocated] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -105,18 +105,18 @@ export function WarehouseDetailsPage() {
     setIsLoading(true);
     setError(null);
     try {
-      const [wh, locs, binsData, unalloc] = await Promise.all([
+      const [wh, locs, binsData, unalloc, itemLocs] = await Promise.all([
         warehouseService.getById(warehouseId),
         warehouseService.getLocations(warehouseId),
         warehouseService.getBinsByWarehouse(warehouseId),
         warehouseService.getUnallocated(warehouseId),
+        warehouseService.getItemLocations(warehouseId),
       ]);
       setWarehouse(wh);
       setLocations(locs);
       setBins(binsData);
       setUnallocated(unalloc);
-      // itemLocations will be populated from bins data or a separate endpoint
-      // For now, derive from bins with assigned items
+      setItemLocations(itemLocs);
     } catch (err) {
       const msg =
         err instanceof Error ? err.message : "Failed to load warehouse details";
@@ -155,17 +155,23 @@ export function WarehouseDetailsPage() {
 
     if (!q) return base;
     return base.filter((item) => {
-      const str = (
-        item.zone ||
-        item.bin_code ||
-        item.item_id ||
-        item.name ||
-        item.item_name ||
-        item.sku ||
-        item.po_reference ||
-        item.supplier ||
-        ""
-      ).toLowerCase();
+      const str = [
+        item.zone,
+        item.row,
+        item.aisle,
+        item.bay,
+        item.bin_code,
+        item.item_name,
+        item.sku,
+        item.category,
+        item.current_bin,
+        item.po_reference,
+        item.supplier,
+        item.name,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
       return str.includes(q);
     });
   }, [activeTab, searchQuery, locations, bins, itemLocations, unallocated]);
@@ -267,6 +273,7 @@ export function WarehouseDetailsPage() {
     from_bin_id: number;
     to_bin_id: number;
     quantity: number;
+    reason?: string;
   }) => {
     await warehouseService.transferItem({
       ...data,
@@ -688,11 +695,11 @@ export function WarehouseDetailsPage() {
                     {/* ITEMS TAB */}
                     {activeTab === "items" && (
                       <>
-                        <TableCell className="font-bold text-sm">
-                          {row.item_id || row.sku}
+                        <TableCell className="font-bold text-sm font-mono">
+                          {row.sku}
                         </TableCell>
                         <TableCell className="text-sm font-semibold">
-                          {row.name || row.item_name}
+                          {row.item_name}
                         </TableCell>
                         <TableCell>
                           <Badge
@@ -707,8 +714,7 @@ export function WarehouseDetailsPage() {
                             variant="outline"
                             className="text-[10px] font-mono font-extrabold text-primary"
                           >
-                            {bins.find((b) => b.id === row.bin_id)?.bin_code ||
-                              "N/A"}
+                            {row.current_bin || "N/A"}
                           </Badge>
                         </TableCell>
                         <TableCell className="font-extrabold text-primary">
@@ -717,13 +723,13 @@ export function WarehouseDetailsPage() {
                         <TableCell>
                           <Badge
                             variant={
-                              row.status === "ACTIVE"
+                              row.status === "allocated"
                                 ? "default"
                                 : "destructive"
                             }
-                            className="text-[10px]"
+                            className="text-[10px] capitalize"
                           >
-                            {row.status || "Active"}
+                            {row.status || "—"}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
@@ -874,6 +880,7 @@ export function WarehouseDetailsPage() {
         onOpenChange={setTransferOpen}
         row={transferRow}
         bins={bins}
+        itemLocations={itemLocations}
         onSubmit={handleTransfer}
       />
       <AllocateItemDialog

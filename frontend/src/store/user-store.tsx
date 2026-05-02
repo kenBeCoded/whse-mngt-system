@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
-import axios from "../api/axios";
+import axios from "../api/axios.ts";
 import { type Users } from "@/app/user-table/columns";
 import { supabase } from "../supabase.ts";
 import { toast } from "sonner";
@@ -175,7 +175,7 @@ export const useUserStore = create<UserState>()(
           // Store old image path for deletion after successful update
           if (updatedUser.user_profile_image_url) {
             const pathParts = updatedUser.user_profile_image_url.split(
-              "/user-images-uploads/"
+              "/user-images-uploads/",
             );
             if (pathParts.length > 1) {
               oldImagePath = `user-images-uploads/${pathParts[1]}`;
@@ -213,9 +213,10 @@ export const useUserStore = create<UserState>()(
                       ...updatedUser,
                       user_profile_image_url: imageUrl,
                       updated_at:
-                        response.data.data?.updated_at || new Date().toISOString(),
+                        response.data.data?.updated_at ||
+                        new Date().toISOString(),
                     }
-                  : user
+                  : user,
               ),
               isLoading: false,
             }));
@@ -262,7 +263,7 @@ export const useUserStore = create<UserState>()(
             set((state) => ({
               users: state.users.filter((user) => user.username !== username),
               selectedUsers: state.selectedUsers.filter(
-                (id) => id !== username
+                (id) => id !== username,
               ),
               isLoading: false,
             }));
@@ -287,17 +288,17 @@ export const useUserStore = create<UserState>()(
             "/api/users/delete-multiple-users",
             {
               data: { user_ids: userIds },
-            }
+            },
           );
           if (response.status === 200 || response.status === 204) {
             set((state) => ({
               users: state.users.filter(
                 (user) =>
                   user.user_account_id &&
-                  !userIds.includes(user.user_account_id)
+                  !userIds.includes(user.user_account_id),
               ),
               selectedUsers: state.selectedUsers.filter(
-                (id) => !userIds.includes(id)
+                (id) => !userIds.includes(id),
               ),
               isLoading: false,
             }));
@@ -367,6 +368,6 @@ export const useUserStore = create<UserState>()(
     }),
     {
       name: "user-store", // Name for devtools
-    }
-  )
+    },
+  ),
 );

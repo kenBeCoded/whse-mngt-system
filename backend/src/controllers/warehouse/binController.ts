@@ -51,6 +51,21 @@ export const getBinsByWarehouse = async (
   }
 };
 
+// GET /api/warehouses/:warehouseId/item-locations
+export const getItemLocationsByWarehouse = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const warehouseId = Number(req.params.warehouseId);
+    const itemLocations = await BinModel.findItemLocationsByWarehouse(warehouseId);
+    sendSuccess(res, 200, itemLocations);
+  } catch (err) {
+    next(err);
+  }
+};
+
 // PUT /api/locations/:locationId/bins/:id
 export const updateBin = async (
   req: Request,

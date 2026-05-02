@@ -8,6 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -17,14 +18,32 @@ import {
 } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
 import type { WarehouseBin } from "@/services/warehouseService";
-import { ArrowRight, Package, RefreshCw, CheckCircle2 } from "lucide-react";
+import {
+  ArrowRight,
+  Package,
+  RefreshCw,
+  CheckCircle2,
+  Lock,
+} from "lucide-react";
 
 interface TransferItemRow {
   id: number;
   item_id: string | number;
-  name: string;
+  sku?: string;
+  item_name?: string;
+  name?: string;
+  category?: string;
+  bin_id: number;
+  bin_code?: string;
+  quantity: number;
+  [key: string]: any;
+}
+
+interface ItemLocation {
+  item_id: number;
   bin_id: number;
   quantity: number;
+  category?: string;
   [key: string]: any;
 }
 
@@ -33,11 +52,13 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   row: TransferItemRow | null;
   bins: WarehouseBin[];
+  itemLocations: ItemLocation[];
   onSubmit: (data: {
     item_id: number;
     from_bin_id: number;
     to_bin_id: number;
     quantity: number;
+    reason?: string;
   }) => Promise<void>;
 }
 
@@ -46,20 +67,24 @@ export function TransferItemDialog({
   onOpenChange,
   row,
   bins,
+  itemLocations,
   onSubmit,
 }: Props) {
-  const [sourceBinId, setSourceBinId] = useState<string>("");
   const [destBinId, setDestBinId] = useState<string>("");
   const [quantity, setQuantity] = useState<string>("");
+  const [remarks, setRemarks] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
+
+  // FROM BIN is always locked to the item's current bin
+  const sourceBinId = row ? String(row.bin_id) : "";
 
   // Reset form when dialog opens with new row
   const handleOpenChange = (val: boolean) => {
     if (val && row) {
-      setSourceBinId(String(row.bin_id));
       setDestBinId("");
       setQuantity("");
+      setRemarks("");
       setSuccess(false);
     }
     onOpenChange(val);
@@ -67,12 +92,26 @@ export function TransferItemDialog({
 
   const sourceBin = useMemo(
     () => bins.find((b) => b.id === parseInt(sourceBinId)),
-    [bins, sourceBinId]
+    [bins, sourceBinId],
   );
   const destBin = useMemo(
     () => bins.find((b) => b.id === parseInt(destBinId)),
-    [bins, destBinId]
+    [bins, destBinId],
   );
+
+  // Get this item's quantity in a specific bin
+  const getItemQtyInBin = (itemId: number | string, binId: number): number => {
+    const numItemId = typeof itemId === "string" ? parseInt(itemId) : itemId;
+    return itemLocations
+      .filter((il) => il.item_id === numItemId && il.bin_id === binId)
+      .reduce((sum, il) => sum + il.quantity, 0);
+  };
+
+  // Get the item's category
+  const itemCategory = row?.category || "";
+
+  // Source item qty in the source bin
+  const sourceItemQty = row ? getItemQtyInBin(row.item_id, row.bin_id) : 0;
 
   const qty = parseInt(quantity) || 0;
   const isSameBin = sourceBinId && destBinId && sourceBinId === destBinId;
@@ -93,10 +132,12 @@ export function TransferItemDialog({
     setIsSubmitting(true);
     try {
       await onSubmit({
-        item_id: typeof row.item_id === "string" ? parseInt(row.item_id) : row.item_id,
+        item_id:
+          typeof row.item_id === "string" ? parseInt(row.item_id) : row.item_id,
         from_bin_id: parseInt(sourceBinId),
         to_bin_id: parseInt(destBinId),
         quantity: qty,
+        ...(remarks.trim() ? { reason: remarks.trim() } : {}),
       });
       setSuccess(true);
       setTimeout(() => {
@@ -114,7 +155,7 @@ export function TransferItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[520px]">
+      <DialogContent className="w-auto max-w-[90vw] min-w-[480px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-extrabold uppercase tracking-tight">
             <RefreshCw className="h-5 w-5 text-amber-500" /> Transfer Item
@@ -145,12 +186,17 @@ export function TransferItemDialog({
                   Moving Item
                 </p>
                 <p className="text-sm font-extrabold text-foreground">
-                  [{row.item_id}] {row.name}
+                  [{row.sku}] {row.item_name}
                 </p>
+                {itemCategory && (
+                  <p className="text-[10px] font-semibold text-muted-foreground">
+                    Category: {itemCategory}
+                  </p>
+                )}
               </div>
               <div className="ml-auto text-right">
                 <p className="text-[9px] font-extrabold text-muted-foreground uppercase">
-                  Total Qty
+                  Qty in Bin
                 </p>
                 <p className="text-sm font-extrabold text-amber-600">
                   {row.quantity} units
@@ -160,30 +206,20 @@ export function TransferItemDialog({
 
             {/* Visual transfer flow */}
             <div className="flex items-start gap-3">
-              {/* Source Bin */}
+              {/* Source Bin — LOCKED */}
               <div className="flex-1 space-y-2">
-                <Label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
-                  From Bin
+                <Label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest flex items-center gap-1">
+                  <Lock size={10} /> From Bin
                 </Label>
-                <Select value={sourceBinId} onValueChange={setSourceBinId}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="-- Source bin --" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {bins
-                      .filter((b) => b.is_active)
-                      .map((b) => (
-                        <SelectItem key={b.id} value={String(b.id)}>
-                          {b.bin_code} ({b.current_occupancy}/{b.capacity})
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2 px-3 py-2.5 bg-muted/60 border border-border rounded-md text-sm font-semibold text-muted-foreground cursor-not-allowed select-none">
+                  {sourceBin?.bin_code || "—"} ({sourceItemQty}/
+                  {sourceBin?.capacity || 0})
+                </div>
                 {sourceBin && (
                   <div className="px-3 py-2 bg-muted/50 rounded-lg space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] font-extrabold text-muted-foreground uppercase">
-                        Occupancy
+                        Total Occupancy
                       </span>
                       <span className="text-[10px] font-extrabold text-foreground">
                         {sourceBin.current_occupancy}/{sourceBin.capacity}
@@ -217,19 +253,19 @@ export function TransferItemDialog({
                   </SelectTrigger>
                   <SelectContent>
                     {bins
-                      .filter(
-                        (b) =>
-                          b.is_active && b.id !== parseInt(sourceBinId || "0")
-                      )
+                      .filter((b) => {
+                        if (!b.is_active) return false;
+                        if (b.id === parseInt(sourceBinId || "0")) return false;
+                        const hasSpace = b.capacity - b.current_occupancy > 0;
+                        return hasSpace;
+                      })
                       .map((b) => {
-                        const available = b.capacity - b.current_occupancy;
+                        const itemQtyInDest = row
+                          ? getItemQtyInBin(row.item_id, b.id)
+                          : 0;
                         return (
-                          <SelectItem
-                            key={b.id}
-                            value={String(b.id)}
-                            disabled={available <= 0}
-                          >
-                            {b.bin_code} (Avail: {available})
+                          <SelectItem key={b.id} value={String(b.id)}>
+                            {b.bin_code} ({itemQtyInDest}/{b.capacity})
                           </SelectItem>
                         );
                       })}
@@ -239,7 +275,7 @@ export function TransferItemDialog({
                   <div className="px-3 py-2 bg-muted/50 rounded-lg space-y-1">
                     <div className="flex items-center justify-between">
                       <span className="text-[9px] font-extrabold text-muted-foreground uppercase">
-                        Occupancy
+                        Total Occupancy
                       </span>
                       <span className="text-[10px] font-extrabold text-foreground">
                         {destBin.current_occupancy}/{destBin.capacity}
@@ -287,6 +323,23 @@ export function TransferItemDialog({
                   )}
                 </p>
               )}
+            </div>
+
+            {/* Remarks */}
+            <div className="space-y-2">
+              <Label className="text-[10px] font-extrabold text-muted-foreground uppercase tracking-widest">
+                Remarks{" "}
+                <span className="text-muted-foreground/60 normal-case tracking-normal font-medium">
+                  (optional)
+                </span>
+              </Label>
+              <Textarea
+                placeholder="Reason for transfer..."
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                rows={2}
+                className="resize-none text-sm"
+              />
             </div>
 
             {/* Same-bin warning */}

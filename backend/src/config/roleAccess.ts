@@ -110,6 +110,11 @@ export const roleAccessConfig: RoutePermission[] = [
     path: "/warehouses/:warehouseId/unallocated",
     roles: ADMIN_MANAGER,
   },
+  {
+    method: "GET",
+    path: "/warehouses/:warehouseId/item-locations",
+    roles: ALL_ROLES,
+  },
 
   // ── Locations (nested under warehouses) ──────────────────────────────────
   {

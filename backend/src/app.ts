@@ -18,7 +18,7 @@ app.use(
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
-  })
+  }),
 );
 
 // Body parsing middleware
@@ -33,13 +33,18 @@ app.use(logger);
 app.use(authenticateToken);
 
 // Rate limiting
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
-  message: "Too many requests from this IP, please try again later.",
-});
-// Routes
-app.use("/api", limiter, routes);
+const isDev = process.env.NODE_ENV === "development";
+
+if (isDev) {
+  app.use("/api", routes);
+} else {
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 300, // limit each IP to 300 requests per windowMs
+    message: "Too many requests from this IP, please try again later.",
+  });
+  app.use("/api", limiter, routes);
+}
 
 // Health check
 app.get("/health", (req, res) => {
