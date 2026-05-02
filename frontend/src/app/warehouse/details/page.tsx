@@ -22,6 +22,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { AddLocationDialog } from "./AddLocationDialog";
+import { EditLocationDialog } from "./EditLocationDialog";
 import { AddBinDialog } from "./AddBinDialog";
 import { AssignItemDialog } from "./AssignItemDialog";
 import { TransferItemDialog } from "./TransferItemDialog";
@@ -36,6 +37,8 @@ import {
   Edit2,
   Trash2,
   MoreHorizontal,
+  Power,
+  ToggleRight,
   RefreshCw,
   ArrowRightCircle,
   ChevronLeft,
@@ -77,13 +80,18 @@ export function WarehouseDetailsPage() {
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
   const [locations, setLocations] = useState<WarehouseLocation[]>([]);
   const [bins, setBins] = useState<WarehouseBin[]>([]);
-  const [itemLocations, setItemLocations] = useState<any[]>([]);
+  const [itemLocations, _] = useState<any[]>([]);
   const [unallocated, setUnallocated] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const [activeTab, setActiveTab] = useState<TabId>("locations");
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Edit location dialog state
+  const [editLocationOpen, setEditLocationOpen] = useState(false);
+  const [editLocationRow, setEditLocationRow] =
+    useState<WarehouseLocation | null>(null);
 
   // Transfer dialog state
   const [transferOpen, setTransferOpen] = useState(false);
@@ -177,6 +185,53 @@ export function WarehouseDetailsPage() {
     });
     toast.success("Location created successfully");
     loadData();
+  };
+
+  const handleEditLocation = async (
+    locationId: number,
+    data: { zone: string; row: string; aisle: string; bay: string },
+  ) => {
+    try {
+      await warehouseService.updateLocation(warehouseId, locationId, {
+        ...data,
+        updated_by: userId,
+      });
+      toast.success("Location updated successfully");
+      loadData();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to update location";
+      toast.error(msg);
+    }
+  };
+
+  const handleDeactivateLocation = async (locationId: number) => {
+    try {
+      await warehouseService.deactivateLocation(warehouseId, locationId);
+      toast.success("Location deactivated");
+      loadData();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to deactivate location";
+      toast.error(msg);
+    }
+  };
+
+  const handleReactivateLocation = async (locationId: number) => {
+    try {
+      await warehouseService.reactivateLocation(warehouseId, locationId);
+      toast.success("Location reactivated");
+      loadData();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Failed to reactivate location";
+      toast.error(msg);
+    }
+  };
+
+  const openEditLocation = (row: WarehouseLocation) => {
+    setEditLocationRow(row);
+    setEditLocationOpen(true);
   };
 
   const handleAddBin = async (data: {
@@ -526,16 +581,36 @@ export function WarehouseDetailsPage() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8"
+                                title="Edit location"
+                                onClick={() => openEditLocation(row)}
                               >
                                 <Edit2 size={15} />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                              >
-                                <Trash2 size={15} />
-                              </Button>
+                              {row.is_active ? (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                  title="Deactivate location"
+                                  onClick={() =>
+                                    handleDeactivateLocation(row.id)
+                                  }
+                                >
+                                  <Power size={15} />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                                  title="Activate location"
+                                  onClick={() =>
+                                    handleReactivateLocation(row.id)
+                                  }
+                                >
+                                  <ToggleRight size={15} />
+                                </Button>
+                              )}
                             </div>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
                               <MoreHorizontal
@@ -660,7 +735,8 @@ export function WarehouseDetailsPage() {
                                 className="h-7 px-2 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
                                 onClick={() => openTransfer(row)}
                               >
-                                <RefreshCw size={12} className="mr-1" /> Transfer
+                                <RefreshCw size={12} className="mr-1" />{" "}
+                                Transfer
                               </Button>
                               <Button
                                 variant="ghost"
@@ -787,6 +863,12 @@ export function WarehouseDetailsPage() {
       </Card>
 
       {/* ─── DIALOGS ─── */}
+      <EditLocationDialog
+        open={editLocationOpen}
+        onOpenChange={setEditLocationOpen}
+        location={editLocationRow}
+        onSubmit={handleEditLocation}
+      />
       <TransferItemDialog
         open={transferOpen}
         onOpenChange={setTransferOpen}

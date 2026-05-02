@@ -32,7 +32,7 @@ export class LocationModel {
        FROM locations l
        JOIN users uc ON uc.id = l.created_by
        LEFT JOIN users uu ON uu.id = l.updated_by
-       WHERE l.warehouse_id = $1 AND l.is_active = true
+       WHERE l.warehouse_id = $1
        ORDER BY l.zone, l.row, l.aisle, l.bay`,
       [warehouseId]
     );

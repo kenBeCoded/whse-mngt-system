@@ -75,6 +75,14 @@ export interface CreateLocationPayload {
   created_by: number;
 }
 
+export interface UpdateLocationPayload {
+  zone: string;
+  row: string;
+  aisle: string;
+  bay: string;
+  updated_by: number;
+}
+
 export interface CreateBinPayload {
   bin_code: string;
   capacity: number;
@@ -145,6 +153,36 @@ export const warehouseService = {
       data
     );
     return response.data.data;
+  },
+
+  updateLocation: async (
+    warehouseId: number,
+    locationId: number,
+    data: UpdateLocationPayload
+  ): Promise<WarehouseLocation> => {
+    const response = await API.put(
+      `/api/warehouses/${warehouseId}/locations/${locationId}`,
+      data
+    );
+    return response.data.data;
+  },
+
+  deactivateLocation: async (
+    warehouseId: number,
+    locationId: number
+  ): Promise<void> => {
+    await API.patch(
+      `/api/warehouses/${warehouseId}/locations/${locationId}/deactivate`
+    );
+  },
+
+  reactivateLocation: async (
+    warehouseId: number,
+    locationId: number
+  ): Promise<void> => {
+    await API.patch(
+      `/api/warehouses/${warehouseId}/locations/${locationId}/reactivate`
+    );
   },
 
   // ── Bins ───────────────────────────────────────────────────────────────────
