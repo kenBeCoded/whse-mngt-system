@@ -80,7 +80,11 @@ export const updateBin = async (
       return;
     }
     sendSuccess(res, 200, bin, "Bin updated");
-  } catch (err) {
+  } catch (err: any) {
+    if (err.statusCode === 400) {
+      sendError(res, 400, ErrorCodes.BAD_REQUEST, err.message);
+      return;
+    }
     next(err);
   }
 };

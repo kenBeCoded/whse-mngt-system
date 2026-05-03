@@ -91,6 +91,22 @@ export class BinModel {
     id: number,
     data: { bin_code: string; capacity: number; updated_by: number },
   ): Promise<Bin | null> {
+    // Guard: capacity must not be less than current occupancy
+    const occupancyCheck = await pool.query(
+      `SELECT current_occupancy FROM bins WHERE id = $1`,
+      [id],
+    );
+    if (!occupancyCheck.rows[0]) return null;
+
+    const currentOccupancy = Number(occupancyCheck.rows[0].current_occupancy);
+    if (data.capacity < currentOccupancy) {
+      const err: any = new Error(
+        `Capacity cannot be less than the currently allocated items (${currentOccupancy}).`,
+      );
+      err.statusCode = 400;
+      throw err;
+    }
+
     const result = await pool.query(
       `UPDATE bins
        SET bin_code = $1, capacity = $2, updated_by = $3, updated_at = NOW()

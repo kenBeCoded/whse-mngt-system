@@ -25,7 +25,7 @@ interface Props {
 }
 
 export function EditBinDialog({ open, onOpenChange, bin, onSubmit }: Props) {
-  const { register, handleSubmit, formState: { errors, isSubmitting }, reset } = useForm<FormData>({
+  const { register, handleSubmit, formState: { errors, isSubmitting }, reset, watch } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { bin_code: "", capacity: 0 },
   });
@@ -39,6 +39,11 @@ export function EditBinDialog({ open, onOpenChange, bin, onSubmit }: Props) {
       });
     }
   }, [bin, reset]);
+
+  const watchedCapacity = watch("capacity");
+  const currentOccupancy = bin?.current_occupancy ?? 0;
+  const isBelowOccupancy =
+    typeof watchedCapacity === "number" && watchedCapacity < currentOccupancy;
 
   const handle = async (data: FormData) => {
     if (!bin) return;
@@ -72,10 +77,17 @@ export function EditBinDialog({ open, onOpenChange, bin, onSubmit }: Props) {
               className="mt-1"
             />
             {errors.capacity && <p className="text-red-500 text-xs mt-1">{errors.capacity.message}</p>}
+            {isBelowOccupancy && (
+              <p className="text-amber-600 text-xs mt-1 font-semibold">
+                ⚠ Capacity cannot be less than currently allocated items ({currentOccupancy}).
+              </p>
+            )}
           </div>
           <div className="flex justify-end gap-2 pt-3 border-t">
             <Button variant="outline" type="button" onClick={() => { onOpenChange(false); reset(); }} disabled={isSubmitting}>Cancel</Button>
-            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? "Saving..." : "Save Changes"}</Button>
+            <Button type="submit" disabled={isSubmitting || isBelowOccupancy}>
+              {isSubmitting ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </form>
       </DialogContent>
