@@ -79,7 +79,7 @@ export class BinModel {
       `SELECT b.*, l.zone, l.row, l.aisle, l.bay
        FROM bins b
        JOIN locations l ON l.id = b.location_id
-       WHERE l.warehouse_id = $1 AND b.is_active = true
+       WHERE l.warehouse_id = $1
        ORDER BY b.bin_code`,
       [warehouseId],
     );

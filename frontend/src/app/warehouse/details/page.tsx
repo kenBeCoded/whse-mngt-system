@@ -23,6 +23,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { AddLocationDialog } from "./AddLocationDialog";
 import { EditLocationDialog } from "./EditLocationDialog";
+import { EditBinDialog } from "./EditBinDialog";
 import { AddBinDialog } from "./AddBinDialog";
 import { AssignItemDialog } from "./AssignItemDialog";
 import { TransferItemDialog } from "./TransferItemDialog";
@@ -35,12 +36,12 @@ import {
   Database,
   Search,
   Edit2,
-  Trash2,
   MoreHorizontal,
   Power,
   ToggleRight,
   RefreshCw,
   ArrowRightCircle,
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   FileText,
@@ -92,6 +93,10 @@ export function WarehouseDetailsPage() {
   const [editLocationOpen, setEditLocationOpen] = useState(false);
   const [editLocationRow, setEditLocationRow] =
     useState<WarehouseLocation | null>(null);
+
+  // Edit bin dialog state
+  const [editBinOpen, setEditBinOpen] = useState(false);
+  const [editBinRow, setEditBinRow] = useState<WarehouseBin | null>(null);
 
   // Transfer dialog state
   const [transferOpen, setTransferOpen] = useState(false);
@@ -254,6 +259,40 @@ export function WarehouseDetailsPage() {
     loadData();
   };
 
+  const openEditBin = (bin: WarehouseBin) => {
+    setEditBinRow(bin);
+    setEditBinOpen(true);
+  };
+
+  const handleEditBin = async (
+    binId: number,
+    locationId: number,
+    data: { bin_code: string; capacity: number }
+  ) => {
+    await warehouseService.updateBin(locationId, binId, {
+      ...data,
+      updated_by: userId,
+    });
+    toast.success("Bin updated successfully");
+    loadData();
+  };
+
+  const handleDeactivateBin = async (bin: WarehouseBin) => {
+    try {
+      await warehouseService.deactivateBin(bin.location_id, bin.id, userId);
+      toast.success("Bin deactivated");
+      loadData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Cannot deactivate bin with active stock.");
+    }
+  };
+
+  const handleReactivateBin = async (bin: WarehouseBin) => {
+    await warehouseService.reactivateBin(bin.location_id, bin.id, userId);
+    toast.success("Bin reactivated");
+    loadData();
+  };
+
   const handleAssignItem = async (data: {
     bin_id: number;
     item_id: number;
@@ -346,6 +385,17 @@ export function WarehouseDetailsPage() {
           </button>
         </div>
       )}
+
+      {/* ─── BACK BUTTON ─── */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="w-fit gap-2 text-muted-foreground hover:text-foreground font-semibold"
+        onClick={() => navigate("/admin/warehouses")}
+      >
+        <ArrowLeft size={16} />
+        Back to Warehouses
+      </Button>
 
       {/* ─── HEADER SECTION ─── */}
       <div className="flex flex-col md:flex-row gap-6">
@@ -671,16 +721,32 @@ export function WarehouseDetailsPage() {
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8"
+                                title="Edit bin"
+                                onClick={() => openEditBin(row)}
                               >
                                 <Edit2 size={15} />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                              >
-                                <Trash2 size={15} />
-                              </Button>
+                              {row.is_active ? (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                  title="Deactivate bin"
+                                  onClick={() => handleDeactivateBin(row)}
+                                >
+                                  <Power size={15} />
+                                </Button>
+                              ) : (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                                  title="Activate bin"
+                                  onClick={() => handleReactivateBin(row)}
+                                >
+                                  <ToggleRight size={15} />
+                                </Button>
+                              )}
                             </div>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
                               <MoreHorizontal
@@ -744,20 +810,7 @@ export function WarehouseDetailsPage() {
                                 <RefreshCw size={12} className="mr-1" />{" "}
                                 Transfer
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                              >
-                                <Edit2 size={15} />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-destructive"
-                              >
-                                <Trash2 size={15} />
-                              </Button>
+
                             </div>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
                               <MoreHorizontal
@@ -874,6 +927,12 @@ export function WarehouseDetailsPage() {
         onOpenChange={setEditLocationOpen}
         location={editLocationRow}
         onSubmit={handleEditLocation}
+      />
+      <EditBinDialog
+        open={editBinOpen}
+        onOpenChange={setEditBinOpen}
+        bin={editBinRow}
+        onSubmit={handleEditBin}
       />
       <TransferItemDialog
         open={transferOpen}

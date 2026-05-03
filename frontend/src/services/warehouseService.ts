@@ -89,6 +89,12 @@ export interface CreateBinPayload {
   created_by: number;
 }
 
+export interface UpdateBinPayload {
+  bin_code: string;
+  capacity: number;
+  updated_by: number;
+}
+
 export interface AssignItemPayload {
   item_id: number;
   quantity: number;
@@ -202,6 +208,38 @@ export const warehouseService = {
       data
     );
     return response.data.data;
+  },
+
+  updateBin: async (
+    locationId: number,
+    binId: number,
+    data: UpdateBinPayload
+  ): Promise<WarehouseBin> => {
+    const response = await API.put(
+      `/api/locations/${locationId}/bins/${binId}`,
+      data
+    );
+    return response.data.data;
+  },
+
+  deactivateBin: async (
+    locationId: number,
+    binId: number,
+    updatedBy: number
+  ): Promise<void> => {
+    await API.patch(`/api/locations/${locationId}/bins/${binId}/deactivate`, {
+      updated_by: updatedBy,
+    });
+  },
+
+  reactivateBin: async (
+    locationId: number,
+    binId: number,
+    updatedBy: number
+  ): Promise<void> => {
+    await API.patch(`/api/locations/${locationId}/bins/${binId}/reactivate`, {
+      updated_by: updatedBy,
+    });
   },
 
   // ── Assign & Transfer ─────────────────────────────────────────────────────
