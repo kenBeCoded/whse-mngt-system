@@ -1,6 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { UpdateOTDialog } from "./dialog/UpdateOTDialog";
 
 export type SchedulerUser = {
   id?: string | number;
@@ -72,19 +72,8 @@ export const schedulerColumns: ColumnDef<SchedulerUser>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const user = row.original;
-
-      return (
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            // TODO: Implement UPDATE OT dialog
-            console.log("Update OT for:", user);
-          }}
-        >
-          UPDATE OT
-        </Button>
-      );
+      return <UpdateOTDialog user={user} />;
     },
   },
 ];
+

@@ -238,6 +238,27 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
               </h2>
             </div>
 
+            {/* Schedule Row */}
+            <div className="col-span-full flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg border">
+              <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <div className="flex items-center gap-1 text-sm">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mr-2">
+                  Schedule Assign
+                </span>
+                {data.u_sched_in && data.u_sched_out ? (
+                  <span className="font-semibold text-foreground">
+                    {data.u_sched_in}
+                    <span className="mx-2 text-muted-foreground">→</span>
+                    {data.u_sched_out}
+                  </span>
+                ) : (
+                  <span className="text-muted-foreground italic">
+                    No schedule set
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Check In Column */}
             <div className="flex flex-col items-center gap-4">
               <h3 className="font-bold text-lg tracking-tight">CHECK IN</h3>

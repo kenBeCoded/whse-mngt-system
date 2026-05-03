@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X } from "lucide-react";
+import { X, Loader2 } from "lucide-react";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -72,6 +72,7 @@ function LoginPage() {
                 required
                 placeholder="Enter your username"
                 className="bg-background"
+                disabled={loading}
               />
             </div>
 
@@ -85,6 +86,7 @@ function LoginPage() {
                 required
                 placeholder="Enter your password"
                 className="bg-background"
+                disabled={loading}
               />
             </div>
 
@@ -112,7 +114,14 @@ function LoginPage() {
               disabled={loading}
               className="w-full space-y-1 mt-4"
             >
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign in"
+              )}
             </Button>
           </CardFooter>
         </form>

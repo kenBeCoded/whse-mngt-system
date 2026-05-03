@@ -23,6 +23,8 @@ export interface AttendanceRecords {
   ot_id?: string | null;
   check_in_image_url: string | null;
   check_out_image_url: string | null;
+  u_sched_in?: string | null;
+  u_sched_out?: string | null;
 }
 
 export interface FetchRecordResponse {
