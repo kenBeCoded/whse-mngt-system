@@ -11,13 +11,15 @@ interface ErrorResponse {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
+  const [isInitializing, setIsInitializing] = useState<boolean>(true);
+  const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
   // Use ref to store the refresh timer ID
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const login = async (email: string, password: string) => {
+    setLoading(true);
     try {
       const { accessToken } = await authService.login(email, password);
       setAccessToken(accessToken);
@@ -31,6 +33,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const axiosError = err as AxiosError<ErrorResponse>;
       setError(axiosError.response?.data?.message || "Login failed");
       throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,7 +94,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setAccessToken(null);
         setUser(null);
       } finally {
-        setLoading(false);
+        setIsInitializing(false);
       }
     };
     init();
@@ -107,7 +111,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     <AuthContext.Provider
       value={{ user, accessToken, login, logout, loading, error, clearError }}
     >
-      {!loading && children}
+      {!isInitializing && children}
     </AuthContext.Provider>
   );
 };
+
