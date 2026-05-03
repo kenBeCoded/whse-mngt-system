@@ -137,6 +137,7 @@ export class Attendance {
     try {
       const { query, params } = buildAttendanceQuery({
         includeUserDetails: true,
+        includeOT: true,
       });
 
       const result = await pool.query(query, params);
@@ -155,6 +156,7 @@ export class Attendance {
         userId,
         selectedDate,
         includeUserDetails: true,
+        includeOT: true,
       });
 
       const result = await pool.query(query, params);

@@ -294,7 +294,9 @@ export function PurchaseOrderDetailsPage() {
             </p>
           ) : (
             <div className="space-y-3">
-              {statusHistory.map((entry) => (
+              {[...statusHistory]
+                .sort((a, b) => new Date(b.changed_at).getTime() - new Date(a.changed_at).getTime())
+                .map((entry) => (
                 <div
                   key={entry.id}
                   className="flex items-start gap-3 border-l-2 border-muted pl-4 py-1"

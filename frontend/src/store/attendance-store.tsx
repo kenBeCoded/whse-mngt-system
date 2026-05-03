@@ -25,6 +25,7 @@ export interface AttendanceRecords {
   check_out_image_url: string | null;
   u_sched_in?: string | null;
   u_sched_out?: string | null;
+  ot_hours?: number | null;
 }
 
 export interface FetchRecordResponse {

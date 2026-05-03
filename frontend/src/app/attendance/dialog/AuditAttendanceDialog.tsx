@@ -32,6 +32,17 @@ interface AttendanceDialogProps {
   data: AttendanceRecords;
 }
 
+const formatTimeAMPM = (timeStr: string | null) => {
+  if (!timeStr) return "";
+  const [hourStr, minStr] = timeStr.split(":");
+  let hour = parseInt(hourStr, 10);
+  const min = minStr || "00";
+  const ampm = hour >= 12 ? "PM" : "AM";
+  hour = hour % 12;
+  hour = hour ? hour : 12;
+  return `${hour}:${min} ${ampm}`;
+};
+
 const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isFailConfirmOpen, setIsFailConfirmOpen] = useState(false);
@@ -239,24 +250,45 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
             </div>
 
             {/* Schedule Row */}
-            <div className="col-span-full flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg border">
-              <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-              <div className="flex items-center gap-1 text-sm">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mr-2">
-                  Schedule Assign
-                </span>
-                {data.u_sched_in && data.u_sched_out ? (
-                  <span className="font-semibold text-foreground">
-                    {data.u_sched_in}
-                    <span className="mx-2 text-muted-foreground">→</span>
-                    {data.u_sched_out}
+            <div className="col-span-full flex flex-col gap-2">
+              <div className="flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg border">
+                <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <div className="flex items-center gap-1 text-sm">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mr-2">
+                    Schedule Assign
                   </span>
-                ) : (
-                  <span className="text-muted-foreground italic">
-                    No schedule set
-                  </span>
-                )}
+                  {data.u_sched_in && data.u_sched_out ? (
+                    <span className="flex items-center text-foreground gap-2">
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {formatTimeAMPM(data.u_sched_in)}
+                      </Badge>
+                      <span className="text-muted-foreground font-semibold">→</span>
+                      <Badge variant="outline" className="font-mono text-xs">
+                        {formatTimeAMPM(data.u_sched_out)}
+                      </Badge>
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground italic">
+                      No schedule set
+                    </span>
+                  )}
+                </div>
               </div>
+
+              {/* Overtime Row */}
+              {data.ot_hours != null && (
+                <div className="flex items-center gap-3 px-3 py-2 bg-muted/50 rounded-lg border">
+                  <Clock className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                  <div className="flex items-center gap-1 text-sm">
+                    <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground mr-2">
+                      Overtime
+                    </span>
+                    <Badge variant="secondary" className="font-mono text-xs">
+                      {data.ot_hours} HR/s
+                    </Badge>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Check In Column */}
