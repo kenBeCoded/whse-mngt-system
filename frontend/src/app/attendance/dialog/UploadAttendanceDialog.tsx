@@ -167,7 +167,10 @@ export const UploadAttendanceDialog = ({
         username: user.username,
       });
 
-      if (!checkUserSched.data.u_sched_in || !checkUserSched.data.u_sched_out) {
+      if (
+        !checkUserSched.data.data.u_sched_in ||
+        !checkUserSched.data.data.u_sched_out
+      ) {
         toast.error("Failed to upload attendance", {
           description: "Schedules are incomplete or not set properly.",
         });
@@ -185,7 +188,7 @@ export const UploadAttendanceDialog = ({
       if (data.check_in_photo) {
         const checkInPhotoUrl = await uploadImage(
           data.check_in_photo,
-          "check_in"
+          "check_in",
         );
         uploadedImages.push(checkInPhotoUrl);
         updates.push({
@@ -200,7 +203,7 @@ export const UploadAttendanceDialog = ({
       if (data.check_out_photo) {
         const checkOutPhotoUrl = await uploadImage(
           data.check_out_photo,
-          "check_out"
+          "check_out",
         );
         uploadedImages.push(checkOutPhotoUrl);
         updates.push({
@@ -221,8 +224,8 @@ export const UploadAttendanceDialog = ({
             image_capture_date: update.imageCaptureDate,
             record_type: update.recordType,
             update_code: update.updateCode,
-          })
-        )
+          }),
+        ),
       );
 
       // Check responses and collect errors
@@ -386,7 +389,7 @@ export const UploadAttendanceDialog = ({
                   <span>
                     {format(
                       new Date(`2000-01-01 ${attendanceRecord.check_in_time}`),
-                      "h:mm a"
+                      "h:mm a",
                     )}
                   </span>
                 </div>
@@ -464,7 +467,7 @@ export const UploadAttendanceDialog = ({
                   <span>
                     {format(
                       new Date(`2000-01-01 ${attendanceRecord.check_out_time}`),
-                      "h:mm a"
+                      "h:mm a",
                     )}
                   </span>
                 </div>
@@ -495,8 +498,8 @@ export const UploadAttendanceDialog = ({
                   attendanceRecord?.check_out_photo_url
                     ? "cursor-default"
                     : canUploadCheckOut
-                    ? "cursor-pointer hover:bg-gray-50"
-                    : "cursor-not-allowed bg-gray-50 opacity-60"
+                      ? "cursor-pointer hover:bg-gray-50"
+                      : "cursor-not-allowed bg-gray-50 opacity-60"
                 }`}
               >
                 {checkOutPreview ? (

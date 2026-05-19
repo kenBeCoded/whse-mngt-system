@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate, Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import {
   Card,
@@ -20,23 +20,25 @@ function LoginPage() {
   const [password, setPassword] = useState("");
   const { user, login, loading, error, clearError } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect back to the page the user was trying to access, or fall back to /admin
+  const from = (location.state as { from?: Location })?.from?.pathname || "/admin";
+
+  if (user) {
+    return <Navigate to={from} replace />;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
       await login(username, password);
-      navigate("/admin");
+      navigate(from, { replace: true });
       clearError();
     } catch (err) {
       console.log(err);
     }
   };
-
-  if (user) {
-    return <Navigate to="/admin" replace />;
-  }
-
-  console.log("loading: ", loading);
 
   return (
     <div

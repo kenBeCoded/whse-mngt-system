@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3NTkxNTY5OCwiZXhwIjoxNzc1OTE2NTk4fQ.BsugZroa1t4enpp6IxXZt0CZEcFKKkNEOZ8wgPJ2PGY
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3OTE5ODUwMn0.HIz1t631d-oMBDhGtL3zGphcEG5QSmd3wy_nNktlihg
 
 
 post http://localhost:8000/api/auth/login

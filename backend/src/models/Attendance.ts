@@ -56,7 +56,7 @@ const buildAttendanceQuery = (options: AttendanceQueryOptions) => {
 
   if (options.includeOT) {
     query += `
-      RIGHT JOIN ot_sched os ON ar.ot_id = os.id
+      LEFT JOIN ot_sched os ON ar.ot_id = os.id
     `;
   }
 
@@ -151,6 +151,8 @@ export class Attendance {
     userId: number,
     selectedDate?: string,
   ) {
+    console.log("selectedDate", selectedDate);
+    console.log("userId", userId);
     try {
       const { query, params } = buildAttendanceQuery({
         userId,
@@ -158,6 +160,9 @@ export class Attendance {
         includeUserDetails: true,
         includeOT: true,
       });
+
+      console.log("query", query);
+      console.log("params", params);
 
       const result = await pool.query(query, params);
       return result.rows || [];

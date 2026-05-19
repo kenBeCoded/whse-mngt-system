@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   ChevronRight,
   ChevronUp,
@@ -38,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/useAuth";
+import React from "react";
 
 interface NavItem {
   title: string;
@@ -63,19 +63,19 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const filterItems = (items: NavItem[], query: string): NavItem[] => {
     const lowerQuery = query.toLowerCase();
     return items.filter((item) =>
-      item.title.toLowerCase().includes(lowerQuery)
+      item.title.toLowerCase().includes(lowerQuery),
     );
   };
 
   const filterSections = (
     sections: NavSection[],
-    query: string
+    query: string,
   ): NavSection[] => {
     const lowerQuery = query.toLowerCase();
     return sections.filter(
       (section) =>
         section.title.toLowerCase().includes(lowerQuery) ||
-        filterItems(section.items, query).length > 0
+        filterItems(section.items, query).length > 0,
     );
   };
 
@@ -108,7 +108,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {filteredNavMain.reduce(
                 (acc, section) =>
                   acc + filterItems(section.items, searchQuery).length,
-                0
+                0,
               )}
               )
             </SidebarGroupLabel>
@@ -121,19 +121,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                         <Link to={item.url}>{item.title}</Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>
-                  ))
+                  )),
                 )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
         ) : (
           <SidebarMenu>
-            {navigationData.navMain.map((item) => (
-              <Collapsible
-                key={item.title}
-                defaultOpen={isActive(item.url)}
-                className="group/collapsible"
-              >
+            {navigationData.navMain.map((item) => {
+              const isSectionActive = item.items.some(
+                (subItem) =>
+                  pathname === subItem.url || pathname.startsWith(subItem.url + "/"),
+              );
+
+              return (
+                <Collapsible
+                  key={item.title}
+                  defaultOpen={isSectionActive}
+                  className="group/collapsible"
+                >
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton className="w-full justify-between text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground">
@@ -157,9 +163,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
-            ))}
-          </SidebarMenu>
-        )}
+            );
+          })}
+        </SidebarMenu>
+      )}
       </SidebarContent>
       <SidebarFooter className="border-t">
         <SidebarMenu>

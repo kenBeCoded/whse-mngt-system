@@ -15,7 +15,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import React from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Link, Outlet, useLocation } from "react-router-dom";
 import { navigationData } from "../config/navigation";
 
 // TODO : hide access url depends on user account roles
@@ -105,8 +105,8 @@ export default function MainPage() {
                     {item.isCurrent ? (
                       <BreadcrumbPage>{item.title}</BreadcrumbPage>
                     ) : (
-                      <BreadcrumbLink href={item.href || "#"}>
-                        {item.title}
+                      <BreadcrumbLink asChild>
+                        <Link to={item.href || "#"}>{item.title}</Link>
                       </BreadcrumbLink>
                     )}
                   </BreadcrumbItem>

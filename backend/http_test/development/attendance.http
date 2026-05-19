@@ -1,4 +1,4 @@
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc2OTI1NzIxNiwiZXhwIjoxNzY5MjU4MTE2fQ.g4aPEJ9t0oBi6e61GjUmKnHs1IM5XAZXnHyuLw9nJm0
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3OTE5ODUwMn0.HIz1t631d-oMBDhGtL3zGphcEG5QSmd3wy_nNktlihg
 
 post http://localhost:8000/api/auth/login
 Content-Type: application/json
@@ -154,7 +154,7 @@ Content-Type: application/json
 Authorization: Bearer {{AT}}
 
 {
-    "request_code": 2,
-    "user_id": 2,
-    "selected_date": "2025-10-10"
+    "request_code": 1,
+    "user_id": 3,
+    "selected_date": "2025-12-28"
 }

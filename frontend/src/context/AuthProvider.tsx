@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { authService } from "../services/userService";
 import { setAuthToken } from "../api/axios";
 import type { AxiosError } from "axios";
@@ -17,6 +17,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // Use ref to store the refresh timer ID
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Track whether the user had an authenticated session — prevents calling /logout
+  // when there was never a valid session (e.g. navigating to /login cold).
+  const wasAuthenticatedRef = useRef<boolean>(false);
 
   const login = async (email: string, password: string) => {
     setLoading(true);
@@ -26,6 +29,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setAuthToken(accessToken ?? null);
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
+      wasAuthenticatedRef.current = true;
 
       // Start the token refresh timer after successful login
       scheduleTokenRefresh();
@@ -38,35 +42,57 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  /** Clears local auth state WITHOUT calling the server logout endpoint. */
+  const clearAuthState = useCallback(() => {
+    if (refreshTimerRef.current) {
+      clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = null;
+    }
+    wasAuthenticatedRef.current = false;
+    setAccessToken(null);
+    setAuthToken(null);
+    setUser(null);
+  }, []);
+
   const logout = async () => {
     // Clear the refresh timer on logout
     if (refreshTimerRef.current) {
       clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
     }
+    wasAuthenticatedRef.current = false;
 
+    // Only hit the server if there was an authenticated session to invalidate
     await authService.logout();
     setAccessToken(null);
     setAuthToken(null);
     setUser(null);
   };
 
-  const refreshAccessToken = async () => {
+  const refreshAccessToken = useCallback(async () => {
     try {
       const { accessToken } = await authService.refresh();
       setAccessToken(accessToken);
       setAuthToken(accessToken ?? null);
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
+      wasAuthenticatedRef.current = true;
 
       // Schedule the next refresh after successfully refreshing
       scheduleTokenRefresh();
     } catch (err) {
       const axiosError = err as AxiosError<ErrorResponse>;
       console.log(axiosError.response?.data?.message || "Token refresh failed");
-      logout();
+      // If the user had an active session, call the server logout to clear cookies.
+      // If there was never a session (e.g. first visit / cold load to /login),
+      // just silently clear local state — no server round-trip needed.
+      if (wasAuthenticatedRef.current) {
+        await authService.logout();
+      }
+      clearAuthState();
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clearAuthState]);
 
   // Schedule token refresh to occur before expiration
   const scheduleTokenRefresh = () => {
@@ -88,14 +114,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const init = async () => {
-      try {
-        await refreshAccessToken();
-      } catch {
-        setAccessToken(null);
-        setUser(null);
-      } finally {
-        setIsInitializing(false);
-      }
+      // refreshAccessToken handles its own errors internally (clearAuthState),
+      // so we just need to ensure isInitializing is cleared when done.
+      await refreshAccessToken().finally(() => setIsInitializing(false));
     };
     init();
 
@@ -105,13 +126,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         clearTimeout(refreshTimerRef.current);
       }
     };
-  }, []);
+  // refreshAccessToken is stable (useCallback with no changing deps)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshAccessToken]);
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, login, logout, loading, error, clearError }}
+      value={{ user, accessToken, isInitializing, login, logout, loading, error, clearError }}
     >
-      {!isInitializing && children}
+      {children}
     </AuthContext.Provider>
   );
 };

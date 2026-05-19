@@ -42,6 +42,7 @@ function App() {
               >
                 <Route element={<Navigate to="admin" />} />
                 <Route path="admin" element={<MainPage />}>
+                  <Route index element={<Navigate to="dashboard" replace />} />
                   <Route path="dashboard" element={<DashboardPage />} />
                   <Route path="users" element={<UsersPage />} />
                   <Route

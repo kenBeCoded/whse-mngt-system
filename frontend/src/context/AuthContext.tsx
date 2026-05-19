@@ -13,6 +13,7 @@ export interface User {
 export interface AuthContextType {
   user: User | null;
   accessToken: string | null;
+  isInitializing: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
