@@ -71,13 +71,17 @@ export function AssignItemDialog({ bins, onSubmit }: Props) {
   });
 
   const handle = async (data: FormData) => {
-    await onSubmit({
-      bin_id: data.bin_id,
-      item_id: data.item_id,
-      quantity: Number(data.quantity),
-    });
-    setOpen(false);
-    reset();
+    try {
+      await onSubmit({
+        bin_id: data.bin_id,
+        item_id: data.item_id,
+        quantity: Number(data.quantity),
+      });
+      setOpen(false);
+      reset();
+    } catch (err) {
+      // Keep open and let parent handle toast
+    }
   };
 
   return (

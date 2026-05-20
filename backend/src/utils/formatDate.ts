@@ -9,7 +9,5 @@ export function formatDateToYYYYMMDD(date: Date): string {
   // Get the day of the month (1-31) and pad to 2 digits
   const day = ("0" + date.getDate()).slice(-2);
 
-  console.log(`${year}-${month}-${day}`);
-
   return `${year}-${month}-${day}`; // result sample "2025-10-09"
 }

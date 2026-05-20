@@ -250,13 +250,22 @@ export function WarehouseDetailsPage() {
     bin_code: string;
     capacity: number;
   }) => {
-    await warehouseService.createBin(data.location_id, {
-      bin_code: data.bin_code,
-      capacity: data.capacity,
-      created_by: userId,
-    });
-    toast.success("Bin created successfully");
-    loadData();
+    try {
+      await warehouseService.createBin(data.location_id, {
+        bin_code: data.bin_code,
+        capacity: data.capacity,
+        created_by: userId,
+      });
+      toast.success("Bin created successfully");
+      loadData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to create bin";
+      toast.error(msg);
+      throw err;
+    }
   };
 
   const openEditBin = (bin: WarehouseBin) => {
@@ -288,9 +297,13 @@ export function WarehouseDetailsPage() {
   };
 
   const handleReactivateBin = async (bin: WarehouseBin) => {
-    await warehouseService.reactivateBin(bin.location_id, bin.id, userId);
-    toast.success("Bin reactivated");
-    loadData();
+    try {
+      await warehouseService.reactivateBin(bin.location_id, bin.id, userId);
+      toast.success("Bin reactivated");
+      loadData();
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Failed to reactivate bin");
+    }
   };
 
   const handleAssignItem = async (data: {
@@ -298,13 +311,22 @@ export function WarehouseDetailsPage() {
     item_id: number;
     quantity: number;
   }) => {
-    await warehouseService.assignItem(data.bin_id, {
-      item_id: data.item_id,
-      quantity: data.quantity,
-      assigned_by: userId,
-    });
-    toast.success("Item assigned to bin");
-    loadData();
+    try {
+      await warehouseService.assignItem(data.bin_id, {
+        item_id: data.item_id,
+        quantity: data.quantity,
+        assigned_by: userId,
+      });
+      toast.success("Item assigned to bin");
+      loadData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to assign item";
+      toast.error(msg);
+      throw err;
+    }
   };
 
   const handleTransfer = async (data: {
@@ -314,12 +336,21 @@ export function WarehouseDetailsPage() {
     quantity: number;
     reason?: string;
   }) => {
-    await warehouseService.transferItem({
-      ...data,
-      transferred_by: userId,
-    });
-    toast.success("Item transferred successfully");
-    loadData();
+    try {
+      await warehouseService.transferItem({
+        ...data,
+        transferred_by: userId,
+      });
+      toast.success("Item transferred successfully");
+      loadData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to transfer item";
+      toast.error(msg);
+      throw err;
+    }
   };
 
   const handleAllocate = async (data: {
@@ -327,13 +358,22 @@ export function WarehouseDetailsPage() {
     bin_id: number;
     quantity: number;
   }) => {
-    await warehouseService.assignItem(data.bin_id, {
-      item_id: data.item_id,
-      quantity: data.quantity,
-      assigned_by: userId,
-    });
-    toast.success("Item allocated to bin");
-    loadData();
+    try {
+      await warehouseService.assignItem(data.bin_id, {
+        item_id: data.item_id,
+        quantity: data.quantity,
+        assigned_by: userId,
+      });
+      toast.success("Item allocated to bin");
+      loadData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to allocate item";
+      toast.error(msg);
+      throw err;
+    }
   };
 
   const openTransfer = (row: any) => {

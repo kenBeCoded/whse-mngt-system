@@ -135,6 +135,7 @@ export class WarehouseModel {
   static async getUnallocated(warehouseId: number): Promise<any[]> {
     const result = await pool.query(
       `SELECT
+           il.item_id,
            ii.name AS item_name,
            ii.sku,
            il.quantity,

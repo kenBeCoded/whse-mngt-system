@@ -59,13 +59,17 @@ export function AddBinDialog({ locations, onSubmit }: Props) {
   });
 
   const handle = async (data: FormData) => {
-    await onSubmit({
-      location_id: data.location_id,
-      bin_code: data.bin_code,
-      capacity: Number(data.capacity),
-    });
-    setOpen(false);
-    reset();
+    try {
+      await onSubmit({
+        location_id: data.location_id,
+        bin_code: data.bin_code,
+        capacity: Number(data.capacity),
+      });
+      setOpen(false);
+      reset();
+    } catch (err) {
+      // Keep open and let parent handle toast
+    }
   };
 
   return (
