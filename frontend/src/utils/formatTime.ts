@@ -70,15 +70,28 @@ export function formatDateToYYYYMMDD(date: Date): string {
 }
 
 export function formatUtcStringToHHmmss(utcString: string): string {
+  if (!utcString) return "";
+
+  // If the input is already in HH:mm:ss format, just return it
+  if (/^\d{2}:\d{2}(:\d{2})?$/.test(utcString)) {
+    return utcString;
+  }
+
   // 1. Create a Date object from the string.
   const date = new Date(utcString);
+  if (isNaN(date.getTime())) {
+    // If it's not a valid date, maybe it's just a time like "08:30:00.123" or similar
+    const match = utcString.match(/^(\d{2}):(\d{2}):(\d{2})/);
+    if (match) {
+      return `${match[1]}:${match[2]}:${match[3]}`;
+    }
+    return utcString;
+  }
 
   // 2. Helper function to ensure single-digit numbers are padded with a leading zero.
-  // We use .padStart(2, '0') for this.
   const pad = (num: number): string => num.toString().padStart(2, "0");
 
   // 3. Get the UTC hours, minutes, and seconds.
-  // Using UTC methods ensures the output is always 12:34:33 for the sample input.
   const hours = date.getUTCHours();
   const minutes = date.getUTCMinutes();
   const seconds = date.getUTCSeconds();
@@ -86,3 +99,79 @@ export function formatUtcStringToHHmmss(utcString: string): string {
   // 4. Format and concatenate the parts.
   return `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
 }
+
+/**
+ * Safely parses any time/date representation from database into a valid Date object.
+ * Returns null if parsing fails.
+ */
+export function parseDateTimeSafe(timeStr: string | null): Date | null {
+  if (!timeStr) return null;
+  try {
+    // If it's a full ISO or timestamp format
+    if (timeStr.includes("T") || timeStr.includes("-")) {
+      const d = new Date(timeStr);
+      if (!isNaN(d.getTime())) return d;
+    }
+
+    // Try prepending dummy date for TIME strings like "08:30:00"
+    const dummyDate = new Date(`2000-01-01T${timeStr}`);
+    if (!isNaN(dummyDate.getTime())) return dummyDate;
+
+    const dummyDateSpace = new Date(`2000-01-01 ${timeStr}`);
+    if (!isNaN(dummyDateSpace.getTime())) return dummyDateSpace;
+
+    const d = new Date(timeStr);
+    if (!isNaN(d.getTime())) return d;
+
+    return null;
+  } catch (error) {
+    console.error("Error parsing date safely:", error);
+    return null;
+  }
+}
+
+/**
+ * Formats a timestamp or time-only string to a 12-hour AM/PM string (e.g. "08:30 AM").
+ */
+export function formatTo12HourTime(timeStr: string | null): string {
+  const d = parseDateTimeSafe(timeStr);
+  if (!d) return "--:--";
+  return d.toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: true,
+  });
+}
+
+/**
+ * Formats a timestamp or time-only string to standard local time string.
+ */
+export function formatToLocalTimeString(timeStr: string | null): string {
+  const d = parseDateTimeSafe(timeStr);
+  if (!d) return "N/A";
+  return d.toLocaleTimeString();
+}
+
+/**
+ * Formats a timestamp or time-only string to standard local date string.
+ */
+export function formatToLocalDateString(timeStr: string | null): string {
+  const d = parseDateTimeSafe(timeStr);
+  if (!d) return "N/A";
+  return d.toLocaleDateString();
+}
+
+/**
+ * Formats a timestamp or time-only string to HTML datetime-local format (YYYY-MM-DDTHH:mm).
+ */
+export function formatToDatetimeLocal(timeStr: string | null): string {
+  const d = parseDateTimeSafe(timeStr);
+  if (!d) return "";
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${year}-${month}-${day}T${hours}:${minutes}`;
+}
+

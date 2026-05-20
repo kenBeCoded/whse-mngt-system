@@ -3,6 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 import type { AttendanceRecords } from "@/store/attendance-store";
 import { Badge } from "@/components/ui/badge";
 import AuditAttendanceDialog from "../dialog/AuditAttendanceDialog";
+import { formatTo12HourTime } from "@/utils/formatTime";
 
 // Remove the duplicate type definition and use the one from the store
 
@@ -30,7 +31,7 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     header: "Check-In Time",
     cell: ({ row }) =>
       row.original.check_in_time
-        ? new Date(row.original.check_in_time).toLocaleTimeString()
+        ? formatTo12HourTime(row.original.check_in_time)
         : "N/A",
   },
   {
@@ -39,7 +40,7 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     header: "Check-Out Time",
     cell: ({ row }) =>
       row.original.check_out_time
-        ? new Date(row.original.check_out_time).toLocaleTimeString()
+        ? formatTo12HourTime(row.original.check_out_time)
         : "N/A",
   },
   {

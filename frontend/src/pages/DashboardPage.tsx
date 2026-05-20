@@ -31,7 +31,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
-import { formatDateToYYYYMMDD } from "@/utils/formatTime";
+import { formatDateToYYYYMMDD, formatTo12HourTime } from "@/utils/formatTime";
 
 interface WarehouseUtilization {
   id: number;
@@ -97,12 +97,8 @@ function DashboardPage() {
         if (attendanceRes && attendanceRes.attendance_record.length > 0) {
           const rec = attendanceRes.attendance_record[0];
           setTodayAttendance({
-            in: rec.check_in_time
-              ? format(new Date(rec.check_in_time), "hh:mm a")
-              : null,
-            out: rec.check_out_time
-              ? format(new Date(rec.check_out_time), "hh:mm a")
-              : null,
+            in: rec.check_in_time ? formatTo12HourTime(rec.check_in_time) : null,
+            out: rec.check_out_time ? formatTo12HourTime(rec.check_out_time) : null,
           });
         }
       } catch (err) {

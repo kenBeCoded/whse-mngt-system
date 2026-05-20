@@ -25,7 +25,12 @@ import {
   useAttendanceStore,
   type AttendanceRecords,
 } from "@/store/attendance-store";
-import { formatDateToYYYYMMDD } from "@/utils/formatTime";
+import {
+  formatDateToYYYYMMDD,
+  formatToLocalTimeString,
+  formatToLocalDateString,
+  formatToDatetimeLocal,
+} from "@/utils/formatTime";
 import { toast } from "sonner";
 
 interface AttendanceDialogProps {
@@ -72,12 +77,10 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
     if (isUpdateDialogOpen) {
       // Convert existing times to datetime-local format if they exist
       if (data.check_in_time) {
-        setCheckInTime(new Date(data.check_in_time).toISOString().slice(0, 16));
+        setCheckInTime(formatToDatetimeLocal(data.check_in_time));
       }
       if (data.check_out_time) {
-        setCheckOutTime(
-          new Date(data.check_out_time).toISOString().slice(0, 16),
-        );
+        setCheckOutTime(formatToDatetimeLocal(data.check_out_time));
       }
       setOvertimeHours("");
     }
@@ -315,11 +318,9 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_in_time
-                    ? `${new Date(
+                    ? `${formatToLocalTimeString(
                         data.check_in_time,
-                      ).toLocaleTimeString()}\n${new Date(
-                        data.check_in_time,
-                      ).toLocaleDateString()}`
+                      )}\n${formatToLocalDateString(data.check_in_time)}`
                     : "N/A"}
                 </span>
               </div>
@@ -349,11 +350,9 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
                 </span>
                 <span className="px-3 py-2 flex-1 text-foreground">
                   {data.check_out_time
-                    ? `${new Date(
+                    ? `${formatToLocalTimeString(
                         data.check_out_time,
-                      ).toLocaleTimeString()}\n${new Date(
-                        data.check_out_time,
-                      ).toLocaleDateString()}`
+                      )}\n${formatToLocalDateString(data.check_out_time)}`
                     : "N/A"}
                 </span>
               </div>
