@@ -1,4 +1,10 @@
-import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  type ReactNode,
+} from "react";
 import { authService } from "../services/userService";
 import { setAuthToken } from "../api/axios";
 import type { AxiosError } from "axios";
@@ -30,6 +36,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
       wasAuthenticatedRef.current = true;
+      // Mark that a valid session exists so future page loads attempt a refresh
+      sessionStorage.setItem("had_session", "true");
 
       // Start the token refresh timer after successful login
       scheduleTokenRefresh();
@@ -49,6 +57,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       refreshTimerRef.current = null;
     }
     wasAuthenticatedRef.current = false;
+    // Remove the session flag so the next cold load skips the refresh call
+    sessionStorage.removeItem("had_session");
     setAccessToken(null);
     setAuthToken(null);
     setUser(null);
@@ -61,6 +71,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       refreshTimerRef.current = null;
     }
     wasAuthenticatedRef.current = false;
+    // Clear the session flag so the login page loads instantly after logout
+    sessionStorage.removeItem("had_session");
 
     // Only hit the server if there was an authenticated session to invalidate
     await authService.logout();
@@ -77,12 +89,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
       wasAuthenticatedRef.current = true;
+      // Keep the session flag alive for the duration of the session
+      sessionStorage.setItem("had_session", "true");
 
       // Schedule the next refresh after successfully refreshing
       scheduleTokenRefresh();
     } catch (err) {
-      const axiosError = err as AxiosError<ErrorResponse>;
-      console.log(axiosError.response?.data?.message || "Token refresh failed");
       // If the user had an active session, call the server logout to clear cookies.
       // If there was never a session (e.g. first visit / cold load to /login),
       // just silently clear local state — no server round-trip needed.
@@ -91,7 +103,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
       clearAuthState();
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [clearAuthState]);
 
   // Schedule token refresh to occur before expiration
@@ -114,6 +126,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const init = async () => {
+      // Only attempt a refresh if there was a prior authenticated session.
+      // On a cold load (e.g. visiting /login for the first time), skip the
+      // network call entirely so the page renders instantly.
+      const hadSession = sessionStorage.getItem("had_session") === "true";
+      if (!hadSession) {
+        setIsInitializing(false);
+        return;
+      }
+
       // refreshAccessToken handles its own errors internally (clearAuthState),
       // so we just need to ensure isInitializing is cleared when done.
       await refreshAccessToken().finally(() => setIsInitializing(false));
@@ -126,16 +147,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         clearTimeout(refreshTimerRef.current);
       }
     };
-  // refreshAccessToken is stable (useCallback with no changing deps)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // refreshAccessToken is stable (useCallback with no changing deps)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshAccessToken]);
 
   return (
     <AuthContext.Provider
-      value={{ user, accessToken, isInitializing, login, logout, loading, error, clearError }}
+      value={{
+        user,
+        accessToken,
+        isInitializing,
+        login,
+        logout,
+        loading,
+        error,
+        clearError,
+      }}
     >
       {children}
     </AuthContext.Provider>
   );
 };
-
