@@ -38,10 +38,16 @@ export function AttendanceRecordsPage() {
   }
 
   return (
-    <DataTable
-      columns={attendanceColumns}
-      data={Attendance}
-      isLoading={isLoading}
-    />
+    <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">ATTENDANCE</h1>
+      </div>
+
+      <DataTable
+        columns={attendanceColumns}
+        data={Attendance}
+        isLoading={isLoading}
+      />
+    </div>
   );
 }

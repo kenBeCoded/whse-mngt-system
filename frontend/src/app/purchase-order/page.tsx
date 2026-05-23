@@ -29,6 +29,10 @@ export function PurchaseOrdersPage() {
 
   return (
     <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">PURCHASE ORDERS</h1>
+      </div>
+
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">
           <div className="flex justify-between items-center">

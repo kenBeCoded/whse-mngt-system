@@ -51,11 +51,13 @@ export const useInventoryStore = create<InventoryState>()(
         try {
           const data = await inventoryService.getAll();
           set({ items: data, isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch inventory items";
+              : "Failed to fetch inventory items");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching inventory items:", error);
         }
@@ -76,6 +78,7 @@ export const useInventoryStore = create<InventoryState>()(
           });
         } catch (error: any) {
           const errorMessage =
+            error?.response?.data?.error?.message ||
             error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
@@ -104,6 +107,7 @@ export const useInventoryStore = create<InventoryState>()(
           });
         } catch (error: any) {
           const errorMessage =
+            error?.response?.data?.error?.message ||
             error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
@@ -128,11 +132,13 @@ export const useInventoryStore = create<InventoryState>()(
             description: formatCustomDate1(new Date()),
             descriptionClassName: "!text-secondary-foreground",
           });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to deactivate item";
+              : "Failed to deactivate item");
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("Failed to deactivate item:", error);

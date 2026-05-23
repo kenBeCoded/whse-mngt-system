@@ -135,18 +135,23 @@ export class WarehouseModel {
   static async getUnallocated(warehouseId: number): Promise<any[]> {
     const result = await pool.query(
       `SELECT
+           il.id,
            il.item_id,
            ii.name AS item_name,
            ii.sku,
            il.quantity,
            il.allocation_status,
            pr.received_at,
-           w.name AS warehouse_name
+           w.name AS warehouse_name,
+           po.po_number AS po_reference,
+           s.name AS supplier
        FROM item_locations il
-       JOIN inventory_items ii    ON il.item_id        = ii.id
+       JOIN inventory_items ii    ON il.item_id         = ii.id
        JOIN po_receipt_lines prl  ON il.receipt_line_id = prl.id
-       JOIN po_receipts pr        ON prl.receipt_id    = pr.id
-       JOIN warehouse w           ON pr.warehouse_id   = w.id
+       JOIN po_receipts pr        ON prl.receipt_id     = pr.id
+       JOIN warehouse w           ON pr.warehouse_id    = w.id
+       JOIN purchase_order po     ON pr.po_id           = po.id
+       JOIN suppliers s           ON po.supplier_id     = s.id
        WHERE il.allocation_status = 'unallocated'
          AND pr.warehouse_id = $1`,
       [warehouseId]

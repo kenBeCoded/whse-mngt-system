@@ -63,11 +63,13 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>()(
         try {
           const data = await purchaseOrderService.getAll();
           set({ purchaseOrders: data, isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch purchase orders";
+              : "Failed to fetch purchase orders");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching POs:", error);
         }
@@ -89,6 +91,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>()(
         } catch (error: any) {
           const errorMessage =
             error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
               : "Failed to create purchase order");
@@ -106,11 +109,13 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>()(
         try {
           const detail = await purchaseOrderService.getById(id);
           set({ currentPO: detail, isDetailLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch PO details";
+              : "Failed to fetch PO details");
           set({ error: errorMessage, isDetailLoading: false });
           console.error("Error fetching PO detail:", error);
         }
@@ -150,6 +155,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>()(
         } catch (error: any) {
           const errorMessage =
             error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
               : "Failed to update PO status");
@@ -186,6 +192,7 @@ export const usePurchaseOrderStore = create<PurchaseOrderState>()(
         } catch (error: any) {
           const errorMessage =
             error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
               : "Failed to receive items");

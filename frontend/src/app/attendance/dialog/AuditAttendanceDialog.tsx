@@ -60,8 +60,6 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
   const [checkOutTime, setCheckOutTime] = useState("");
   const [overtimeHours, setOvertimeHours] = useState("");
 
-  console.log("data", data);
-
   const {
     failAttendnaceRecord,
     passAttendnaceRecord,
@@ -265,7 +263,9 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
                       <Badge variant="outline" className="font-mono text-xs">
                         {formatTimeAMPM(data.u_sched_in)}
                       </Badge>
-                      <span className="text-muted-foreground font-semibold">→</span>
+                      <span className="text-muted-foreground font-semibold">
+                        →
+                      </span>
                       <Badge variant="outline" className="font-mono text-xs">
                         {formatTimeAMPM(data.u_sched_out)}
                       </Badge>

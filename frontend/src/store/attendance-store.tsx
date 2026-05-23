@@ -134,11 +134,13 @@ export const useAttendanceStore = create<AttendanceState>()(
             { request_code: 0, user_id: user_id },
           );
           set({ Attendance: response.data.data, isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch attendance records";
+              : "Failed to fetch attendance records");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching attendance records:", error);
         }
@@ -163,11 +165,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           );
           set({ isLoading: false });
           return { attendance_record: response.data.data };
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch attendance records";
+              : "Failed to fetch attendance records");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching attendance record by ID:", error);
         }
@@ -188,11 +192,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           );
           set({ isLoading: false });
           return { attendance_record: response.data.data };
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch attendance records with overtime";
+              : "Failed to fetch attendance records with overtime");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching attendance record with OT:", error);
         }
@@ -221,11 +227,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           }));
 
           return response.data;
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fail attendance record";
+              : "Failed to fail attendance record");
           set({ error: errorMessage, isLoading: false });
           console.error("Error failing attendance record:", error);
           throw error;
@@ -255,11 +263,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           }));
 
           return response.data;
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to pass attendance record";
+              : "Failed to pass attendance record");
           set({ error: errorMessage, isLoading: false });
           console.error("Error passing attendance record:", error);
           throw error;
@@ -305,11 +315,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           }));
 
           return response.data;
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to update attendance record";
+              : "Failed to update attendance record");
           set({ error: errorMessage, isLoading: false });
           console.error("Error updating attendance record:", error);
           throw error;
@@ -359,11 +371,13 @@ export const useAttendanceStore = create<AttendanceState>()(
           }));
 
           return response.data;
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to reset attendance record";
+              : "Failed to reset attendance record");
           set({ error: errorMessage, isLoading: false });
           console.error("Error resetting attendance record:", error);
           throw error;

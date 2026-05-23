@@ -51,11 +51,13 @@ export const useSupplierStore = create<SupplierState>()(
         try {
           const data = await supplierService.getAll();
           set({ suppliers: data, isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch suppliers";
+              : "Failed to fetch suppliers");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching suppliers:", error);
         }
@@ -76,6 +78,7 @@ export const useSupplierStore = create<SupplierState>()(
           });
         } catch (error: any) {
           const errorMessage =
+            error?.response?.data?.error?.message ||
             error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
@@ -104,6 +107,7 @@ export const useSupplierStore = create<SupplierState>()(
           });
         } catch (error: any) {
           const errorMessage =
+            error?.response?.data?.error?.message ||
             error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
@@ -128,11 +132,13 @@ export const useSupplierStore = create<SupplierState>()(
             description: formatCustomDate1(new Date()),
             descriptionClassName: "!text-secondary-foreground",
           });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to deactivate supplier";
+              : "Failed to deactivate supplier");
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("Failed to deactivate supplier:", error);

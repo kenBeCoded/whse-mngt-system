@@ -23,9 +23,6 @@ export default function MainPage() {
   const location = useLocation();
   const pathname = location.pathname;
 
-  console.log("pathname", pathname);
-  console.log("location", location);
-
   const getBreadcrumbs = () => {
     // Handle root/home
     if (pathname === "/" || pathname === "") {
@@ -71,7 +68,7 @@ export default function MainPage() {
 
       // 2. Capitalize the first letter of every word using a regex
       const title = spacedSegment.replace(/\b\w/g, (char) =>
-        char.toUpperCase()
+        char.toUpperCase(),
       );
 
       return {
@@ -84,8 +81,6 @@ export default function MainPage() {
   };
 
   const breadcrumbs = getBreadcrumbs();
-
-  console.log(breadcrumbs);
 
   return (
     <SidebarProvider>

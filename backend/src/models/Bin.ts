@@ -178,7 +178,12 @@ export class BinModel {
   // ── POST /api/warehouses/bins/:binId/assign (manual assignment) ───────────
   static async assignItem(
     binId: number,
-    data: { item_id: number; quantity: number; assigned_by: number },
+    data: {
+      item_id: number;
+      quantity: number;
+      assigned_by: number;
+      source_location_id?: number;
+    },
   ): Promise<void> {
     const client = await pool.connect();
     try {
@@ -212,6 +217,45 @@ export class BinModel {
         );
         err.statusCode = 400;
         throw err;
+      }
+
+      // If allocating from a specific unallocated source row, validate and decrement it
+      if (data.source_location_id) {
+        const srcRow = await client.query(
+          `SELECT id, quantity FROM item_locations
+           WHERE id = $1 AND item_id = $2 AND allocation_status = 'unallocated'`,
+          [data.source_location_id, data.item_id],
+        );
+        if (!srcRow.rows[0]) {
+          const err: any = new Error("Source unallocated row not found");
+          err.statusCode = 400;
+          throw err;
+        }
+        const remaining = Number(srcRow.rows[0].quantity) - data.quantity;
+        if (remaining < 0) {
+          const err: any = new Error(
+            `Cannot allocate ${data.quantity} — only ${srcRow.rows[0].quantity} unallocated`,
+          );
+          err.statusCode = 400;
+          throw err;
+        }
+        if (remaining === 0) {
+          // Fully allocated — mark the source row as allocated and clear its bin reference
+          await client.query(
+            `UPDATE item_locations
+             SET quantity = 0, allocation_status = 'allocated', updated_at = NOW()
+             WHERE id = $1`,
+            [data.source_location_id],
+          );
+        } else {
+          // Partially allocated — reduce its remaining quantity
+          await client.query(
+            `UPDATE item_locations
+             SET quantity = $1, updated_at = NOW()
+             WHERE id = $2`,
+            [remaining, data.source_location_id],
+          );
+        }
       }
 
       await client.query(

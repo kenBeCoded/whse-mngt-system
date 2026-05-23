@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { X, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 function LoginPage() {
   const [username, setUsername] = useState("");
@@ -23,7 +24,8 @@ function LoginPage() {
   const location = useLocation();
 
   // Redirect back to the page the user was trying to access, or fall back to /admin
-  const from = (location.state as { from?: Location })?.from?.pathname || "/admin";
+  const from =
+    (location.state as { from?: Location })?.from?.pathname || "/admin";
 
   if (user) {
     return <Navigate to={from} replace />;
@@ -33,10 +35,16 @@ function LoginPage() {
     e.preventDefault();
     try {
       await login(username, password);
+      toast.success("Successfully logged in!");
       navigate(from, { replace: true });
       clearError();
-    } catch (err) {
-      console.log(err);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Login failed. Please check your credentials.";
+      toast.error(msg);
     }
   };
 

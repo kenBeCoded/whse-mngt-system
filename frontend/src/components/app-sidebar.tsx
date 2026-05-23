@@ -79,10 +79,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     );
   };
 
-  const handleSearchSubmit = (query: string) => {
-    console.log("Searching for:", query);
-  };
-
   const filteredNavMain = filterSections(navigationData.navMain, searchQuery);
   const hasSearchResults = searchQuery.trim() !== "";
 
@@ -96,7 +92,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SearchForm
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          onSubmit={handleSearchSubmit}
         />
       </SidebarHeader>
       <SidebarContent className="gap-0 overflow-y-auto">
@@ -131,7 +126,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             {navigationData.navMain.map((item) => {
               const isSectionActive = item.items.some(
                 (subItem) =>
-                  pathname === subItem.url || pathname.startsWith(subItem.url + "/"),
+                  pathname === subItem.url ||
+                  pathname.startsWith(subItem.url + "/"),
               );
 
               return (
@@ -140,33 +136,33 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   defaultOpen={isSectionActive}
                   className="group/collapsible"
                 >
-                <SidebarMenuItem>
-                  <CollapsibleTrigger asChild>
-                    <SidebarMenuButton className="w-full justify-between text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground">
-                      {item.title}
-                      <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {item.items.map((subItem) => (
-                        <SidebarMenuSubItem key={subItem.title}>
-                          <SidebarMenuButton
-                            asChild
-                            isActive={isActive(subItem.url)}
-                          >
-                            <Link to={subItem.url}>{subItem.title}</Link>
-                          </SidebarMenuButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
-              </Collapsible>
-            );
-          })}
-        </SidebarMenu>
-      )}
+                  <SidebarMenuItem>
+                    <CollapsibleTrigger asChild>
+                      <SidebarMenuButton className="w-full justify-between text-sm font-medium hover:bg-sidebar-accent hover:text-sidebar-accent-foreground text-sidebar-foreground">
+                        {item.title}
+                        <ChevronRight className="ml-auto transition-transform group-data-[state=open]/collapsible:rotate-90" />
+                      </SidebarMenuButton>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent>
+                      <SidebarMenuSub>
+                        {item.items.map((subItem) => (
+                          <SidebarMenuSubItem key={subItem.title}>
+                            <SidebarMenuButton
+                              asChild
+                              isActive={isActive(subItem.url)}
+                            >
+                              <Link to={subItem.url}>{subItem.title}</Link>
+                            </SidebarMenuButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    </CollapsibleContent>
+                  </SidebarMenuItem>
+                </Collapsible>
+              );
+            })}
+          </SidebarMenu>
+        )}
       </SidebarContent>
       <SidebarFooter className="border-t">
         <SidebarMenu>

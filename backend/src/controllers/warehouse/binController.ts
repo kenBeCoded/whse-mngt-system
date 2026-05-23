@@ -6,7 +6,7 @@ import { sendSuccess, sendError, ErrorCodes } from "../../utils/apiResponse.js";
 export const createBin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const locationId = Number(req.params.locationId);
@@ -25,7 +25,7 @@ export const createBin = async (
 export const getBinsByLocation = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const locationId = Number(req.params.locationId);
@@ -40,7 +40,7 @@ export const getBinsByLocation = async (
 export const getBinsByWarehouse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const warehouseId = Number(req.params.warehouseId);
@@ -55,11 +55,12 @@ export const getBinsByWarehouse = async (
 export const getItemLocationsByWarehouse = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const warehouseId = Number(req.params.warehouseId);
-    const itemLocations = await BinModel.findItemLocationsByWarehouse(warehouseId);
+    const itemLocations =
+      await BinModel.findItemLocationsByWarehouse(warehouseId);
     sendSuccess(res, 200, itemLocations);
   } catch (err) {
     next(err);
@@ -70,7 +71,7 @@ export const getItemLocationsByWarehouse = async (
 export const updateBin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const id = Number(req.params.id);
@@ -93,7 +94,7 @@ export const updateBin = async (
 export const deactivateBin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const id = Number(req.params.id);
@@ -113,7 +114,7 @@ export const deactivateBin = async (
 export const reactivateBin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const id = Number(req.params.id);
@@ -129,7 +130,7 @@ export const reactivateBin = async (
 export const assignItemToBin = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     const binId = Number(req.params.binId);
@@ -148,7 +149,7 @@ export const assignItemToBin = async (
 export const transferItemBetweenBins = async (
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> => {
   try {
     await BinModel.transferItem(req.body);

@@ -32,7 +32,6 @@ export function UsersPage() {
 
   const handleSaveUser = async (updatedUser: Users) => {
     try {
-      // return console.log("updatedUser", updatedUser);
       await updateUser(updatedUser);
     } catch (error) {
       // Error handling is already done in the store
@@ -43,7 +42,6 @@ export function UsersPage() {
   const handleDeleteUser = async (userId: string) => {
     try {
       await deleteUser(userId);
-      console.log("User deleted successfully");
     } catch (error) {
       console.error("Failed to delete user in component:", error);
     }
@@ -54,7 +52,6 @@ export function UsersPage() {
 
     try {
       await deleteMultipleUsers(selectedUsers);
-      console.log("Users deleted successfully");
     } catch (error) {
       console.error("Failed to delete users in component:", error);
     }
@@ -62,10 +59,7 @@ export function UsersPage() {
 
   const handleCreateUser = async (newUser: Omit<Users, "user_account_id">) => {
     try {
-      // console.log("newUser", newUser);
       await addUser(newUser);
-
-      console.log("User created successfully");
     } catch (error) {
       console.error("Failed to create user in component:", error);
     }
@@ -84,6 +78,10 @@ export function UsersPage() {
 
   return (
     <div className="container mx-auto py-10">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">USERS</h1>
+      </div>
+
       {/* Error display */}
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-md">

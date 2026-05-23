@@ -99,6 +99,7 @@ export interface AssignItemPayload {
   item_id: number;
   quantity: number;
   assigned_by: number;
+  source_location_id?: number;
 }
 
 export interface TransferItemPayload {

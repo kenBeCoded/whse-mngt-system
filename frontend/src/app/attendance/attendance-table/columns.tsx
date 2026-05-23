@@ -98,13 +98,6 @@ export const attendanceColumns: ColumnDef<AttendanceRecords, unknown>[] = [
     header: "Actions",
     cell: ({ row }) => {
       const user = row.original;
-      // const onSave =
-      //   (table.options.meta as TableMeta)?.onSave ??
-      //   ((u: Users) => {
-      //     void u;
-      //   });
-
-      // console.log(row.original)
 
       return (
         <div className="flex gap-2">

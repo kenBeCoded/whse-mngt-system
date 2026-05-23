@@ -247,6 +247,7 @@ export const UploadAttendanceDialog = ({
         } else {
           // Promise rejected
           const errorMsg =
+            response.reason?.response?.data?.error?.message ||
             response.reason?.response?.data?.message ||
             response.reason?.response?.data?.error ||
             response.reason?.message ||
@@ -273,14 +274,16 @@ export const UploadAttendanceDialog = ({
       setIsOpen(false);
       reset();
       onSuccess();
-    } catch (error) {
+    } catch (error: any) {
       // Cleanup uploaded images on error
       if (uploadedImages.length > 0) {
         await cleanupUploadedImages(uploadedImages);
       }
 
       const errorMessage =
-        error instanceof Error ? error.message : "Please try again";
+        error?.response?.data?.error?.message ||
+        error?.response?.data?.message ||
+        (error instanceof Error ? error.message : "Please try again");
       toast.error("Failed to upload attendance", {
         description: errorMessage,
       });

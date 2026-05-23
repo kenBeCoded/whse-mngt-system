@@ -41,11 +41,13 @@ export const useWarehouseStore = create<WarehouseState>()(
         try {
           const data = await warehouseService.getAll();
           set({ warehouses: data, isLoading: false });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to fetch warehouses";
+              : "Failed to fetch warehouses");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching warehouses:", error);
         }
@@ -67,6 +69,7 @@ export const useWarehouseStore = create<WarehouseState>()(
         } catch (error: any) {
           const errorMessage =
             error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
               : "Failed to create warehouse");
@@ -95,6 +98,7 @@ export const useWarehouseStore = create<WarehouseState>()(
         } catch (error: any) {
           const errorMessage =
             error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
             (error instanceof Error
               ? error.message
               : "Failed to update warehouse");
@@ -118,11 +122,13 @@ export const useWarehouseStore = create<WarehouseState>()(
             description: formatCustomDate1(new Date()),
             descriptionClassName: "!text-secondary-foreground",
           });
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error
               ? error.message
-              : "Failed to deactivate warehouse";
+              : "Failed to deactivate warehouse");
           set({ error: errorMessage, isLoading: false });
           toast.error(errorMessage);
           console.error("Failed to deactivate warehouse:", error);

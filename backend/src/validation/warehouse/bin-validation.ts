@@ -18,6 +18,7 @@ const assignItemSchema = Joi.object({
   item_id: Joi.number().integer().required(),
   quantity: Joi.number().integer().min(1).required(),
   assigned_by: Joi.number().integer().required(),
+  source_location_id: Joi.number().integer().optional(),
 });
 
 const transferItemSchema = Joi.object({

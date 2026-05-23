@@ -44,6 +44,7 @@ interface Props {
     item_id: number;
     bin_id: number;
     quantity: number;
+    source_location_id?: number;
   }) => Promise<void>;
 }
 
@@ -58,6 +59,8 @@ export function AllocateItemDialog({
   const [quantity, setQuantity] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  console.log("row", row);
+
   const handleOpenChange = (val: boolean) => {
     if (val && row) {
       setBinId("");
@@ -71,13 +74,12 @@ export function AllocateItemDialog({
     setIsSubmitting(true);
     try {
       const itemId =
-        typeof row.item_id === "string"
-          ? parseInt(row.item_id)
-          : row.item_id;
+        typeof row.item_id === "string" ? parseInt(row.item_id) : row.item_id;
       await onSubmit({
         item_id: itemId,
         bin_id: parseInt(binId),
         quantity: parseInt(quantity),
+        source_location_id: row.id,
       });
       onOpenChange(false);
     } catch (err) {

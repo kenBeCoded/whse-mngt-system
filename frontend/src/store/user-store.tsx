@@ -64,9 +64,11 @@ export const useUserStore = create<UserState>()(
           } else {
             throw new Error(`Unexpected response status: ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to fetch users";
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error ? error.message : "Failed to fetch users");
           set({ error: errorMessage, isLoading: false });
           console.error("Error fetching users:", error);
         }
@@ -74,7 +76,6 @@ export const useUserStore = create<UserState>()(
 
       // Add new user
       addUser: async (user) => {
-        // return console.log(user);
         set({ isLoading: true, error: null });
 
         let imageUrl = null;
@@ -126,9 +127,11 @@ export const useUserStore = create<UserState>()(
           } else {
             throw new Error(`Failed to create user: ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to add user";
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error ? error.message : "Failed to add user");
           set({ error: errorMessage, isLoading: false });
           console.error("Failed to add user:", error);
           throw error;
@@ -227,7 +230,7 @@ export const useUserStore = create<UserState>()(
           } else {
             throw new Error(`Failed to update user: ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: any) {
           // If database update fails, delete the newly uploaded image
           if (
             imageUrl &&
@@ -243,7 +246,9 @@ export const useUserStore = create<UserState>()(
           }
 
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to update user";
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error ? error.message : "Failed to update user");
           set({ error: errorMessage, isLoading: false });
           console.error("Failed to update user:", error);
           throw error;
@@ -270,9 +275,11 @@ export const useUserStore = create<UserState>()(
           } else {
             throw new Error(`Failed to delete user: ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to delete user";
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error ? error.message : "Failed to delete user");
           set({ error: errorMessage, isLoading: false });
           console.error("Failed to delete user:", error);
           throw error;
@@ -305,9 +312,11 @@ export const useUserStore = create<UserState>()(
           } else {
             throw new Error(`Failed to delete users: ${response.status}`);
           }
-        } catch (error) {
+        } catch (error: any) {
           const errorMessage =
-            error instanceof Error ? error.message : "Failed to delete users";
+            error?.response?.data?.error?.message ||
+            error?.response?.data?.message ||
+            (error instanceof Error ? error.message : "Failed to delete users");
           set({ error: errorMessage, isLoading: false });
           console.error("Failed to delete users:", error);
           throw error;

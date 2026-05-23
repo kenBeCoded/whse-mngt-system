@@ -209,9 +209,12 @@ export function WarehouseDetailsPage() {
       });
       toast.success("Location updated successfully");
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       const msg =
-        err instanceof Error ? err.message : "Failed to update location";
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to update location";
       toast.error(msg);
     }
   };
@@ -221,9 +224,12 @@ export function WarehouseDetailsPage() {
       await warehouseService.deactivateLocation(warehouseId, locationId);
       toast.success("Location deactivated");
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       const msg =
-        err instanceof Error ? err.message : "Failed to deactivate location";
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to deactivate location";
       toast.error(msg);
     }
   };
@@ -233,9 +239,12 @@ export function WarehouseDetailsPage() {
       await warehouseService.reactivateLocation(warehouseId, locationId);
       toast.success("Location reactivated");
       loadData();
-    } catch (err) {
+    } catch (err: any) {
       const msg =
-        err instanceof Error ? err.message : "Failed to reactivate location";
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to reactivate location";
       toast.error(msg);
     }
   };
@@ -260,6 +269,7 @@ export function WarehouseDetailsPage() {
       loadData();
     } catch (err: any) {
       const msg =
+        err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         err?.message ||
         "Failed to create bin";
@@ -276,14 +286,23 @@ export function WarehouseDetailsPage() {
   const handleEditBin = async (
     binId: number,
     locationId: number,
-    data: { bin_code: string; capacity: number }
+    data: { bin_code: string; capacity: number },
   ) => {
-    await warehouseService.updateBin(locationId, binId, {
-      ...data,
-      updated_by: userId,
-    });
-    toast.success("Bin updated successfully");
-    loadData();
+    try {
+      await warehouseService.updateBin(locationId, binId, {
+        ...data,
+        updated_by: userId,
+      });
+      toast.success("Bin updated successfully");
+      loadData();
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.error?.message ||
+        err?.response?.data?.message ||
+        err?.message ||
+        "Failed to update bin";
+      toast.error(msg);
+    }
   };
 
   const handleDeactivateBin = async (bin: WarehouseBin) => {
@@ -292,7 +311,11 @@ export function WarehouseDetailsPage() {
       toast.success("Bin deactivated");
       loadData();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Cannot deactivate bin with active stock.");
+      toast.error(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          "Cannot deactivate bin with active stock.",
+      );
     }
   };
 
@@ -302,7 +325,11 @@ export function WarehouseDetailsPage() {
       toast.success("Bin reactivated");
       loadData();
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Failed to reactivate bin");
+      toast.error(
+        err?.response?.data?.error?.message ||
+          err?.response?.data?.message ||
+          "Failed to reactivate bin",
+      );
     }
   };
 
@@ -321,6 +348,7 @@ export function WarehouseDetailsPage() {
       loadData();
     } catch (err: any) {
       const msg =
+        err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         err?.message ||
         "Failed to assign item";
@@ -345,6 +373,7 @@ export function WarehouseDetailsPage() {
       loadData();
     } catch (err: any) {
       const msg =
+        err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         err?.message ||
         "Failed to transfer item";
@@ -357,17 +386,20 @@ export function WarehouseDetailsPage() {
     item_id: number;
     bin_id: number;
     quantity: number;
+    source_location_id?: number;
   }) => {
     try {
       await warehouseService.assignItem(data.bin_id, {
         item_id: data.item_id,
         quantity: data.quantity,
         assigned_by: userId,
+        source_location_id: data.source_location_id,
       });
       toast.success("Item allocated to bin");
       loadData();
     } catch (err: any) {
       const msg =
+        err?.response?.data?.error?.message ||
         err?.response?.data?.message ||
         err?.message ||
         "Failed to allocate item";
@@ -850,7 +882,6 @@ export function WarehouseDetailsPage() {
                                 <RefreshCw size={12} className="mr-1" />{" "}
                                 Transfer
                               </Button>
-
                             </div>
                             <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
                               <MoreHorizontal

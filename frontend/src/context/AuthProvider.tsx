@@ -36,8 +36,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       const profile = await authService.getProfile(accessToken);
       setUser(profile);
       wasAuthenticatedRef.current = true;
-      // Mark that a valid session exists so future page loads attempt a refresh
-      sessionStorage.setItem("had_session", "true");
+      // Mark that a valid session exists so future page loads (and new tabs) attempt a refresh
+      localStorage.setItem("had_session", "true");
 
       // Start the token refresh timer after successful login
       scheduleTokenRefresh();
@@ -58,7 +58,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     wasAuthenticatedRef.current = false;
     // Remove the session flag so the next cold load skips the refresh call
-    sessionStorage.removeItem("had_session");
+    localStorage.removeItem("had_session");
     setAccessToken(null);
     setAuthToken(null);
     setUser(null);
@@ -72,7 +72,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
     wasAuthenticatedRef.current = false;
     // Clear the session flag so the login page loads instantly after logout
-    sessionStorage.removeItem("had_session");
+    localStorage.removeItem("had_session");
 
     // Only hit the server if there was an authenticated session to invalidate
     await authService.logout();
@@ -90,7 +90,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setUser(profile);
       wasAuthenticatedRef.current = true;
       // Keep the session flag alive for the duration of the session
-      sessionStorage.setItem("had_session", "true");
+      localStorage.setItem("had_session", "true");
 
       // Schedule the next refresh after successfully refreshing
       scheduleTokenRefresh();
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Only attempt a refresh if there was a prior authenticated session.
       // On a cold load (e.g. visiting /login for the first time), skip the
       // network call entirely so the page renders instantly.
-      const hadSession = sessionStorage.getItem("had_session") === "true";
+      const hadSession = localStorage.getItem("had_session") === "true";
       if (!hadSession) {
         setIsInitializing(false);
         return;

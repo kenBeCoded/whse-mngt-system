@@ -68,8 +68,6 @@ function DashboardPage() {
   }>({ in: null, out: null });
   const [isDataLoading, setIsDataLoading] = useState(true);
 
-  console.log("todayAttendance", todayAttendance);
-
   // Current Date string
   const currentDateStr = useMemo(
     () => format(new Date(), "EEEE, MMMM dd, yyyy"),
@@ -90,15 +88,16 @@ function DashboardPage() {
 
         // Fetch today's attendance record for the logged-in user
         const todayStr = formatDateToYYYYMMDD(new Date());
-        console.log("todayStr", todayStr);
-        console.log("user.id", user.id);
         const attendanceRes = await fetchRecordByID(user.id, todayStr);
-        console.log("attendanceResattendanceRes", attendanceRes);
         if (attendanceRes && attendanceRes.attendance_record.length > 0) {
           const rec = attendanceRes.attendance_record[0];
           setTodayAttendance({
-            in: rec.check_in_time ? formatTo12HourTime(rec.check_in_time) : null,
-            out: rec.check_out_time ? formatTo12HourTime(rec.check_out_time) : null,
+            in: rec.check_in_time
+              ? formatTo12HourTime(rec.check_in_time)
+              : null,
+            out: rec.check_out_time
+              ? formatTo12HourTime(rec.check_out_time)
+              : null,
           });
         }
       } catch (err) {
