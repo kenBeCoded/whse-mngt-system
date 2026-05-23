@@ -12,6 +12,8 @@ export function SchedulerPage() {
   const [isUpdating, setIsUpdating] = useState(false);
   const [resetSelection, setResetSelection] = useState(0);
 
+  console.log("users", users)
+
   // Fetch users on component mount
   useEffect(() => {
     fetchUsers();

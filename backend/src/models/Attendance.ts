@@ -156,7 +156,10 @@ export class Attendance {
         userId,
         selectedDate,
         includeUserDetails: true,
+<<<<<<< Updated upstream
         includeOT: true,
+=======
+>>>>>>> Stashed changes
       });
 
       const result = await pool.query(query, params);
@@ -175,6 +178,9 @@ export class Attendance {
       });
 
       const result = await pool.query(query, params);
+      // console.log("result", result);
+      // console.log("query", query);
+      // console.log("params", params);
       return result.rows || [];
     } catch (error: any) {
       throw new Error(
@@ -414,6 +420,8 @@ export class Attendance {
      * 4 - update overtime (multiple or single)
      * 5 - update/modify attendance record check in & out and overtime
      */
+
+    console.log("data",data)
 
     const allowedCodes = [0, 1, 2, 3, 4, 5];
 

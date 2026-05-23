@@ -28,4 +28,8 @@ dist-ssr
 markdown/
 .env
 guide/
+<<<<<<< Updated upstream
 plan/
+=======
+drawio/
+>>>>>>> Stashed changes

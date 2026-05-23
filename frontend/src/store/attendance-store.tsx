@@ -81,6 +81,11 @@ interface AttendanceState {
     check_out_image_url: string | null,
   ) => Promise<void>;
 
+  updateOtRecords: (
+    idArr: number[],
+    ot_hours: number,
+  ) => Promise<void>;
+
   clearError: () => void;
   reset: () => void;
 }
@@ -380,6 +385,31 @@ export const useAttendanceStore = create<AttendanceState>()(
               : "Failed to reset attendance record");
           set({ error: errorMessage, isLoading: false });
           console.error("Error resetting attendance record:", error);
+          throw error;
+        }
+      },
+
+      updateOtRecords: async (idArr, ot_hours) => {
+        set({ isLoading: true, error: null });
+        try {
+          const response = await API.patch(
+            "/api/attendance/audit-attendance-update",
+            {
+              ot_idArr: idArr,
+              ot_hours: ot_hours,
+              update_code: 4, // 4 for OT update
+            },
+          );
+
+          set({ isLoading: false });
+          return response.data;
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error
+              ? error.message
+              : "Failed to update OT records";
+          set({ error: errorMessage, isLoading: false });
+          console.error("Error updating OT records:", error);
           throw error;
         }
       },

@@ -1,7 +1,16 @@
+<<<<<<< Updated upstream:backend/http_test/development/user.http
 @AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3OTE5ODUwMn0.HIz1t631d-oMBDhGtL3zGphcEG5QSmd3wy_nNktlihg
+=======
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3NDY5OTgyNiwiZXhwIjoxNzc0NzAwNzI2fQ.spB5-SGg82xCDhjkgOLb8ECkWqDzJvpOTweM3OZaAig
+
+get http://localhost:3000/health
+>>>>>>> Stashed changes:backend/http_test/user.http
 
 
-post http://localhost:8000/api/auth/login
+###
+
+
+post http://localhost:3000/api/auth/login
 Content-Type: application/json
 
 {
@@ -66,7 +75,7 @@ Content-Type: application/json
 
 ###
 
-get http://localhost:8000/api/users/get-all-users
+get http://localhost:3000/api/users/get-all-users
 Authorization: Bearer {{AT}}
 
 ###

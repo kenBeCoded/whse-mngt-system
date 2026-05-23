@@ -1,6 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
+<<<<<<< Updated upstream
 import { UpdateOTDialog } from "./dialog/UpdateOTDialog";
+=======
+import { UpdateOtCell } from "./dialog/Updateotcell";
+>>>>>>> Stashed changes
 
 export type SchedulerUser = {
   id?: string | number;
@@ -45,12 +49,8 @@ export const schedulerColumns: ColumnDef<SchedulerUser>[] = [
   {
     id: "FULLNAME",
     header: "Fullname",
-    accessorFn: (row) => {
-      const fullName = `${row.first_name} ${row.middle_name || ""} ${
-        row.last_name
-      }`.trim();
-      return fullName;
-    },
+    accessorFn: (row) =>
+      `${row.first_name} ${row.middle_name || ""} ${row.last_name}`.trim(),
   },
   {
     id: "ROLE",
@@ -61,15 +61,14 @@ export const schedulerColumns: ColumnDef<SchedulerUser>[] = [
     id: "SCHEDULE",
     header: "Schedule",
     accessorFn: (row) => {
-      if (!row.u_sched_in || !row.u_sched_out) {
-        return "Not Set";
-      }
+      if (!row.u_sched_in || !row.u_sched_out) return "Not Set";
       return `${row.u_sched_in} to ${row.u_sched_out}`;
     },
   },
   {
     id: "actions",
     header: "Actions",
+<<<<<<< Updated upstream
     cell: ({ row }) => {
       const user = row.original;
       return <UpdateOTDialog user={user} />;
@@ -77,3 +76,8 @@ export const schedulerColumns: ColumnDef<SchedulerUser>[] = [
   },
 ];
 
+=======
+    cell: ({ row }) => <UpdateOtCell user={row.original} />,
+  },
+];
+>>>>>>> Stashed changes
