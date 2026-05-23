@@ -418,8 +418,6 @@ export class Attendance {
      * 5 - update/modify attendance record check in & out and overtime
      */
 
-    console.log("data",data)
-
     const allowedCodes = [0, 1, 2, 3, 4, 5];
 
     if (!allowedCodes.includes(data.update_code)) {

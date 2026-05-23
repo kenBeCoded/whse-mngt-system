@@ -144,9 +144,8 @@ export function UpdateOvertimeDialog({
   }
 
   // Header label
-  const headerLabel = `[${user.user_account_id}] ${user.first_name} ${
-    user.middle_name ? user.middle_name + " " : ""
-  }${user.last_name}`;
+  const headerLabel = `[${user.user_account_id}] ${user.first_name} ${user.middle_name ? user.middle_name + " " : ""
+    }${user.last_name}`;
 
   // Overtime validation
   const overtimeValid =
@@ -177,8 +176,6 @@ export function UpdateOvertimeDialog({
   function handlePageChange(newPage: number) {
     setPage(Math.min(Math.max(1, newPage), totalPages));
   }
-
-  console.log("attendanceRecords",attendanceRecords)
 
   return (
     <>
@@ -256,8 +253,8 @@ export function UpdateOvertimeDialog({
                         allPageSelected
                           ? true
                           : somePageSelected
-                          ? "indeterminate"
-                          : false
+                            ? "indeterminate"
+                            : false
                       }
                       onCheckedChange={(v) => toggleAll(!!v)}
                       aria-label="Select all on page"
