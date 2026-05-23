@@ -8,7 +8,6 @@ import { getAllowedRoles } from "../config/roleAccess.js";
 // Routes that skip authentication entirely
 const PUBLIC_ROUTES = [
   "/api/auth/login",
-  "/api/auth/refresh",
   "/api/auth/register",
   "/health",
 ];
@@ -23,15 +22,19 @@ export const authenticateToken = async (
     return next();
   }
 
-  // ── 1. Verify token ─────────────────────────────────────────────────────
-  const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1];
+  // ── 1. Extract token ─────────────────────────────────────────────────────
+  // Primary: HTTP-only cookie (cookie-based auth)
+  // Fallback: Authorization header (for manual API testing / tools like Postman)
+  const token =
+    req.cookies?.accessToken ||
+    (req.headers["authorization"]?.split(" ")[1] ?? null);
 
   if (!token) {
     sendError(res, 401, ErrorCodes.TOKEN_REQUIRED, "Access token required");
     return;
   }
 
+  // ── 2. Verify token ──────────────────────────────────────────────────────
   let decoded: JWTPayload;
   try {
     decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET!) as JWTPayload;
@@ -40,7 +43,7 @@ export const authenticateToken = async (
     return;
   }
 
-  // ── 2. Verify user exists ───────────────────────────────────────────────
+  // ── 3. Verify user exists ────────────────────────────────────────────────
   const user = await UserModel.findById(decoded.userId);
   if (!user || user.is_deleted) {
     sendError(res, 401, ErrorCodes.UNAUTHORIZED, "Not authorized");
@@ -54,7 +57,7 @@ export const authenticateToken = async (
     role: user.role,
   };
 
-  // ── 3. Role-based authorization ─────────────────────────────────────────
+  // ── 4. Role-based authorization ──────────────────────────────────────────
   const allowedRoles = getAllowedRoles(req.method, req.path);
 
   if (allowedRoles === null) {

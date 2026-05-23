@@ -54,21 +54,21 @@ export const purchaseOrderColumns: ColumnDef<PurchaseOrder>[] = [
   },
   {
     id: "SUPPLIER",
-    accessorKey: "supplier_id",
-    header: "Supplier ID",
+    accessorKey: "supplier_name",
+    header: "Supplier Name",
     cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        #{row.original.supplier_id}
+      <span className="text-xs font-medium">
+        {row.original.supplier_name || `#${row.original.supplier_id}`}
       </span>
     ),
   },
   {
     id: "WAREHOUSE",
-    accessorKey: "warehouse_id",
-    header: "Warehouse ID",
+    accessorKey: "warehouse_name",
+    header: "Warehouse Name",
     cell: ({ row }) => (
-      <span className="font-mono text-xs text-muted-foreground">
-        #{row.original.warehouse_id}
+      <span className="text-xs font-medium">
+        {row.original.warehouse_name || `#${row.original.warehouse_id}`}
       </span>
     ),
   },

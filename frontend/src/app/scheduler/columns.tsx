@@ -1,10 +1,6 @@
 import { type ColumnDef } from "@tanstack/react-table";
 import { Checkbox } from "@/components/ui/checkbox";
-<<<<<<< Updated upstream
-import { UpdateOTDialog } from "./dialog/UpdateOTDialog";
-=======
 import { UpdateOtCell } from "./dialog/Updateotcell";
->>>>>>> Stashed changes
 
 export type SchedulerUser = {
   id?: string | number;
@@ -68,16 +64,6 @@ export const schedulerColumns: ColumnDef<SchedulerUser>[] = [
   {
     id: "actions",
     header: "Actions",
-<<<<<<< Updated upstream
-    cell: ({ row }) => {
-      const user = row.original;
-      return <UpdateOTDialog user={user} />;
-    },
-  },
-];
-
-=======
     cell: ({ row }) => <UpdateOtCell user={row.original} />,
   },
 ];
->>>>>>> Stashed changes

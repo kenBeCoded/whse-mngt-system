@@ -59,8 +59,6 @@ export function AllocateItemDialog({
   const [quantity, setQuantity] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  console.log("row", row);
-
   const handleOpenChange = (val: boolean) => {
     if (val && row) {
       setBinId("");
@@ -96,7 +94,7 @@ export function AllocateItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px]" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-extrabold uppercase tracking-tight">
             <ArrowRightCircle className="h-5 w-5 text-emerald-500" />

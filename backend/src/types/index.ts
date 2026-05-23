@@ -100,6 +100,8 @@ export interface PurchaseOrder {
   po_number: string;
   supplier_id: number;
   warehouse_id: number;
+  supplier_name?: string;
+  warehouse_name?: string;
   status: POStatus;
   total_amount: number;
   created_by: number;

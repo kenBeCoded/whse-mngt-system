@@ -1,51 +1,20 @@
 import { Router, Request, Response } from "express";
 import { validateLogin } from "../validation/user/user-validation.js";
 import { UserModel } from "../models/User.js";
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken,
-} from "../utils/tokens.js";
+import { generateAccessToken } from "../utils/tokens.js";
 import { AuthenticatedRequest } from "../types/index.js";
 import { sendSuccess, sendError, ErrorCodes } from "../utils/apiResponse.js";
 
 const router = Router();
 
-// Refresh token endpoint
-router.post("/refresh", (req: Request, res: Response): void => {
-  try {
-    const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) {
-      sendError(
-        res,
-        401,
-        ErrorCodes.REFRESH_TOKEN_REQUIRED,
-        "Refresh token required"
-      );
-      return;
-    }
-
-    const decoded = verifyRefreshToken(refreshToken);
-    if (!decoded) {
-      sendError(
-        res,
-        403,
-        ErrorCodes.REFRESH_TOKEN_INVALID,
-        "Invalid refresh token"
-      );
-      return;
-    }
-
-    // generate new access token
-    const tokenPayload = { userId: decoded.userId, username: decoded.username };
-    const accessToken = generateAccessToken(tokenPayload);
-
-    sendSuccess(res, 200, { accessToken });
-  } catch (error) {
-    console.error("Refresh error:", error);
-    sendError(res, 500, ErrorCodes.INTERNAL_ERROR, "Internal server error");
-  }
-});
+const COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: (process.env.NODE_ENV === "production" ? "none" : "strict") as
+    | "none"
+    | "strict",
+  maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+};
 
 // log in account
 router.post(
@@ -79,24 +48,17 @@ router.post(
         return;
       }
 
-      // generate tokens
+      // generate access token
       const tokenPayload = { userId: user.id, username: user.username };
       const accessToken = generateAccessToken(tokenPayload);
-      const refreshToken = generateRefreshToken(tokenPayload);
 
-      // set refresh token cookie
-      res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      });
+      // Set JWT as secure, HTTP-only cookie — never exposed to client-side JS
+      res.cookie("accessToken", accessToken, COOKIE_OPTIONS);
 
       sendSuccess(
         res,
         200,
         {
-          accessToken,
           user: {
             id: user.id,
             username: user.username,
@@ -114,13 +76,15 @@ router.post(
 
 // logout account
 router.post("/logout", (req: Request, res: Response) => {
-  res.clearCookie("refreshToken", {
+  res.clearCookie("accessToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    sameSite: (process.env.NODE_ENV === "production" ? "none" : "strict") as
+      | "none"
+      | "strict",
   });
 
-  res.status(204).json();
+  res.status(204).send();
 });
 
 // Get current user profile

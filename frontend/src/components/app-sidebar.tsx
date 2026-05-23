@@ -8,7 +8,7 @@ import {
 import { Link, useLocation } from "react-router-dom";
 
 import { SearchForm } from "@/components/search-form";
-import { VersionSwitcher } from "@/components/version-switcher";
+import logo2 from "@/assets/logo2.png";
 import {
   Collapsible,
   CollapsibleContent,
@@ -85,10 +85,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar {...props} className="border-r">
       <SidebarHeader className="border-b px-4 py-3">
-        <VersionSwitcher
-          versions={navigationData.versions}
-          defaultVersion={navigationData.versions[0]}
-        />
+        <div className="flex justify-center mb-4">
+          <img src={logo2} alt="Logo 2" className="h-12" />
+        </div>
         <SearchForm
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

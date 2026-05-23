@@ -195,12 +195,12 @@ export function PurchaseOrderDetailsPage() {
         <CardContent>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
             <div>
-              <p className="text-muted-foreground">Supplier ID</p>
-              <p className="font-mono font-medium">#{po.supplier_id}</p>
+              <p className="text-muted-foreground">Supplier Name</p>
+              <p className="font-medium">{po.supplier_name || `#${po.supplier_id}`}</p>
             </div>
             <div>
-              <p className="text-muted-foreground">Warehouse ID</p>
-              <p className="font-mono font-medium">#{po.warehouse_id}</p>
+              <p className="text-muted-foreground">Warehouse Name</p>
+              <p className="font-medium">{po.warehouse_name || `#${po.warehouse_id}`}</p>
             </div>
             <div>
               <p className="text-muted-foreground">Total Amount</p>

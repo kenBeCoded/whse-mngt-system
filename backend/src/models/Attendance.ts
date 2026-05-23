@@ -156,10 +156,7 @@ export class Attendance {
         userId,
         selectedDate,
         includeUserDetails: true,
-<<<<<<< Updated upstream
         includeOT: true,
-=======
->>>>>>> Stashed changes
       });
 
       const result = await pool.query(query, params);

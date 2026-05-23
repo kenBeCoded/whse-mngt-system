@@ -102,7 +102,11 @@ export class PurchaseOrderModel {
       await client.query("COMMIT");
 
       const final = await pool.query(
-        `SELECT * FROM purchase_order WHERE id = $1`,
+        `SELECT po.*, s.name AS supplier_name, w.name AS warehouse_name
+         FROM purchase_order po
+         LEFT JOIN suppliers s ON po.supplier_id = s.id
+         LEFT JOIN warehouse w ON po.warehouse_id = w.id
+         WHERE po.id = $1`,
         [poId],
       );
       return final.rows[0];
@@ -117,7 +121,11 @@ export class PurchaseOrderModel {
   // ── GET /api/purchase-orders ──────────────────────────────────────────────
   static async findAll(): Promise<PurchaseOrder[]> {
     const result = await pool.query(
-      `SELECT * FROM purchase_order ORDER BY created_at DESC`,
+      `SELECT po.*, s.name AS supplier_name, w.name AS warehouse_name 
+       FROM purchase_order po
+       LEFT JOIN suppliers s ON po.supplier_id = s.id
+       LEFT JOIN warehouse w ON po.warehouse_id = w.id
+       ORDER BY po.created_at DESC`,
     );
     return result.rows;
   }
@@ -127,7 +135,11 @@ export class PurchaseOrderModel {
     id: number,
   ): Promise<{ po: PurchaseOrder; lines: any[] } | null> {
     const poResult = await pool.query(
-      `SELECT * FROM purchase_order WHERE id = $1`,
+      `SELECT po.*, s.name AS supplier_name, w.name AS warehouse_name
+       FROM purchase_order po
+       LEFT JOIN suppliers s ON po.supplier_id = s.id
+       LEFT JOIN warehouse w ON po.warehouse_id = w.id
+       WHERE po.id = $1`,
       [id],
     );
     if (!poResult.rows[0]) return null;
@@ -221,7 +233,11 @@ export class PurchaseOrderModel {
       await client.query("COMMIT");
 
       const updated = await pool.query(
-        `SELECT * FROM purchase_order WHERE id = $1`,
+        `SELECT po.*, s.name AS supplier_name, w.name AS warehouse_name
+         FROM purchase_order po
+         LEFT JOIN suppliers s ON po.supplier_id = s.id
+         LEFT JOIN warehouse w ON po.warehouse_id = w.id
+         WHERE po.id = $1`,
         [id],
       );
       return updated.rows[0];

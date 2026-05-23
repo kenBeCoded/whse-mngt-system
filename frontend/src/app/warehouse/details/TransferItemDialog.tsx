@@ -155,7 +155,7 @@ export function TransferItemDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="w-auto max-w-[90vw] min-w-[480px]">
+      <DialogContent className="w-auto max-w-[90vw] min-w-[480px]" aria-describedby={undefined}>
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg font-extrabold uppercase tracking-tight">
             <RefreshCw className="h-5 w-5 text-amber-500" /> Transfer Item
