@@ -97,8 +97,8 @@ export class UserModel {
         userData.gender,
         userData.user_profile_image_url,
         userData.role ? userData.role : "employee",
-        userData.u_sched_in ? userData.u_sched_in : "",
-        userData.u_sched_out ? userData.u_sched_out : "",
+        userData.u_sched_in ? userData.u_sched_in : null,
+        userData.u_sched_out ? userData.u_sched_out : null,
       ]);
 
       await client.query("COMMIT");

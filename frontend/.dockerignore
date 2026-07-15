@@ -2,8 +2,6 @@ node_modules
 npm-debug.log
 dist
 .env
-scripts/backup.dump
-scripts/backup.sql
 .git
 .gitignore
 .dockerignore

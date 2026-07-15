@@ -39,9 +39,7 @@ logs
 markdown/
 sql/
 guide/
-<<<<<<< Updated upstream
 plan/
 documentation/
-=======
 test/
->>>>>>> Stashed changes
+scripts/

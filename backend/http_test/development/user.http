@@ -1,21 +1,17 @@
-<<<<<<< Updated upstream:backend/http_test/development/user.http
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3OTE5ODUwMn0.HIz1t631d-oMBDhGtL3zGphcEG5QSmd3wy_nNktlihg
-=======
-@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIyIiwidXNlcm5hbWUiOiJ0ZXN0MSIsImlhdCI6MTc3NDY5OTgyNiwiZXhwIjoxNzc0NzAwNzI2fQ.spB5-SGg82xCDhjkgOLb8ECkWqDzJvpOTweM3OZaAig
+@AT = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxIiwidXNlcm5hbWUiOiJhZG1pbiIsImlhdCI6MTc4Mzg0Mzg4MywiZXhwIjoxNzg0NDQ4NjgzfQ.CYVC0zgQ83GFbTb1gRICWuZ8WP8Hfa1NKKKOeaaONd
 
-get http://localhost:3000/health
->>>>>>> Stashed changes:backend/http_test/user.http
+get http://localhost:3002/health
 
 
 ###
 
 
-post http://localhost:3000/api/auth/login
+post http://localhost:8000/api/auth/login
 Content-Type: application/json
 
 {
-    "username":"test1",
-    "password":"test1"
+    "username":"admin",
+    "password":"admin"
 }
 
 ###
@@ -37,30 +33,30 @@ post http://localhost:8000/api/users/create-user
 Authorization: Bearer {{AT}}
 Content-Type: application/json
 
-# {
-#     "username":"admin",
-#     "password":"admin",
-#     "email":"admin@gmail.com",
-#     "first_name":"admin",
-#     "middle_name":"admin",
-#     "last_name":"admin",
-#     "gender":"male",
-#     "role":"admin",
-#     "user_profile_image_url":"test1 profile image url"
-# }
-
 {
-    "username":"test8",
-    "password":"test8",
-    "email":"test8@gmail.com",
-    "first_name":"test8",
-    "middle_name":"test8",
-    "last_name":"test8",
+    "username":"admin",
+    "password":"admin",
+    "email":"admin@gmail.com",
+    "first_name":"admin",
+    "middle_name":"admin",
+    "last_name":"admin",
     "gender":"male",
-    "user_profile_image_url":"test8 profile image url",
-    "u_sched_in": "08:18",
-    "u_sched_out": "20:18"
+    "role":"admin",
+    "user_profile_image_url":"test1 profile image url"
 }
+
+# {
+#     "username":"test8",
+#     "password":"test8",
+#     "email":"test8@gmail.com",
+#     "first_name":"test8",
+#     "middle_name":"test8",
+#     "last_name":"test8",
+#     "gender":"male",
+#     "user_profile_image_url":"test8 profile image url",
+#     "u_sched_in": "08:18",
+#     "u_sched_out": "20:18"
+# }
 
 # no password 
 # {

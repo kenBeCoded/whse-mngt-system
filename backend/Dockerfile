@@ -1,5 +1,5 @@
-# Use Node.js LTS
-FROM node:20
+# Use Node.js Alpine for a lightweight image
+FROM node:20-alpine
 
 # Set working directory
 WORKDIR /app
@@ -16,8 +16,8 @@ COPY . .
 # Build TypeScript
 RUN npm run build
 
-# Expose port
-EXPOSE 8000
+# Expose port (will be overridden by docker-compose but good practice)
+EXPOSE 3002
 
 # Run app
-CMD ["npm", "start"]
+CMD ["npm", "run", "dev"]
