@@ -65,7 +65,7 @@ function LoginPage() {
       <Card className="w-full max-w-md relative z-10 shadow-2xl border-none bg-card/95 backdrop-blur">
         <CardHeader className="space-y-1">
           <CardTitle className="text-3xl font-bold text-center">
-            App-System-Title
+            WHSE MNGT SYSTEM
           </CardTitle>
           <CardDescription className="text-center">
             Enter your credentials to access your account
