@@ -1,16 +1,23 @@
 import { useEffect, useState } from "react";
+import { Navigate } from "react-router-dom";
 import { schedulerColumns, type SchedulerUser } from "./columns";
 import { SchedulerDataTable } from "./data-table";
 import { useUserStore } from "@/store/user-store";
+import { useAuth } from "@/hooks/useAuth";
 import axios from "@/api/axios";
 import { toast } from "sonner";
 
 const API = axios;
 
 export function SchedulerPage() {
+  const { user } = useAuth();
   const { users, isLoading, error, fetchUsers, clearError } = useUserStore();
   const [isUpdating, setIsUpdating] = useState(false);
   const [resetSelection, setResetSelection] = useState(0);
+
+  if (user?.role?.toLowerCase() === "employee") {
+    return <Navigate to="/admin" replace />;
+  }
 
   // Fetch users on component mount
   useEffect(() => {

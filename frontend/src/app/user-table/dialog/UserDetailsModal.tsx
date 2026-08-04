@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import type { Users } from "../columns";
 import { useUserStore } from "@/store/user-store";
+import { useAuth } from "@/hooks/useAuth";
 import { useForm } from "react-hook-form";
 import {
   Dialog,
@@ -51,6 +52,8 @@ export const UserDetailsModal = ({
   user: Users;
   onSave: (updatedUser: Users) => void;
 }) => {
+  const { user: currentUser } = useAuth();
+  const isManager = currentUser?.role?.toLowerCase() === "manager";
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
@@ -182,12 +185,20 @@ export const UserDetailsModal = ({
                   <Label htmlFor="role" className="text-sm">
                     Role
                   </Label>
-                  <Input
-                    id="role"
-                    {...register("role")}
-                    readOnly
-                    className="bg-gray-100 mt-1"
-                  />
+                  <Select
+                    value={watch("role")}
+                    onValueChange={(value) => setValue("role", value)}
+                    disabled={isSubmitting || isLoading}
+                  >
+                    <SelectTrigger className="w-full mt-1">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="employee">Employee</SelectItem>
+                    </SelectContent>
+                  </Select>
                   {errors.role && (
                     <p className="text-red-500 text-xs mt-1">
                       {errors.role.message}
@@ -376,7 +387,7 @@ export const UserDetailsModal = ({
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-4 border-t">
             <div>
-              {!isDeleteDialogOpen ? (
+              {!isManager && (!isDeleteDialogOpen ? (
                 <Button
                   type="button"
                   variant="outline"
@@ -408,7 +419,7 @@ export const UserDetailsModal = ({
                     Cancel
                   </Button>
                 </div>
-              )}
+              ))}
             </div>
 
             <div className="flex gap-2 w-full sm:w-auto">

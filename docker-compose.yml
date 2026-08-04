@@ -10,6 +10,9 @@ services:
       - NODE_ENV=development
       - VITE_API_URL=http://localhost:3002
       - CUSTOM_WEB_VAR=your_custom_value_here
+      - VITE_NODE_ENV=development
+      - VITE_SUPABASE_URL=https://pmgwsuuyhwtvlzltzjwq.supabase.co
+      - VITE_SUPABASE_ANONKEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBtZ3dzdXV5aHd0dmx6bHR6andxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI5OTkxNTYsImV4cCI6MjA2ODU3NTE1Nn0.La4ocSCwNu6ZRhKz-Nqoso3_MBAAjbdSHIjP2EjvE-s
     develop:
       watch:
         - action: sync

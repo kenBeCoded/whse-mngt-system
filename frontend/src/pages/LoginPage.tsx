@@ -33,17 +33,29 @@ function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    const timeoutPromise = new Promise((_, reject) => {
+      timeoutId = setTimeout(() => {
+        reject(new Error("Backend did not respond in time. Please try again."));
+      }, 10000);
+    });
+
     try {
-      await login(username, password);
+      await Promise.race([login(username, password), timeoutPromise]);
+      if (timeoutId) clearTimeout(timeoutId);
       toast.success("Successfully logged in!");
       navigate(from, { replace: true });
       clearError();
     } catch (err: any) {
+      if (timeoutId) clearTimeout(timeoutId);
       const msg =
-        err?.response?.data?.error?.message ||
-        err?.response?.data?.message ||
-        err?.message ||
-        "Login failed. Please check your credentials.";
+        err?.code === "ECONNABORTED" || err?.message?.includes("timeout")
+          ? "Backend did not respond in time (10s timeout). Please try again."
+          : err?.response?.data?.error?.message ||
+            err?.response?.data?.message ||
+            err?.message ||
+            "Login failed. Please check your credentials.";
       toast.error(msg);
     }
   };

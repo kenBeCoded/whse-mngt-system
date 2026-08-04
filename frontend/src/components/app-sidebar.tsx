@@ -79,7 +79,26 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     );
   };
 
-  const filteredNavMain = filterSections(navigationData.navMain, searchQuery);
+  const isEmployee = user?.role?.toLowerCase() === "employee";
+
+  const roleFilteredNavMain = navigationData.navMain
+    .map((section) => ({
+      ...section,
+      items: section.items.filter((item) => {
+        if (isEmployee) {
+          if (
+            item.url === "/admin/users" ||
+            item.url === "/admin/user-schedule"
+          ) {
+            return false;
+          }
+        }
+        return true;
+      }),
+    }))
+    .filter((section) => section.items.length > 0);
+
+  const filteredNavMain = filterSections(roleFilteredNavMain, searchQuery);
   const hasSearchResults = searchQuery.trim() !== "";
 
   return (
@@ -122,7 +141,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarGroup>
         ) : (
           <SidebarMenu>
-            {navigationData.navMain.map((item) => {
+            {roleFilteredNavMain.map((item) => {
               const isSectionActive = item.items.some(
                 (subItem) =>
                   pathname === subItem.url ||

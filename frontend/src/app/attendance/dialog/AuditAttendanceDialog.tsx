@@ -33,6 +33,8 @@ import {
 } from "@/utils/formatTime";
 import { toast } from "sonner";
 
+import { useAuth } from "@/hooks/useAuth";
+
 interface AttendanceDialogProps {
   data: AttendanceRecords;
 }
@@ -49,6 +51,8 @@ const formatTimeAMPM = (timeStr: string | null) => {
 };
 
 const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [isOpen, setIsOpen] = useState(false);
   const [isFailConfirmOpen, setIsFailConfirmOpen] = useState(false);
   const [isPassConfirmOpen, setIsPassConfirmOpen] = useState(false);
@@ -361,24 +365,26 @@ const AuditAttendanceDialog = ({ data }: AttendanceDialogProps) => {
 
           {/* FOOTER SECTION: ACTION BUTTONS */}
           {!data.is_audited ? (
-            <div className="flex justify-center gap-6 pt-4 border-t">
-              <Button
-                variant="destructive"
-                className="w-32 font-bold uppercase tracking-widest"
-                onClick={() => setIsFailConfirmOpen(true)}
-                disabled={isLoading}
-              >
-                Failed
-              </Button>
-              <Button
-                variant="default"
-                className="w-32 font-bold uppercase tracking-widest bg-green-500 hover:bg-green-600 text-white"
-                onClick={() => setIsPassConfirmOpen(true)}
-                disabled={isLoading}
-              >
-                Passed
-              </Button>
-            </div>
+            !isEmployee ? (
+              <div className="flex justify-center gap-6 pt-4 border-t">
+                <Button
+                  variant="destructive"
+                  className="w-32 font-bold uppercase tracking-widest"
+                  onClick={() => setIsFailConfirmOpen(true)}
+                  disabled={isLoading}
+                >
+                  Failed
+                </Button>
+                <Button
+                  variant="default"
+                  className="w-32 font-bold uppercase tracking-widest bg-green-500 hover:bg-green-600 text-white"
+                  onClick={() => setIsPassConfirmOpen(true)}
+                  disabled={isLoading}
+                >
+                  Passed
+                </Button>
+              </div>
+            ) : null
           ) : (
             <div className="flex justify-center gap-6 pt-4 border-t">
               <Button

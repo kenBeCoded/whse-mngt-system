@@ -1,9 +1,12 @@
 import { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 import { userColumns, type Users } from "./columns";
 import { DataTable } from "./data-table";
 import { useUserStore } from "../../store/user-store";
+import { useAuth } from "@/hooks/useAuth";
 
 export function UsersPage() {
+  const { user } = useAuth();
   const {
     users,
     isLoading,
@@ -16,6 +19,10 @@ export function UsersPage() {
     clearError,
     addUser,
   } = useUserStore();
+
+  if (user?.role?.toLowerCase() === "employee") {
+    return <Navigate to="/admin" replace />;
+  }
 
   // Fetch users on component mount
   useEffect(() => {

@@ -26,6 +26,17 @@ export function AttendanceRecordsPage() {
     }
   }, [error]);
 
+  const isAdmin = user?.role?.toLowerCase() === "admin";
+
+  const displayAttendance = isAdmin
+    ? Attendance
+    : Attendance.filter(
+        (record) =>
+          String(record.user_id) === String(user?.id) ||
+          record.username === user?.username ||
+          record.user_account_id === user?.id
+      );
+
   // Show loading state
   if (isLoading && Attendance.length === 0) {
     return (
@@ -45,7 +56,7 @@ export function AttendanceRecordsPage() {
 
       <DataTable
         columns={attendanceColumns}
-        data={Attendance}
+        data={displayAttendance}
         isLoading={isLoading}
       />
     </div>
