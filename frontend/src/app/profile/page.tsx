@@ -68,13 +68,14 @@ export function MyProfilePage() {
 
     setIsUploading(true);
     try {
+      const uuid_v4 = crypto.randomUUID();
       const fileExt = file.name.split(".").pop();
-      const fileName = `${user?.id || "profile"}_${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      const fileName = `img-${uuid_v4}-${Date.now()}.${fileExt}`;
+      const filePath = `user-images-uploads/${fileName}`;
 
-      // Upload file to Supabase Storage bucket 'profile-images'
+      // Upload file to Supabase Storage bucket 'App-File-Storage'
       const { error: uploadError } = await supabase.storage
-        .from("profile-images")
+        .from("App-File-Storage")
         .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
       if (uploadError) {
@@ -83,7 +84,7 @@ export function MyProfilePage() {
 
       // Get public URL
       const { data } = supabase.storage
-        .from("profile-images")
+        .from("App-File-Storage")
         .getPublicUrl(filePath);
 
       if (!data?.publicUrl) {
