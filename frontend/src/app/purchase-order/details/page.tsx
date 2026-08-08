@@ -170,11 +170,13 @@ export function PurchaseOrderDetailsPage() {
               </CardDescription>
             </div>
             <div className="flex items-center gap-2">
-              {/* Status update button (hidden for terminal states) */}
-              <StatusUpdateModal
-                currentStatus={po.status}
-                onUpdate={handleStatusUpdate}
-              />
+              {/* Status update button (hidden for employee role or terminal states) */}
+              {user?.role?.toLowerCase() !== "employee" && (
+                <StatusUpdateModal
+                  currentStatus={po.status}
+                  onUpdate={handleStatusUpdate}
+                />
+              )}
               {/* Receive button (only when shipped) */}
               {po.status === "shipped" && (
                 <ReceiveItemsModal

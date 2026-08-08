@@ -21,6 +21,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { InventoryItem } from "@/services/inventoryService";
+import { useAuth } from "@/hooks/useAuth";
 
 const inventorySchema = z.object({
   item_number: z.string().min(1, "Item number is required"),
@@ -51,6 +52,8 @@ export const InventoryDetailsModal = ({
   onSave,
   onDeactivate,
 }: InventoryDetailsModalProps) => {
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [isOpen, setIsOpen] = useState(false);
   const [isDeactivateConfirm, setIsDeactivateConfirm] = useState(false);
 
@@ -298,53 +301,55 @@ export const InventoryDetailsModal = ({
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-4 border-t">
-            <div>
-              {!isDeactivateConfirm ? (
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => setIsDeactivateConfirm(true)}
-                  className="text-red-600 border-red-600 hover:bg-red-50"
-                  disabled={isSubmitting}
-                >
-                  Deactivate Item
-                </Button>
-              ) : (
-                <div className="flex gap-2">
+          {!isEmployee && (
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-4 border-t">
+              <div>
+                {!isDeactivateConfirm ? (
                   <Button
-                    variant="destructive"
-                    size="sm"
                     type="button"
-                    onClick={handleDeactivate}
-                    disabled={isSubmitting}
-                  >
-                    Confirm
-                  </Button>
-                  <Button
                     variant="outline"
-                    size="sm"
-                    type="button"
-                    onClick={() => setIsDeactivateConfirm(false)}
+                    onClick={() => setIsDeactivateConfirm(true)}
+                    className="text-red-600 border-red-600 hover:bg-red-50"
                     disabled={isSubmitting}
                   >
-                    Cancel
+                    Deactivate Item
                   </Button>
-                </div>
-              )}
-            </div>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      type="button"
+                      onClick={handleDeactivate}
+                      disabled={isSubmitting}
+                    >
+                      Confirm
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      type="button"
+                      onClick={() => setIsDeactivateConfirm(false)}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
 
-            <div className="flex gap-2 w-full sm:w-auto">
-              <Button
-                variant="outline"
-                type="submit"
-                disabled={isSubmitting}
-                className="flex-1 sm:flex-none"
-              >
-                {isSubmitting ? "Saving..." : "Save changes"}
-              </Button>
+              <div className="flex gap-2 w-full sm:w-auto">
+                <Button
+                  variant="outline"
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 sm:flex-none"
+                >
+                  {isSubmitting ? "Saving..." : "Save changes"}
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
         </form>
       </DialogContent>
     </Dialog>

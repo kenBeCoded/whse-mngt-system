@@ -33,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 import { DataTablePagination } from "../../components/data-table/data-table-pagination";
 import { DataTableViewOptions } from "../../components/data-table/data-table-column-toggle";
 import type { PurchaseOrder } from "@/services/purchaseOrderService";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DataTableProps {
   columns: ColumnDef<PurchaseOrder, unknown>[];
@@ -42,6 +43,8 @@ interface DataTableProps {
 
 export function DataTable({ columns, data, isLoading = false }: DataTableProps) {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -76,12 +79,14 @@ export function DataTable({ columns, data, isLoading = false }: DataTableProps) 
           className="max-w-sm"
           disabled={isLoading}
         />
-        <Button
-          className="ml-2"
-          onClick={() => navigate("/admin/purchase-orders/new")}
-        >
-          New Request
-        </Button>
+        {!isEmployee && (
+          <Button
+            className="ml-2"
+            onClick={() => navigate("/admin/purchase-orders/new")}
+          >
+            New Request
+          </Button>
+        )}
         {/* view column */}
         <DropdownMenu>
           <DataTableViewOptions table={table} />

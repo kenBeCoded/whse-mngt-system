@@ -32,6 +32,7 @@ import { DataTablePagination } from "../../components/data-table/data-table-pagi
 import { DataTableViewOptions } from "../../components/data-table/data-table-column-toggle";
 import { SupplierCreateModal } from "./dialog/SupplierCreateModal";
 import type { Supplier } from "@/services/supplierService";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DataTableProps {
   columns: ColumnDef<Supplier, unknown>[];
@@ -62,6 +63,8 @@ export function DataTable({
   isLoading = false,
   onCreate,
 }: DataTableProps) {
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -100,7 +103,9 @@ export function DataTable({
           className="max-w-sm"
           disabled={isLoading}
         />
-        <SupplierCreateModal onCreate={(newSupplier) => onCreate?.(newSupplier)} />
+        {!isEmployee && (
+          <SupplierCreateModal onCreate={(newSupplier) => onCreate?.(newSupplier)} />
+        )}
         {/* view column */}
         <DropdownMenu>
           <DataTableViewOptions table={table} />

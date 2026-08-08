@@ -32,11 +32,9 @@ export function UpdateOtCell({ user }: UpdateOtCellProps) {
             date: r.attendance_date, // "YYYY-MM-DD"
             check_in: r.check_in_time, // "HH:MM" or null
             check_out: r.check_out_time, // "HH:MM" or null
-            // ot_id holds the OT hours value in the store; null means no OT set
-            ot:
-              r.ot_id !== null && r.ot_id !== undefined
-                ? Number(r.ot_id)
-                : null,
+            ot: r.ot_hours !== null && r.ot_hours !== undefined
+              ? Number(r.ot_hours)
+              : null,
           }),
         );
         setRecords(mapped);

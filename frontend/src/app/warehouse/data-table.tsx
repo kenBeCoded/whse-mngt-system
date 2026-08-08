@@ -32,6 +32,7 @@ import { DataTablePagination } from "../../components/data-table/data-table-pagi
 import { DataTableViewOptions } from "../../components/data-table/data-table-column-toggle";
 import type { Warehouse } from "@/services/warehouseService";
 import { WarehouseCreateModal } from "./dialog/WarehouseCreateModal";
+import { useAuth } from "@/hooks/useAuth";
 
 interface DataTableProps {
   columns: ColumnDef<Warehouse, unknown>[];
@@ -52,6 +53,8 @@ export function DataTable({
   isLoading = false,
   onCreate,
 }: DataTableProps) {
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -86,9 +89,11 @@ export function DataTable({
           className="max-w-sm"
           disabled={isLoading}
         />
-        <WarehouseCreateModal
-          onCreate={(data) => onCreate?.(data)}
-        />
+        {!isEmployee && (
+          <WarehouseCreateModal
+            onCreate={(data) => onCreate?.(data)}
+          />
+        )}
         {/* view column */}
         <DropdownMenu>
           <DataTableViewOptions table={table} />

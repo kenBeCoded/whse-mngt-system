@@ -6,6 +6,7 @@ import {
   getAllUsers,
   updateUser,
   deleteUser,
+  deleteMultipleUsers,
   getUserByUsername,
 } from "../../controllers/users/usersController.js";
 
@@ -16,5 +17,6 @@ router.get("/get-all-users", getAllUsers);
 router.post("/get-user-by-username", getUserByUsername);
 router.patch("/update-user", updateUser);
 router.delete("/delete-user", deleteUser);
+router.delete("/delete-multiple-users", deleteMultipleUsers);
 
 export default router;

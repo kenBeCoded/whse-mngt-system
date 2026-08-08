@@ -104,3 +104,24 @@ export const deleteUser = async (
     next(error);
   }
 };
+
+// delete multiple (soft)
+export const deleteMultipleUsers = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { user_ids } = req.body; // array of user_account_ids
+    if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
+      sendError(res, 400, ErrorCodes.BAD_REQUEST, "Invalid or empty user_ids array");
+      return;
+    }
+
+    await UserModel.deleteMultipleByUserAccountIds(user_ids);
+
+    sendSuccess(res, 200, null, "Users deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};

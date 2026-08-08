@@ -10,39 +10,26 @@ export function AttendanceRecordsPage() {
   const { user } = useAuth();
 
   useEffect(() => {
-    // 1. Null Check: Ensure user and user.id exist before proceeding.
-    if (user?.id) {
-      // 2. Type Correction: Pass user.id as a string if fetchRecord expects string,
-      //    or parse it to a number if fetchRecord was updated to accept number.
-      //    Assuming the original store change was to accept a string (which is typical for user IDs).
-      fetchRecord(user.id);
+    if (user?.id && user?.role) {
+      // fetchRecord uses the role to decide:
+      //   admin  → request_code 0 (fetch all records)
+      //   others → request_code 1 (fetch only this user's records)
+      fetchRecord(user.id, user.role);
     }
-  }, [fetchRecord, user?.id]); // 3. Dependency Array: Include user?.id to re-run when the user logs in/out.
+  }, [fetchRecord, user?.id, user?.role]);
 
   useEffect(() => {
     if (error) {
-      console.error("User store error:", error);
-      // You can add toast notification here
+      console.error("Attendance store error:", error);
     }
   }, [error]);
-
-  const isAdmin = user?.role?.toLowerCase() === "admin";
-
-  const displayAttendance = isAdmin
-    ? Attendance
-    : Attendance.filter(
-        (record) =>
-          String(record.user_id) === String(user?.id) ||
-          record.username === user?.username ||
-          record.user_account_id === user?.id
-      );
 
   // Show loading state
   if (isLoading && Attendance.length === 0) {
     return (
       <div className="container mx-auto py-10">
         <div className="flex items-center justify-center h-64">
-          <div className="text-lg">Loading users...</div>
+          <div className="text-lg">Loading attendance...</div>
         </div>
       </div>
     );
@@ -56,9 +43,10 @@ export function AttendanceRecordsPage() {
 
       <DataTable
         columns={attendanceColumns}
-        data={displayAttendance}
+        data={Attendance}
         isLoading={isLoading}
       />
     </div>
   );
 }
+

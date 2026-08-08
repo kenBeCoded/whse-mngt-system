@@ -24,7 +24,7 @@ router.post(
     try {
       const { username, password } = req.body;
 
-      // find user
+      // find user (findByUsername already filters is_deleted = FALSE)
       const user = await UserModel.findByUsername(username);
       if (!user) {
         sendError(

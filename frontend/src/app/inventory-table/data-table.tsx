@@ -33,6 +33,8 @@ import { DataTableViewOptions } from "../../components/data-table/data-table-col
 import { InventoryCreateModal } from "./dialog/InventoryCreateModal";
 import type { InventoryItem } from "@/services/inventoryService";
 
+import { useAuth } from "@/hooks/useAuth";
+
 interface DataTableProps {
   columns: ColumnDef<InventoryItem, unknown>[];
   data: InventoryItem[];
@@ -64,6 +66,8 @@ export function DataTable({
   isLoading = false,
   onCreate,
 }: DataTableProps) {
+  const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
@@ -102,9 +106,11 @@ export function DataTable({
           className="max-w-sm"
           disabled={isLoading}
         />
-        <InventoryCreateModal
-          onCreate={(newItem) => onCreate?.(newItem)}
-        />
+        {!isEmployee && (
+          <InventoryCreateModal
+            onCreate={(newItem) => onCreate?.(newItem)}
+          />
+        )}
         {/* view column */}
         <DropdownMenu>
           <DataTableViewOptions table={table} />

@@ -28,17 +28,15 @@ const buildAttendanceQuery = (options: AttendanceQueryOptions) => {
       ar.ot_id,
       ar.created_at,
       ar.updated_at
-      ${
-        options.includeOT
-          ? `,
+      ${options.includeOT
+      ? `,
         os.ot_hours,
         os.added_by AS ot_added_by,
         os.created_at AS ot_created_at`
-          : ""
-      }
-      ${
-        options.includeUserDetails
-          ? `,
+      : ""
+    }
+      ${options.includeUserDetails
+      ? `,
         u.username,
         u.user_account_id,
         u.first_name,
@@ -49,8 +47,8 @@ const buildAttendanceQuery = (options: AttendanceQueryOptions) => {
         u.role,
         ci.image_url AS check_in_image_url,
         co.image_url AS check_out_image_url`
-          : ""
-      }
+      : ""
+    }
     FROM attendance_records ar
   `;
 
@@ -175,9 +173,6 @@ export class Attendance {
       });
 
       const result = await pool.query(query, params);
-      // console.log("result", result);
-      // console.log("query", query);
-      // console.log("params", params);
       return result.rows || [];
     } catch (error: any) {
       throw new Error(
@@ -450,8 +445,8 @@ export class Attendance {
         }
         break;
       case 4:
-        if (!data.ot_hours || !data.ot_idArr || data.ot_idArr.length === 0) {
-          throw new Error("ot_hours and ot_idArr are required");
+        if (data.ot_hours === undefined || data.ot_hours === null || !data.ot_idArr || data.ot_idArr.length === 0) {
+          throw new Error("ot_hours and ot_idArr (attendance record IDs) are required");
         }
         break;
       case 5:
@@ -588,19 +583,66 @@ export class Attendance {
           break;
 
         // update overtime single or multiple dates selected
+        // ot_idArr contains attendance_record.id values.
+        // For each record:
+        //   - If ot_id already exists → UPDATE ot_sched
+        //   - If ot_id is null        → INSERT ot_sched + link back to attendance_record
         case 4:
-          const updateOtQuery = `
-          UPDATE ot_sched
-          SET ot_hours = $1
-          WHERE id = ANY($2::int[])
-          RETURNING *;
-        `;
+          const upsertOtResults: any[] = [];
 
-          result = await client.query(updateOtQuery, [
-            data.ot_hours,
-            data.ot_idArr,
-          ]);
+          for (const attendanceRecordId of data.ot_idArr!) {
+            // Fetch the attendance record
+            const getRecordQ = `
+              SELECT id, ot_id, user_id
+              FROM attendance_records
+              WHERE id = $1
+            `;
+            const recordRes = await client.query(getRecordQ, [attendanceRecordId]);
 
+            if (recordRes.rows.length === 0) {
+              // Record not found — skip silently
+              continue;
+            }
+
+            const { ot_id: existingOtId, user_id: recordUserId } = recordRes.rows[0];
+
+            if (existingOtId) {
+              // OT already exists — update it
+              const updateExistingOtQ = `
+                UPDATE ot_sched
+                SET ot_hours = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE id = $2
+                RETURNING *;
+              `;
+              const updateRes = await client.query(updateExistingOtQ, [
+                data.ot_hours,
+                existingOtId,
+              ]);
+              upsertOtResults.push(updateRes.rows[0]);
+            } else {
+              // OT does not exist — create and link
+              const insertNewOtQ = `
+                INSERT INTO ot_sched (added_by, ot_hours)
+                VALUES ($1, $2)
+                RETURNING *;
+              `;
+              const insertRes = await client.query(insertNewOtQ, [
+                recordUserId,
+                data.ot_hours,
+              ]);
+              const newOt = insertRes.rows[0];
+
+              const linkOtQ = `
+                UPDATE attendance_records
+                SET ot_id = $1, updated_at = CURRENT_TIMESTAMP
+                WHERE id = $2
+              `;
+              await client.query(linkOtQ, [newOt.id, attendanceRecordId]);
+              upsertOtResults.push(newOt);
+            }
+          }
+
+          result = { rows: upsertOtResults };
           break;
 
         // update/modify attendance record check in & out and overtime

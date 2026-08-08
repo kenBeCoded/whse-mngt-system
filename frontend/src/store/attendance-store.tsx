@@ -7,6 +7,7 @@ const API = axios; // use shared configured axios instance (withCredentials + au
 
 export interface AttendanceRecords {
   id?: string | number;
+  user_id?: string | number | null;
   attendance_date: string;
   check_in_time: string | null;
   check_out_time: string | null;
@@ -44,7 +45,7 @@ interface AttendanceState {
   setError: (error: string | null) => void;
 
   // User CRUD operations
-  fetchRecord: (user_id: number | string) => Promise<void>;
+  fetchRecord: (user_id: number | string, role: string) => Promise<void>;
 
   fetchRecordByID: (
     user_id: number | string,
@@ -126,7 +127,7 @@ export const useAttendanceStore = create<AttendanceState>()(
       setLoading: (isLoading) => set({ isLoading }),
       setError: (error) => set({ error }),
 
-      fetchRecord: async (user_id) => {
+      fetchRecord: async (user_id, role) => {
         if (!user_id) {
           set({ isLoading: false, error: "User is not authenticated." });
           return;
@@ -134,9 +135,16 @@ export const useAttendanceStore = create<AttendanceState>()(
 
         set({ isLoading: true, error: null });
         try {
+          const isAdmin = role?.toLowerCase() === "admin";
+          // Admin: request_code 0 → fetch all records
+          // Non-admin: request_code 1 → fetch only their own records by user_id
+          const payload = isAdmin
+            ? { request_code: 0 }
+            : { request_code: 1, user_id, selected_date: null };
+
           const response = await API.post(
             "/api/attendance/get-attendance-record",
-            { request_code: 0, user_id: user_id },
+            payload,
           );
           set({ Attendance: response.data.data, isLoading: false });
         } catch (error: any) {

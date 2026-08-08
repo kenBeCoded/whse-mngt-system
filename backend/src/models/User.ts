@@ -68,10 +68,12 @@ export class UserModel {
               user_profile_image_url,
               role,
               u_sched_in,
-              u_sched_out
+              u_sched_out,
+              user_account_id
           )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, LPAD(nextval('user_account_id_seq')::text, 6, '0'))
       RETURNING
+          id,
           username,
           email,
           first_name,
@@ -161,10 +163,12 @@ export class UserModel {
           created_at,
           updated_at,
           role,
+          is_deleted,
           u_sched_in,
           u_sched_out
       FROM users
       WHERE username = $1
+        AND is_deleted = FALSE
       `;
       const result = await pool.query(query, [username]);
       return result.rows[0] || null;
@@ -252,6 +256,16 @@ export class UserModel {
       }
     } catch (error: any) {
       throw new Error(`Failed to delete user: ${error.message}`);
+    }
+  }
+
+  static async deleteMultipleByUserAccountIds(userAccountIds: string[]): Promise<void> {
+    try {
+      const query =
+        "UPDATE users SET is_deleted = TRUE WHERE user_account_id = ANY($1) RETURNING id";
+      await pool.query(query, [userAccountIds]);
+    } catch (error: any) {
+      throw new Error(`Failed to delete multiple users: ${error.message}`);
     }
   }
 

@@ -76,6 +76,7 @@ export function WarehouseDetailsPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const isEmployee = user?.role?.toLowerCase() === "employee";
   const warehouseId = Number(id);
 
   const [warehouse, setWarehouse] = useState<Warehouse | null>(null);
@@ -617,13 +618,13 @@ export function WarehouseDetailsPage() {
           </div>
 
           <div>
-            {activeTab === "locations" && (
+            {!isEmployee && activeTab === "locations" && (
               <AddLocationDialog onSubmit={handleAddLocation} />
             )}
-            {activeTab === "bins" && (
+            {!isEmployee && activeTab === "bins" && (
               <AddBinDialog locations={locations} onSubmit={handleAddBin} />
             )}
-            {activeTab === "items" && (
+            {!isEmployee && activeTab === "items" && (
               <AssignItemDialog bins={bins} onSubmit={handleAssignItem} />
             )}
           </div>
@@ -641,7 +642,9 @@ export function WarehouseDetailsPage() {
                     <TableHead>Aisle</TableHead>
                     <TableHead>Bay</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!isEmployee && (
+                      <TableHead className="text-right">Actions</TableHead>
+                    )}
                   </>
                 )}
                 {activeTab === "bins" && (
@@ -651,7 +654,9 @@ export function WarehouseDetailsPage() {
                     <TableHead>Capacity</TableHead>
                     <TableHead>Utilization</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!isEmployee && (
+                      <TableHead className="text-right">Actions</TableHead>
+                    )}
                   </>
                 )}
                 {activeTab === "items" && (
@@ -662,7 +667,9 @@ export function WarehouseDetailsPage() {
                     <TableHead>Current Bin</TableHead>
                     <TableHead>Stock Qty</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!isEmployee && (
+                      <TableHead className="text-right">Actions</TableHead>
+                    )}
                   </>
                 )}
                 {activeTab === "unallocated" && (
@@ -671,7 +678,9 @@ export function WarehouseDetailsPage() {
                     <TableHead>Reference Details</TableHead>
                     <TableHead>Received</TableHead>
                     <TableHead>Quantity</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                    {!isEmployee && (
+                      <TableHead className="text-right">Actions</TableHead>
+                    )}
                   </>
                 )}
               </TableRow>
@@ -703,52 +712,54 @@ export function WarehouseDetailsPage() {
                             {row.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="relative flex items-center justify-end">
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Edit location"
-                                onClick={() => openEditLocation(row)}
-                              >
-                                <Edit2 size={15} />
-                              </Button>
-                              {row.is_active ? (
+                        {!isEmployee && (
+                          <TableCell className="text-right">
+                            <div className="relative flex items-center justify-end">
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
-                                  title="Deactivate location"
-                                  onClick={() =>
-                                    handleDeactivateLocation(row.id)
-                                  }
+                                  className="h-8 w-8"
+                                  title="Edit location"
+                                  onClick={() => openEditLocation(row)}
                                 >
-                                  <Power size={15} />
+                                  <Edit2 size={15} />
                                 </Button>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
-                                  title="Activate location"
-                                  onClick={() =>
-                                    handleReactivateLocation(row.id)
-                                  }
-                                >
-                                  <ToggleRight size={15} />
-                                </Button>
-                              )}
+                                {row.is_active ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                    title="Deactivate location"
+                                    onClick={() =>
+                                      handleDeactivateLocation(row.id)
+                                    }
+                                  >
+                                    <Power size={15} />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                                    title="Activate location"
+                                    onClick={() =>
+                                      handleReactivateLocation(row.id)
+                                    }
+                                  >
+                                    <ToggleRight size={15} />
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                                <MoreHorizontal
+                                  size={16}
+                                  className="text-muted-foreground/40"
+                                />
+                              </div>
                             </div>
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
-                              <MoreHorizontal
-                                size={16}
-                                className="text-muted-foreground/40"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
+                        )}
                       </>
                     )}
                     {/* BINS TAB */}
@@ -786,48 +797,50 @@ export function WarehouseDetailsPage() {
                             {row.is_active ? "Active" : "Inactive"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="relative flex items-center justify-end">
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8"
-                                title="Edit bin"
-                                onClick={() => openEditBin(row)}
-                              >
-                                <Edit2 size={15} />
-                              </Button>
-                              {row.is_active ? (
+                        {!isEmployee && (
+                          <TableCell className="text-right">
+                            <div className="relative flex items-center justify-end">
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
-                                  title="Deactivate bin"
-                                  onClick={() => handleDeactivateBin(row)}
+                                  className="h-8 w-8"
+                                  title="Edit bin"
+                                  onClick={() => openEditBin(row)}
                                 >
-                                  <Power size={15} />
+                                  <Edit2 size={15} />
                                 </Button>
-                              ) : (
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
-                                  title="Activate bin"
-                                  onClick={() => handleReactivateBin(row)}
-                                >
-                                  <ToggleRight size={15} />
-                                </Button>
-                              )}
+                                {row.is_active ? (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-500/10"
+                                    title="Deactivate bin"
+                                    onClick={() => handleDeactivateBin(row)}
+                                  >
+                                    <Power size={15} />
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10"
+                                    title="Activate bin"
+                                    onClick={() => handleReactivateBin(row)}
+                                  >
+                                    <ToggleRight size={15} />
+                                  </Button>
+                                )}
+                              </div>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                                <MoreHorizontal
+                                  size={16}
+                                  className="text-muted-foreground/40"
+                                />
+                              </div>
                             </div>
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
-                              <MoreHorizontal
-                                size={16}
-                                className="text-muted-foreground/40"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
+                        )}
                       </>
                     )}
                     {/* ITEMS TAB */}
@@ -870,27 +883,29 @@ export function WarehouseDetailsPage() {
                             {row.status || "—"}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="relative flex items-center justify-end">
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 px-2 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
-                                onClick={() => openTransfer(row)}
-                              >
-                                <RefreshCw size={12} className="mr-1" />{" "}
-                                Transfer
-                              </Button>
+                        {!isEmployee && (
+                          <TableCell className="text-right">
+                            <div className="relative flex items-center justify-end">
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-7 px-2 text-[10px] font-extrabold uppercase bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
+                                  onClick={() => openTransfer(row)}
+                                >
+                                  <RefreshCw size={12} className="mr-1" />{" "}
+                                  Transfer
+                                </Button>
+                              </div>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                                <MoreHorizontal
+                                  size={16}
+                                  className="text-muted-foreground/40"
+                                />
+                              </div>
                             </div>
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
-                              <MoreHorizontal
-                                size={16}
-                                className="text-muted-foreground/40"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
+                        )}
                       </>
                     )}
                     {/* UNALLOCATED TAB */}
@@ -935,26 +950,28 @@ export function WarehouseDetailsPage() {
                             {row.quantity} Units
                           </div>
                         </TableCell>
-                        <TableCell className="text-right">
-                          <div className="relative flex items-center justify-end">
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                size="sm"
-                                className="h-7 px-3 text-[10px] font-extrabold uppercase tracking-widest"
-                                onClick={() => openAllocate(row)}
-                              >
-                                Allocate{" "}
-                                <ArrowRightCircle size={14} className="ml-1" />
-                              </Button>
+                        {!isEmployee && (
+                          <TableCell className="text-right">
+                            <div className="relative flex items-center justify-end">
+                              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <Button
+                                  size="sm"
+                                  className="h-7 px-3 text-[10px] font-extrabold uppercase tracking-widest"
+                                  onClick={() => openAllocate(row)}
+                                >
+                                  Allocate{" "}
+                                  <ArrowRightCircle size={14} className="ml-1" />
+                                </Button>
+                              </div>
+                              <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
+                                <MoreHorizontal
+                                  size={16}
+                                  className="text-muted-foreground/40"
+                                />
+                              </div>
                             </div>
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2 opacity-100 group-hover:opacity-0 transition-opacity flex items-center justify-center pointer-events-none">
-                              <MoreHorizontal
-                                size={16}
-                                className="text-muted-foreground/40"
-                              />
-                            </div>
-                          </div>
-                        </TableCell>
+                          </TableCell>
+                        )}
                       </>
                     )}
                   </TableRow>

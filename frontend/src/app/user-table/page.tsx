@@ -105,7 +105,7 @@ export function UsersPage() {
       )}
 
       {/* Bulk actions */}
-      {selectedUsers.length > 0 && (
+      {user?.role?.toLowerCase() === "admin" && selectedUsers.length > 0 && (
         <div className="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
           <div className="flex justify-between items-center">
             <p className="text-blue-800">
@@ -123,7 +123,11 @@ export function UsersPage() {
       )}
 
       <DataTable
-        columns={userColumns}
+        columns={
+          user?.role?.toLowerCase() === "admin"
+            ? userColumns
+            : userColumns.filter((col) => col.id !== "select")
+        }
         data={users}
         onSave={handleSaveUser}
         onCreate={handleCreateUser}

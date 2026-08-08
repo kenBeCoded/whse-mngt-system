@@ -24,12 +24,14 @@ import { PurchaseOrderFormPage } from "./app/purchase-order/create/page";
 import { PurchaseOrderDetailsPage } from "./app/purchase-order/details/page";
 import { WarehousesPage } from "./app/warehouse/page";
 import { WarehouseDetailsPage } from "./app/warehouse/details/page";
+import { DynamicTitle } from "./components/DynamicTitle";
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <DynamicTitle />
           <div className="App">
             <Routes>
               <Route

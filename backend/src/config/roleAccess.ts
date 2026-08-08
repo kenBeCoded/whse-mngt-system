@@ -31,11 +31,12 @@ export const roleAccessConfig: RoutePermission[] = [
   { method: "POST", path: "/auth/logout", roles: ALL_ROLES },
 
   // ── Users ────────────────────────────────────────────────────────────────
-  { method: "POST", path: "/users/create-user", roles: ADMIN_ONLY },
+  { method: "POST", path: "/users/create-user", roles: ADMIN_MANAGER },
   { method: "GET", path: "/users/get-all-users", roles: ADMIN_MANAGER },
   { method: "POST", path: "/users/get-user-by-username", roles: ADMIN_MANAGER },
   { method: "PATCH", path: "/users/update-user", roles: ADMIN_ONLY },
   { method: "DELETE", path: "/users/delete-user", roles: ADMIN_ONLY },
+  { method: "DELETE", path: "/users/delete-multiple-users", roles: ADMIN_ONLY },
 
   // ── Attendance ───────────────────────────────────────────────────────────
   {
@@ -108,7 +109,7 @@ export const roleAccessConfig: RoutePermission[] = [
   {
     method: "GET",
     path: "/warehouses/:warehouseId/unallocated",
-    roles: ADMIN_MANAGER,
+    roles: ALL_ROLES,
   },
   {
     method: "GET",
