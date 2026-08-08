@@ -245,6 +245,57 @@ export class UserModel {
     }
   }
 
+  static async updateProfile(
+    id: number,
+    updates: {
+      first_name?: string;
+      middle_name?: string;
+      last_name?: string;
+      email?: string;
+      gender?: string;
+      user_profile_image_url?: string;
+    },
+  ): Promise<User | null> {
+    try {
+      const fields = Object.keys(updates).filter(
+        (key) => updates[key as keyof typeof updates] !== undefined,
+      );
+      if (fields.length === 0) return null;
+
+      const values = fields.map((f) => updates[f as keyof typeof updates]);
+      const setClause = fields
+        .map((field, index) => `${field} = $${index + 2}`)
+        .join(", ");
+
+      const query = `
+      UPDATE users
+      SET ${setClause}, updated_at = NOW()
+      WHERE id = $1
+      RETURNING id, user_account_id, username, email, first_name, middle_name,
+                last_name, gender, user_profile_image_url, role,
+                u_sched_in, u_sched_out, created_at, updated_at
+      `;
+      const result = await pool.query(query, [id, ...values]);
+      return result.rows[0] || null;
+    } catch (error: any) {
+      throw new Error(`Failed to update profile: ${error.message}`);
+    }
+  }
+
+  static async updatePassword(
+    id: number,
+    newPassword: string,
+  ): Promise<boolean> {
+    try {
+      const hashed = await bcrypt.hash(newPassword, 12);
+      const query = `UPDATE users SET password_hash = $2, updated_at = NOW() WHERE id = $1`;
+      await pool.query(query, [id, hashed]);
+      return true;
+    } catch (error: any) {
+      throw new Error(`Failed to update password: ${error.message}`);
+    }
+  }
+
   // TODO: set this as update the is_deleted
   static async deleteById(id: number): Promise<void> {
     try {

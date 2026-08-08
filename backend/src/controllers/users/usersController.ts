@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { UserModel } from "../../models/User.js";
-import { User } from "../../types/index.js";
+import { User, AuthenticatedRequest } from "../../types/index.js";
 import { sendSuccess, sendError, ErrorCodes } from "../../utils/apiResponse.js";
 
 // signup/create local account
@@ -121,6 +121,78 @@ export const deleteMultipleUsers = async (
     await UserModel.deleteMultipleByUserAccountIds(user_ids);
 
     sendSuccess(res, 200, null, "Users deleted successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+// update own profile (any role)
+export const updateProfile = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, 401, ErrorCodes.UNAUTHORIZED, "Unauthorized");
+      return;
+    }
+
+    const { first_name, middle_name, last_name, email, gender, user_profile_image_url } = req.body;
+    const updated = await UserModel.updateProfile(userId, {
+      first_name,
+      middle_name,
+      last_name,
+      email,
+      gender,
+      user_profile_image_url,
+    });
+
+    if (!updated) {
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
+      return;
+    }
+
+    sendSuccess(res, 200, updated, "Profile updated successfully");
+  } catch (error) {
+    next(error);
+  }
+};
+
+// update own password (any role)
+export const updatePassword = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, 401, ErrorCodes.UNAUTHORIZED, "Unauthorized");
+      return;
+    }
+
+    const { current_password, new_password } = req.body;
+    if (!current_password || !new_password) {
+      sendError(res, 400, ErrorCodes.BAD_REQUEST, "current_password and new_password are required");
+      return;
+    }
+
+    // Fetch user to validate current password
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      sendError(res, 404, ErrorCodes.USER_NOT_FOUND, "User not found");
+      return;
+    }
+
+    const isValid = await UserModel.validatePassword(user, current_password);
+    if (!isValid) {
+      sendError(res, 400, ErrorCodes.INVALID_CREDENTIALS, "Current password is incorrect");
+      return;
+    }
+
+    await UserModel.updatePassword(userId, new_password);
+    sendSuccess(res, 200, null, "Password updated successfully");
   } catch (error) {
     next(error);
   }

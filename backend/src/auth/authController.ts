@@ -106,6 +106,13 @@ router.get(
         updatedAt: user.updated_at,
         user_profile_image_url: user.user_profile_image_url,
         email: user.email,
+        first_name: user.first_name,
+        middle_name: user.middle_name,
+        last_name: user.last_name,
+        gender: user.gender,
+        user_account_id: user.user_account_id,
+        u_sched_in: user.u_sched_in,
+        u_sched_out: user.u_sched_out,
       });
     } catch (error) {
       console.error("Profile error:", error);

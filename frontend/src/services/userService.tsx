@@ -25,4 +25,24 @@ export const authService = {
     // Backend returns { success, data: { id, username, role, ... } }
     return response.data.data;
   },
+
+  updateProfile: async (data: {
+    first_name?: string;
+    middle_name?: string;
+    last_name?: string;
+    email?: string;
+    gender?: string;
+    user_profile_image_url?: string;
+  }) => {
+    const response = await API.patch("/api/users/update-profile", data);
+    return response.data;
+  },
+
+  updatePassword: async (data: {
+    current_password?: string;
+    new_password?: string;
+  }) => {
+    const response = await API.patch("/api/users/update-password", data);
+    return response.data;
+  },
 };

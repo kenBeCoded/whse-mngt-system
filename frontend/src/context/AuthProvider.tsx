@@ -85,6 +85,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const clearError = () => setError(null);
 
+  const refreshProfile = async () => {
+    try {
+      const profile = await authService.getProfile();
+      setUser(profile);
+    } catch {
+      // silently fail
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -95,6 +104,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         loading,
         error,
         clearError,
+        refreshProfile,
       }}
     >
       {children}

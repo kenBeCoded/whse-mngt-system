@@ -35,6 +35,8 @@ export const roleAccessConfig: RoutePermission[] = [
   { method: "GET", path: "/users/get-all-users", roles: ADMIN_MANAGER },
   { method: "POST", path: "/users/get-user-by-username", roles: ADMIN_MANAGER },
   { method: "PATCH", path: "/users/update-user", roles: ADMIN_ONLY },
+  { method: "PATCH", path: "/users/update-profile", roles: ALL_ROLES },
+  { method: "PATCH", path: "/users/update-password", roles: ALL_ROLES },
   { method: "DELETE", path: "/users/delete-user", roles: ADMIN_ONLY },
   { method: "DELETE", path: "/users/delete-multiple-users", roles: ADMIN_ONLY },
 

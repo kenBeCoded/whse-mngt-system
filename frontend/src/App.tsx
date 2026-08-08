@@ -24,6 +24,7 @@ import { PurchaseOrderFormPage } from "./app/purchase-order/create/page";
 import { PurchaseOrderDetailsPage } from "./app/purchase-order/details/page";
 import { WarehousesPage } from "./app/warehouse/page";
 import { WarehouseDetailsPage } from "./app/warehouse/details/page";
+import { MyProfilePage } from "./app/profile/page";
 import { DynamicTitle } from "./components/DynamicTitle";
 
 function App() {
@@ -59,6 +60,7 @@ function App() {
                   <Route path="purchase-orders/:id" element={<PurchaseOrderDetailsPage />} />
                   <Route path="warehouses" element={<WarehousesPage />} />
                   <Route path="warehouses/:id" element={<WarehouseDetailsPage />} />
+                  <Route path="profile" element={<MyProfilePage />} />
                 </Route>
 
                 {/* Example nested routes - extend with your full nav structure */}

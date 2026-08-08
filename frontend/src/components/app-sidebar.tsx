@@ -218,7 +218,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 className="w-[var(--radix-dropdown-menu-trigger-width)] bg-popover border rounded-md shadow-md p-1"
               >
                 <DropdownMenuItem className="cursor-pointer hover:bg-accent rounded-sm px-2 py-1.5">
-                  <Link to="#" className="flex items-center w-full">
+                  <Link to="/admin/profile" className="flex items-center w-full">
                     <User2 className="mr-2 h-4 w-4" />
                     <span>My Profile</span>
                   </Link>

@@ -12,6 +12,7 @@ const routeTitleMap: Record<string, string> = {
   "/admin/purchase-orders": "Purchase Orders",
   "/admin/purchase-orders/new": "Create Purchase Order",
   "/admin/warehouses": "Warehouses",
+  "/admin/profile": "My Profile",
 };
 
 export function DynamicTitle() {
